@@ -8,17 +8,16 @@
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="المنصة">
 </div>
 
+<br>
+
 <div align="center">
-  <br>
-  <sub>
-    <a href="README.md">🇬🇧 English</a> •
-    <a href="README.fa.md">🇮🇷 فارسی</a> •
-    <a href="README.ru.md">🇷🇺 Русский</a> •
-    <a href="README.zh.md">🇨🇳 中文</a> •
-    <a href="README.hi.md">🇮🇳 हिन्दी</a> •
-    <a href="README.es.md">🇪🇸 Español</a> •
-    <a href="README.ar.md">🇸🇦 العربية</a>
-  </sub>
+  <a href="README.md"><img src="https://img.shields.io/badge/English-00ADD8?style=for-the-badge&logo=github&logoColor=white" alt="English"></a>
+  <a href="README.fa.md"><img src="https://img.shields.io/badge/فارسی-DC143C?style=for-the-badge&logo=iran&logoColor=white" alt="فارسی"></a>
+  <a href="README.ru.md"><img src="https://img.shields.io/badge/Русский-0052CC?style=for-the-badge&logo=russia&logoColor=white" alt="Русский"></a>
+  <a href="README.zh.md"><img src="https://img.shields.io/badge/中文-FF4500?style=for-the-badge&logo=china&logoColor=white" alt="中文"></a>
+  <a href="README.hi.md"><img src="https://img.shields.io/badge/हिन्दी-FF9933?style=for-the-badge&logo=india&logoColor=white" alt="हिन्दी"></a>
+  <a href="README.es.md"><img src="https://img.shields.io/badge/Español-FF6B35?style=for-the-badge&logo=spain&logoColor=white" alt="Español"></a>
+  <a href="README.ar.md"><img src="https://img.shields.io/badge/العربية-006233?style=for-the-badge&logo=saudi-arabia&logoColor=white" alt="العربية"></a>
 </div>
 
 <br>
