@@ -15,22 +15,23 @@ type TunnelEndpoint struct {
 	Status     string
 }
 
-func SetupWireGuardRemote(host *Host, localPublicKey string, listenPort int) (string, error) {
+func SetupWireGuardRemote(host *Host, localPublicKey string, listenPort int) (pubkey string, iface string, err error) {
 	log.Printf("[tunnel] setting up wireguard on remote %s", host.Address)
 
-	privKey, err := host.SSHCommand("wg genkey")
+	var privKey, pubKey string
+	privKey, err = host.SSHCommand("wg genkey")
 	if err != nil {
-		return "", fmt.Errorf("generate wg key: %w", err)
+		return "", "", fmt.Errorf("generate wg key: %w", err)
 	}
 	privKey = strings.TrimSpace(privKey)
 
-	pubKey, err := host.SSHCommand(fmt.Sprintf("echo '%s' | wg pubkey", privKey))
+	pubKey, err = host.SSHCommand(fmt.Sprintf("echo '%s' | wg pubkey", privKey))
 	if err != nil {
-		return "", fmt.Errorf("derive pubkey: %w", err)
+		return "", "", fmt.Errorf("derive pubkey: %w", err)
 	}
 	pubKey = strings.TrimSpace(pubKey)
 
-	iface := fmt.Sprintf("nyxora%d", listenPort)
+	iface = fmt.Sprintf("nyxora%d", listenPort)
 	subnet := listenPort % 256
 	cfg := fmt.Sprintf(`[Interface]
 PrivateKey = %s
@@ -48,7 +49,7 @@ PersistentKeepalive = 25
 
 	cfgPath := fmt.Sprintf("/etc/wireguard/%s.conf", iface)
 	if err := host.WriteFile(cfgPath, cfg, "600"); err != nil {
-		return "", fmt.Errorf("write remote wg config: %w", err)
+		return "", "", fmt.Errorf("write remote wg config: %w", err)
 	}
 
 	_, err = host.SSHCommand(fmt.Sprintf("wg-quick up %s 2>&1", iface))
@@ -57,7 +58,7 @@ PersistentKeepalive = 25
 	}
 
 	log.Printf("[tunnel] remote wireguard ready | pubkey: %s | iface: %s", pubKey[:16]+"...", iface)
-	return pubKey, nil
+	return pubKey, iface, nil
 }
 
 func TeardownRemote(host *Host, iface string) error {

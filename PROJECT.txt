@@ -1,282 +1,222 @@
 ================================================================================
-                        NYXORA - ADAPTIVE TUNNEL ORCHESTRATOR
-                        پروژه نایکسورا - ارکسترator تونل تطبیقی
+                         NYXORA - ADAPTIVE TUNNEL ORCHESTRATOR
+                         نایکسورا - ارکستریتور تونل تطبیقی
 ================================================================================
 
 ================================================================================
-                            🇬🇧 ENGLISH
+                             🇬🇧 ENGLISH
 ================================================================================
 
 1. WHAT IS NYXORA?
 ===================
 NYXORA is a self-healing multi-transport adaptive tunnel orchestrator.
-You install it on ONE server (single-side install). It connects to a remote
-server via SSH, auto-provisions the fastest tunnel, and keeps it healthy.
+Install it on ONE server (server A). It SSHs into a remote server (server B),
+auto-provisions tunnels, monitors them, and fails over if needed.
 
-Key concept: Only nyxora needs to be installed (on server A).
-Server B just needs SSH access (user/password or key). Nyxora SSHs in,
-installs dependencies, sets up the tunnel, and monitors it.
+No agent needed on server B — just SSH access (root password or key).
 
-2. PROJECT STRUCTURE
-=====================
-/root/nyxora/                          - Project root
-  ├── cmd/nyxora/main.go               - CLI entry point (install, connect, disconnect, status, dashboard, daemon, monitor)
-  ├── internal/
-  │   ├── orchestrator/orchestrator.go - Main brain: Init, ConnectToRemote, monitoring loop, failover logic
-  │   ├── transport/
-  │   │   ├── transport.go             - Transport interface + Info struct + Metrics + Status types
-  │   │   ├── manager.go               - Transport Manager: register, connect all, score, weight management
-  │   │   ├── registry.go              - Tunnel metadata registry: 11 tunnels defined
-  │   │   ├── wireguard.go             - WireGuard transport implementation
-  │   │   ├── openvpn.go               - OpenVPN transport
-  │   │   ├── ssh.go                   - SSH tunnel transport
-  │   │   ├── quic.go                  - QUIC transport (Go net, no binary needed)
-  │   │   ├── frp.go                   - FRP (Fast Reverse Proxy) transport
-  │   │   ├── rathole.go               - Rathole (Rust reverse proxy) transport
-  │   │   ├── cloudflare.go            - Cloudflare Tunnel (cloudflared) transport
-  │   │   ├── ipsec.go                 - IPsec/strongSwan transport
-  │   │   ├── shadowsocks.go           - ShadowSOCKS proxy transport
-  │   │   ├── hysteria.go              - Hysteria (modified QUIC) transport
-  │   │   └── backhaul.go              - Backhaul (reverse tunnel, TCP/UDP/WS/WSS) transport
-  │   ├── multipath/multipath.go       - Scheduler with 5 distribution modes (weighted, lowest-latency, lowest-loss, even, all)
-  │   ├── remote/
-  │   │   ├── ssh.go                   - SSH client: connect, exec, SCP, OS detection, dependency install
-  │   │   └── tunnel.go                - Remote tunnel provisioning: WireGuard setup/teardown
-  │   ├── failover/failover.go         - Health monitor + callback-based failover
-  │   ├── dashboard/tui.go             - Terminal TUI: colored tables, step wizard, live refresh
-  │   └── config/config.go             - Configuration struct and defaults
-  ├── go.mod                           - Go module definition
-  ├── go.sum                           - Go dependency checksums
-  └── PROJECT.txt                      - This file
+2. ARCHITECTURE
+===============
+┌───────────────────────────────────────────────────┐
+│  nyxora (server A)                                │
+│                                                   │
+│  ┌────────────┐  ┌──────────────────────────────┐ │
+│  │ Orchestrator│  │  10 Transport Types          │ │
+│  │ (brain)    │  │  ┌────┐ ┌────┐ ┌──────────┐ │ │
+│  │ Init       │  │  │ WG │ │SSH │ │ OpenVPN  │ │ │
+│  │ Connect    │  │  ├────┤ ├────┤ ├──────────┤ │ │
+│  │ Monitor    │  │  │FRP │ │QUIC│ │ Rathole  │ │ │
+│  │ Failover   │  │  ├────┤ ├────┤ ├──────────┤ │ │
+│  └────────────┘  │  │TCP │ │IPsec│ │ShadowSK  │ │ │
+│                  │  ├────┤ ├────┤ ├──────────┤ │ │
+│  ┌────────────┐  │  │Hys │ │Bkhl│ │          │ │ │
+│  │ Multipath  │  │  └────┘ └────┘ └──────────┘ │ │
+│  │ Scheduler  │  └──────────────────────────────┘ │
+│  └────────────┘                                   │
+│                                                   │
+│  ┌────────────┐  ┌────────────┐  ┌──────────────┐ │
+│  │ Remote SSH │  │ Failover   │  │ Dashboard    │ │
+│  │ Management │  │ Engine     │  │ (TUI)        │ │
+│  └────────────┘  └────────────┘  └──────────────┘ │
+└───────────────────────────────────────────────────┘
+         │
+         │ SSH + provisioning
+         ▼
+┌───────────────────────────────────────────────────┐
+│  server B (remote)                                │
+│  ┌──────────┐ ┌──────────┐ ┌──────────────────┐  │
+│  │ frps     │ │ rathole  │ │ hysteria server  │  │
+│  │ :7000    │ │ :2333    │ │ :8444            │  │
+│  ├──────────┤ ├──────────┤ ├──────────────────┤  │
+│  │ ss-server│ │ backhaul │ │ WireGuard        │  │
+│  │ :8388    │ │ :3080    │ │ :51820           │  │
+│  └──────────┘ └──────────┘ └──────────────────┘  │
+└───────────────────────────────────────────────────┘
 
-3. TUNNEL REGISTRY (11 TUNNELS)
-================================
-All defined in internal/transport/registry.go with metadata:
-Name, Type, Category, Description, Port, Protocol, Binary, Dependencies,
-Default Score, Weight.
+3. FILES & STRUCTURE
+====================
+/root/nyxora/
+  cmd/nyxora/main.go         - CLI: connect, dashboard, status, ...
+  internal/
+    orchestrator/             - Brain: Init, Connect, Monitor, Failover
+    transport/                - 10 transport implementations
+      transport.go            - Transport interface + Metrics struct
+      base.go                 - BaseTransport (shared logic for all transports)
+      manager.go              - Register and manage transports
+      registry.go             - Metadata for 10 tunnels + install scripts
+      scoring.go              - MeasureLatency + ComputeScore
+      wireguard.go            - WireGuard VPN tunnel
+      openvpn.go              - OpenVPN tunnel
+      ssh.go                  - SSH tunnel (sshpass -D)
+      quic.go                 - QUIC tunnel (UDP probe)
+      frp.go                  - FRP reverse proxy
+      rathole.go              - Rathole reverse proxy (Rust)
+      ipsec.go                - IPsec/strongSwan
+      shadowsocks.go          - ShadowSOCKS proxy
+      hysteria.go             - Hysteria 2 (modified QUIC)
+      backhaul.go             - Backhaul reverse tunnel
+      tcp.go                  - Raw TCP direct connection
+    remote/
+      ssh.go                  - SSH client + install dependencies
+      tunnel.go               - WireGuard remote setup/teardown
+      provision.go            - Provision daemons on remote
+    multipath/                - Multipath scheduler (5 modes)
+    failover/                 - Automatic failover engine
+    routing/                  - Scorer + routing engine
+    monitor/                  - Ping-based monitoring
+    dashboard/                - TUI terminal dashboard
+    config/                   - Config struct + JSON load/save
+    packager/                 - Tar.gz pack/unpack for tunnel assets
 
-   #  Name         Type       Category    Port  Protocol  Binary       Score  Weight
-  ───────────────────────────────────────────────────────────────────────────────────
-   1  wireguard    wireguard  VPN         51820 udp       wg           95     30
-   2  openvpn      openvpn    VPN         1194  udp       openvpn      75     10
-   3  ssh          ssh        Tunnel      22    tcp       ssh          60      5
-   4  quic         quic       Tunnel      9923  udp       (built-in)   80     15
-   5  frp          frp        Relay       7000  tcp       frpc         70     10
-   6  rathole      rathole    Relay       2333  tcp       rathole      85     12
-   7  cloudflare   cloudflare Mesh        0     tcp       cloudflared  65      8
-   8  ipsec        ipsec      VPN         500   udp       ipsec        70      5
-   9  shadowsocks  shadowsocks Proxy      8388  tcp       ss-server    55      3
-  10  hysteria     hysteria   Tunnel      8443  udp       hysteria     90     12
-  11  backhaul     backhaul   Relay       3080  tcp       backhaul     82     10
+4. CONNECTION FLOW (nyxora connect <IP>)
+=========================================
+  1. PING → measure latency and packet loss
+  2. SSH → authenticate to remote server
+  3. DETECT OS → detect Ubuntu/Debian/CentOS
+  4. INSTALL → install tunnel binaries on remote
+  5. WG KEY → generate key pair locally
+  6. REMOTE WG → SSH to remote: config + wg-quick up + iptables
+  7. LOCAL WG → wg-quick up nyxora0 with remote public key
+  8. PROVISION → start 5 daemons on remote (frps, rathole, ss, hys, backhaul)
+  9. ALL-ACTIVE → test and activate all tunnels simultaneously
+ 10. MONITOR → every 10 seconds: ping, score, failover check
 
-Categories: CatVPN, CatTunnel, CatRelay, CatMesh, CatProxy
+5. MULTIPATH SCHEDULER
+======================
+5 distribution modes:
+  - weighted (default)    - based on tunnel weights
+  - lowest-latency        - only lowest latency
+  - lowest-loss           - only lowest packet loss
+  - even                  - equal between all
+  - all                   - all active simultaneously
 
-4. INSTALL SCRIPTS
-===================
-Each tunnel type has an install script in registry.go InstallScript(name).
-These are bash commands that run on the remote server via SSH to install
-the tunnel binary and dependencies.
-
-Important: Install scripts use dynamic GitHub API resolution for latest
-release URLs (frp, rathole, backhaul, hysteria). For apt packages (openvpn,
-ipsec, shadowsocks), standard apt-get install is used.
-
-5. TRANSPORT INTERFACE
-=======================
-Every transport implements (defined in internal/transport/transport.go):
-  - Name() string        - Unique transport name
-  - Type() string        - Transport type identifier
-  - Init(cfg map[string]string) error  - Initialize with config
-  - Connect(remoteAddr string) error   - Establish tunnel to remote
-  - Disconnect() error                 - Tear down tunnel
-  - Status() Status                    - Current status (Inactive/Testing/Active/Failed)
-  - Metrics() *Metrics                 - Latency, packet loss, jitter, stability, bandwidth
-  - Health() bool                      - Is tunnel healthy?
-  - Score() float64                    - 0-100 score based on metrics
-
-6. HOW CONNECTION WORKS (ORCHESTRATOR FLOW)
-============================================
-When you run: nyxora connect <IP> --user root --port 22 --password <pass>
-
-Step-by-step flow in ConnectToRemote (orchestrator.go ~line 160):
-  1. Ping remote server (measures latency, loss)
-  2. SSH connect with password
-  3. Detect OS (Ubuntu, Debian, CentOS, etc.)
-  4. Install tunnel dependencies on remote via SSH (loops all 11 tunnels)
-  5. Generate local WireGuard key pair
-  6. SSH into remote, set up WireGuard endpoint (generate key, write config, wg-quick up)
-  7. Create local WireGuard interface with remote's public key + proper IPv6 endpoint
-  8. If NYXORA_ALL_ACTIVE=true -> ConnectAll (try all 11 transports, activate all)
-  9. Start monitoring loop (every 10s: ping, update metrics, check failover, adjust weights)
-
-7. MULTIPATH SCHEDULER
-=======================
-internal/multipath/multipath.go
-  - 5 distribution modes: weighted (default), lowest-latency, lowest-loss, even, all
-  - Dynamic weight adjustment based on real-time scores
-  - Path scoring: 0-100 combining latency, loss, jitter, stability
-  - Weight normalization to sum to 100
-  - Aggregated bandwidth calculation
-
-8. FAILOVER SYSTEM
-===================
-internal/failover/failover.go
-  - Monitors all active transports (configurable interval, default 15s)
-  - Callback-based: OnFailover when better path found, OnRecover when degraded path heals
-  - Failover triggers when score difference > 15 points
-  - Records failover count and last switch time
-
-9. DASHBOARD (TUI)
-===================
-internal/dashboard/tui.go
-  - ANSI terminal dashboard with colored output
-  - Live refresh every 2 seconds
-  - Shows: status, node ID, uptime, remote host info, tunnel list with scores
-  - Step wizard during connect (shows each step with OK/FAILED/RUNNING/WARN status)
-  - Transport table with: marker, name, type, status icon, score, latency, loss, progress bar
-  - Failover status section
-
-10. CLI COMMANDS
-=================
-  nyxora install         - Check dependencies & setup directories
-  nyxora connect <host>  - Connect to remote server (interactive)
-  nyxora disconnect      - Close all tunnels
-  nyxora status          - Show connection info
-  nyxora dashboard       - Live terminal dashboard
-  nyxora daemon          - Run as background service
-  nyxora monitor         - Show real-time metrics
-
-Env vars:
-  NYXORA_ALL_ACTIVE=true  - Enable all-active multipath mode
-  NYXORA_CONFIG=<path>    - Custom config file path
-
-11. CRITICAL DIRECTORIES
-=========================
-  /etc/nyxora/              - Main nyxora config and data directory
-  /etc/nyxora/tunnels/      - Compressed tunnel packages (.tar.gz)
-  /etc/nyxora/cache/        - Cache directory
-  /etc/wireguard/           - WireGuard config files (nyxora0.conf local, nyxora<port>.conf remote)
-  /var/log/nyxora/          - Log files
-  /etc/systemd/system/nyxora.service  - Systemd service file
-
-12. CURRENT STATE
+6. TRANSPORTS (10)
 ==================
-  - All 11 transports implemented and registered
-  - WireGuard: full connection flow tested and working end-to-end on server 2
-  - WireGuard fixes applied:
-    a) IPv6 endpoint: brackets added in formatEndpoint() for net.DialTimeout + config
-    b) Remote public key: passed through orchestrator -> Init() -> generateConfig()
-    c) Local AllowedIPs: changed from 0.0.0.0/0 to 10.100.<subnet>.0/24 (tunnel subnet only)
-       -> prevents cutting off local internet access
-    d) Remote AllowedIPs: changed from 0.0.0.0/0 to 10.100.<subnet>.2/32 (peer IP only)
-       -> CRITICAL: prevents cutting off SSH to remote server
-    e) PostUp iptables rule added on remote: whitelist WireGuard interface traffic
-       -> required because some VPS providers (like this one) DROP private IP ranges (10.0.0.0/8)
-    f) wg-quick up/down calls added in WireGuard.Connect()/Disconnect()
-       -> actually brings up the local interface (was missing before)
-    g) Subnet derived from listenPort % 256 (51820 % 256 = 108)
-       -> both sides use 10.100.108.x/24, aligned
-    h) Remote config: Address = 10.100.108.1/24
-    i) Local config: Address = 10.100.108.2/24
-  - Multipath scheduler: implemented, wired into monitoring loop, weight adjustment active
-  - Dashboard: working (shows status, live refresh)
-  - Failover: implemented with callbacks
-  - Backhaul: added as 11th transport
-  - Install scripts: fixed to use dynamic GitHub API download URLs
-  - Server 2 (91.107.243.237): fully tested, all 11 transports connect, WireGuard tunnel bidirectional ping OK
-  - WiP: Data-plane aggregation (splitting traffic across tunnels at packet level) not yet implemented
+  #   Name          Port   Protocol  Category  Score  Weight
+  ─────────────────────────────────────────────────────────
+  1   wireguard     51820  UDP       vpn       95     30
+  2   openvpn       1194   UDP       vpn       75     10
+  3   ssh           22     TCP       tunnel    60     5
+  4   quic          9923   UDP       tunnel    80     15
+  5   frp           7000   TCP       relay     70     10
+  6   rathole       2333   TCP       relay     85     12
+  7   ipsec         500    UDP       vpn       70     5
+  8   shadowsocks   8388   TCP       proxy     55     3
+  9   hysteria      8444   UDP       tunnel    90     12
+  10  backhaul      3080   TCP       relay     82     10
+  11  tcp           9924   TCP       tunnel    50     3
 
-13. KNOWN ISSUES
-=================
-  - Some transport binaries are not installed on local machine (fall back to ping-only scoring)
-  - Data-plane multipath routing (TUN interface bonding) not implemented yet
-  - Server 1 (213.32.69.147): unreachable (previous AllowedIPs=0.0.0.0/0 on remote cut SSH; code fixed)
-  - Many transport install scripts are one-time downloads (no update mechanism)
-  - Disconnect() from remote.TeardownRemote uses wrong interface name ("nyxora0" instead of "nyxora51820")
+7. KNOWN ISSUES
+===============
+  - OpenVPN: needs easy-rsa certs for full operation
+  - IPsec: requires strongSwan installation
+  - SSH tunnel: occasional exit 255 during scoring
+  - Data-plane TUN bonding not implemented yet
+  - Server 1 (213.32.69.147): dead (needs provider reset)
 
-14. BUILD & DEPLOY
-===================
+8. COMMANDS
+===========
+  nyxora connect <ip> --user root --password <pass>
+  nyxora dashboard
+  nyxora disconnect
+  nyxora status
+
+  env NYXORA_ALL_ACTIVE=true  → all transports active simultaneously
+
+9. BUILD & TEST
+===============
   Build:  cd /root/nyxora && go build -ldflags="-s -w" -o nyxora ./cmd/nyxora
-  Deploy: scp nyxora root@<server>:/usr/local/bin/nyxora
-  Test:   NYXORA_ALL_ACTIVE=true ./nyxora connect <server> --user root --port 22 --password <pass>
-  Dev:    go build ./... && go vet ./...
+  Test:   cd /root/nyxora && go test ./...
+  Vet:    cd /root/nyxora && go vet ./...
+  Deploy: sshpass -p 'pass' scp ./nyxora root@<ip>:/usr/local/bin/nyxora
 
-15. TEST SERVERS
+10. TEST SERVERS
 ================
-  Server 1: 213.32.69.147 (dead - WG 0.0.0.0/0 cut SSH, needs provider reset)
-    User: root | Pass: Rd4yVgX2*4RzGw@*YJSd | Port: 22
-    IPv6: 2001:41d0:367:d73::1 | Ubuntu 24.04.4 x86_64
+  Server 1: 213.32.69.147  (DEAD - needs reset)
+    IPv6: 2001:41d0:367:d73::1
+    User: root
 
-  Server 2: 91.107.243.237 (active - fully tested)
-    User: root | Pass: A1380ashkan | Port: 22
-    IPv6: 2a01:4f8:1c1b:1d14::1 | Ubuntu 24.04.4 x86_64
-    Hostname: ashkann | Latency: ~125ms, 0% loss
+  Server 2: 91.107.243.237 (ACTIVE)
+    IPv6: 2a01:4f8:1c1b:1d14::1
+    User: root
+    Hostname: ashkann | Latency: ~125ms
 
-16. GITHUB
+11. GITHUB
 ==========
-  Repo:    https://github.com/nyxorammd-lgtm/nyxora (private)
-  Token:   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
+  Repo: https://github.com/nyxorammd-lgtm/nyxora (private)
 
 ================================================================================
-                            🇮🇷 فارسی (PERSIAN)
+                             🇮🇷 فارسی
 ================================================================================
 
 1. NYXORA چیه؟
-================
-NYXORA یه ارکسترator تونل تطبیقی هستش که روی یک سرور نصب میشه (نصب تک‌طرفه).
-از طریق SSH به سرور مقصد وصل میشه و خودکار بهترین تونل رو راه میندازه.
-نیازی نیست روی سرور مقصد چیزی نصب کنین — فقط SSH access کافیه.
+==============
+NYXORA یه ابزار تونل‌زنی هوشمنده.
 
-2. ساختار پروژه
-===============
-/root/nyxora/ - روت پروژه
-کدهای اصلی:
-  cmd/nyxora/main.go  - ورودی برنامه (CLI)
-  internal/orchestrator/  - مغز برنامه (ارکسترator)
-  internal/transport/     - ۱۱ تا تونل مختلف
-  internal/multipath/     - زمانبند چندمسیره
-  internal/remote/        - مدیریت از راه دور (SSH)
-  internal/failover/      - سیستم Failover
-  internal/dashboard/     - داشبورد ترمینال
+هدف: یه برنامه که روی یه سرور (سرور A) نصب میشه و از طریق SSH به یه سرور دیگه
+(سرور B) وصل میشه، بهترین تونل رو بینشون راه میندازه، و اگه تونل قطع شد
+خودکار به تونل بعدی سوئیچ میکنه.
 
-3. ۱۱ تا تونل
+مهم: هیچ برنامه‌ای روی سرور B نصب نیست — nyxora از طریق SSH همه کارها رو انجام
+میده.
+
+2. چجوری کار میکنه؟
+====================
+وقتی دستور میدی `nyxora connect 91.107.243.237 --user root --password ...`:
+
+  1. پینگ میزنه به سرور
+  2. SSH میزنه با رمز
+  3. تشخیص OS
+  4. نصب tunnel binary ها روی ریموت
+  5. ساخت کلید WireGuard
+  6. راه‌اندازی WireGuard روی ریموت
+  7. راه‌اندازی WireGuard روی لوکال
+  8. راه‌اندازی ۵ تا daemon روی ریموت
+  9. تست و فعالسازی همه تونل‌ها
+ 10. مانیتورینگ مداوم + failover خودکار
+
+3. ۱۰ تا تونل
 =============
-1. wireguard   - VPN سطح کرنل (سریعترین)
-2. openvpn     - VPN قدیمی با سازگاری بالا
-3. ssh         - تونل SSH (رو همه سرورها هست)
-4. quic        - تونل UDP با تحمل پکت لاس
-5. frp         - ریدایرکت پروکسی سریع
-6. rathole     - پروکسی معکوس با Rust
-7. cloudflare  - تونل Zero-Trust Cloudflare
-8. ipsec       - VPN سازمانی (strongSwan)
-9. shadowsocks - پروکسی سبک با obfuscation
-10. hysteria   - QUIC اصلاح شده برای سرعت بالا
-11. backhaul   - تونل معکوس با TCP/UDP/WS/WSS
+  شماره  نام          پورت     نوع
+  ────────────────────────────────────
+  1      wireguard    51820    VPN سطح کرنل
+  2      openvpn      1194     VPN
+  3      ssh          22       تونل SSH
+  4      quic         9923     تونل UDP
+  5      frp          7000     رله TCP
+  6      rathole      2333     رله Rust
+  7      ipsec        500      VPN سازمانی
+  8      shadowsocks  8388     پروکسی
+  9      hysteria     8444     QUIC اصلاحی
+ 10      backhaul     3080     تونل معکوس
+ 11      tcp          9924     اتصال TCP خام
 
-4. نحوه اتصال
-=============
-nyxora connect <IP> --user root --port 22 --password <pass>
-مراحل: پینگ → SSH → تشخیص OS → نصب وابستگی‌ها → ساخت کلید WG → راه‌اندازی تونل ریموت → راه‌اندازی تونل لوکال → مانیتورینگ
-
-5. وضعیت فعلی
-=============
-- ۱۱ تا تونل پیاده‌سازی و رجیستر شدن
-- WireGuard تست شده و کار میکنه (IPv6, public key, subnet, iptalles درست شد)
-- تونل WireGuard دوطرفه ping میخوره (145ms, 0% loss)
-- Local AllowedIPs: فقط subnet تونل (10.100.108.0/24) — نه 0.0.0.0/0
-- Remote AllowedIPs: فقط IP تونل لوکال (10.100.108.2/32) — SSH قطع نمیشه
-- iptables روی ریموت: WireGuard interface whitelist شد
-- Multipath scheduler فعال و متصل به monitoring
-- Failover با callback آماده
-- Backhaul اضافه شد
-- سرور اول (213.32.69.147) قطع شده — کد درست شد
-- سرور دوم (91.107.243.237) تست شد و همه چیز OK
-
-6. ساختن و دیپلوی
+4. دستورات کاربردی
 =================
-Build:  cd /root/nyxora && go build -ldflags="-s -w" -o nyxora ./cmd/nyxora
-دیپلوی: scp nyxora root@<server>:/usr/local/bin/nyxora
+  ساختن:           go build -ldflags="-s -w" -o nyxora ./cmd/nyxora
+  تست:             go test ./...
+  اجرا:            NYXORA_ALL_ACTIVE=true ./nyxora connect <IP> --user root
 
 ================================================================================
-                    END OF PROJECT DOCUMENTATION
+                          END / پایان
 ================================================================================

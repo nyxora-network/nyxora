@@ -3,10 +3,8 @@ package transport
 import (
 	"fmt"
 	"log"
-	"os/exec"
 	"sort"
 	"sync"
-	"time"
 )
 
 type Manager struct {
@@ -108,7 +106,7 @@ func (m *Manager) ConnectAll(remoteAddr string) error {
 	defer m.mu.Unlock()
 
 	log.Printf("[manager] probing %s...", remoteAddr)
-	latency, loss := probeRemote(remoteAddr)
+	latency, loss, _ := MeasureLatency(remoteAddr, 4)
 	log.Printf("[manager] remote base latency: %.1fms, loss: %.1f%%", latency, loss)
 
 	type candidate struct {
@@ -284,31 +282,4 @@ func (m *Manager) RefreshScores() {
 	}
 }
 
-func probeRemote(addr string) (latency, loss float64) {
-	var rtts []float64
-	var lossCount float64
-	count := 4
-
-	for i := 0; i < count; i++ {
-		start := time.Now()
-		cmd := exec.Command("ping", "-c", "1", "-W", "2", addr)
-		if err := cmd.Run(); err == nil {
-			rtt := time.Since(start).Seconds() * 1000
-			rtts = append(rtts, rtt)
-		} else {
-			lossCount++
-		}
-	}
-
-	loss = (lossCount / float64(count)) * 100
-	if len(rtts) == 0 {
-		return 999, 100
-	}
-
-	var sum float64
-	for _, r := range rtts {
-		sum += r
-	}
-	latency = sum / float64(len(rtts))
-	return
-}
+// probeRemote is exported via scoring.go's MeasureLatency

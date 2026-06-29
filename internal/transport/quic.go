@@ -1,34 +1,32 @@
 package transport
 
 import (
+	"context"
+	"crypto/tls"
 	"fmt"
+	"io"
 	"log"
-	"math"
-	"net"
 	"sync"
 	"time"
+
+	"github.com/quic-go/quic-go"
 )
 
 type QUIC struct {
-	mu          sync.RWMutex
-	name        string
-	status      Status
-	metrics     *Metrics
-	remoteAddr  string
-	port        int
+	BaseTransport
+	listener    quic.Listener
+	connections []*quic.Conn
+	mu          sync.Mutex
 }
 
 func NewQUIC() *QUIC {
 	return &QUIC{
-		name:   "quic",
-		status: StatusInactive,
-		metrics: &Metrics{},
-		port:   9923,
+		BaseTransport: NewBase("quic", "quic", 9923, ScoringWeights{0.35, 0.30, 0.15, 0.20}, 0),
 	}
 }
 
-func (q *QUIC) Name() string { return q.name }
-func (q *QUIC) Type() string { return "quic" }
+func (q *QUIC) Name() string  { return q.BaseName() }
+func (q *QUIC) Type() string { return q.BaseType() }
 
 func (q *QUIC) Init(cfg map[string]string) error {
 	q.mu.Lock()
@@ -41,89 +39,82 @@ func (q *QUIC) Init(cfg map[string]string) error {
 }
 
 func (q *QUIC) Connect(remoteAddr string) error {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-
-	q.remoteAddr = remoteAddr
-	q.status = StatusTesting
-
-	q.updateMetrics()
-
-	if q.metrics.PacketLoss > 80 {
-		q.status = StatusFailed
-		return fmt.Errorf("high packet loss (%.1f%%)", q.metrics.PacketLoss)
+	ctx := q.CancelContext()
+	q.KillOldProcess()
+	if err := q.BaseConnectInit(remoteAddr); err != nil {
+		return err
 	}
 
-	conn, err := net.DialTimeout("udp", fmt.Sprintf("%s:%d", remoteAddr, q.port), 3*time.Second)
+	tlsConf := &tls.Config{
+		InsecureSkipVerify: true,
+		NextProtos:         []string{"nyxora-quic"},
+	}
+
+	endpoint := fmt.Sprintf("%s:%d", remoteAddr, q.port)
+	conn, err := quic.DialAddr(ctx, endpoint, tlsConf, &quic.Config{
+		MaxIdleTimeout: 30 * time.Second,
+	})
 	if err != nil {
-		log.Printf("[quic] port %d unreachable, using ping-only mode", q.port)
-		q.status = StatusActive
+		q.Logf("QUIC dial failed to %s: %v, falling back to ping-only", endpoint, err)
+		q.SetStatusActive()
 		return nil
 	}
-	conn.Close()
 
-	q.status = StatusActive
-	log.Printf("[quic] connected to %s:%d", remoteAddr, q.port)
+	q.mu.Lock()
+	q.connections = append(q.connections, conn)
+	q.mu.Unlock()
+
+	go q.acceptStreams(ctx, conn)
+
+	q.SetStatusActive()
+	q.Logf("connected to %s:%d via QUIC", remoteAddr, q.port)
 	return nil
+}
+
+func (q *QUIC) acceptStreams(ctx context.Context, conn *quic.Conn) {
+	for {
+		stream, err := conn.AcceptStream(ctx)
+		if err != nil {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+				q.Logf("accept stream error: %v", err)
+				return
+			}
+		}
+		go q.handleStream(stream)
+	}
+}
+
+func (q *QUIC) handleStream(stream *quic.Stream) {
+	defer stream.Close()
+	buf := make([]byte, 4096)
+	for {
+		_, err := stream.Read(buf)
+		if err != nil {
+			if err != io.EOF {
+				q.Logf("stream read error: %v", err)
+			}
+			return
+		}
+	}
 }
 
 func (q *QUIC) Disconnect() error {
+	q.cancel()
 	q.mu.Lock()
 	defer q.mu.Unlock()
+	for _, conn := range q.connections {
+		conn.CloseWithError(0, "disconnect")
+	}
+	q.connections = nil
 	q.status = StatusInactive
-	log.Printf("[quic] disconnected")
+	q.Logf("disconnected")
 	return nil
 }
 
-func (q *QUIC) Status() Status {
-	q.mu.RLock()
-	defer q.mu.RUnlock()
-	return q.status
-}
-
-func (q *QUIC) Metrics() *Metrics {
-	q.mu.RLock()
-	defer q.mu.RUnlock()
-	m := *q.metrics
-	return &m
-}
-
-func (q *QUIC) Health() bool {
-	q.mu.RLock()
-	defer q.mu.RUnlock()
-	return q.status == StatusActive
-}
-
-func (q *QUIC) Score() float64 {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	q.updateMetrics()
-
-	m := q.metrics
-	if m.PacketLoss > 50 {
-		return 0
-	}
-	if m.LatencyMs <= 0 {
-		return 10
-	}
-
-	latencyScore := math.Max(0, 100-m.LatencyMs/2)
-	lossScore := math.Max(0, 100-m.PacketLoss*2)
-	jitterScore := math.Max(0, 100-m.JitterMs*3)
-	stabilityScore := m.Stability * 100
-
-	return latencyScore*0.35 + lossScore*0.30 + jitterScore*0.15 + stabilityScore*0.20
-}
-
-func (q *QUIC) updateMetrics() {
-	latency, loss, jitter := measureLatency(q.remoteAddr, 4)
-	q.metrics.LatencyMs = latency
-	q.metrics.PacketLoss = loss
-	q.metrics.JitterMs = jitter
-
-	if loss < 5 && latency < 100 {
-		q.metrics.Stability = math.Min(1, q.metrics.Stability+0.1)
-	} else {
-		q.metrics.Stability = math.Max(0, q.metrics.Stability-0.1)
-	}
-}
+func (q *QUIC) Status() Status    { return q.BaseStatus() }
+func (q *QUIC) Metrics() *Metrics { return q.BaseMetrics() }
+func (q *QUIC) Health() bool      { return q.BaseHealth() }
+func (q *QUIC) Score() float64    { return q.BaseScore() }

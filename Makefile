@@ -10,7 +10,6 @@ install: build
 	cp $(BINARY) $(INSTALL_PATH)/$(BINARY)
 	mkdir -p /etc/nyxora/tunnels /etc/nyxora/cache /var/log/nyxora
 	cp -r tunnels/*.tar.gz /etc/nyxora/tunnels/ 2>/dev/null || true
-	cp $(BINARY) $(INSTALL_PATH)/$(BINARY)
 
 run: build
 	./$(BINARY)

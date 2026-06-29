@@ -47,5 +47,4 @@ const (
 	CatTunnel = "tunnel"
 	CatRelay  = "relay"
 	CatProxy  = "proxy"
-	CatMesh   = "mesh"
 )

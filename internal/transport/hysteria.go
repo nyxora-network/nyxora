@@ -3,32 +3,22 @@ package transport
 import (
 	"fmt"
 	"log"
-	"math"
 	"os/exec"
-	"sync"
 )
 
 type Hysteria struct {
-	mu          sync.RWMutex
-	name        string
-	status      Status
-	metrics     *Metrics
-	remoteAddr  string
-	port        int
-	cmd         *exec.Cmd
+	BaseTransport
+	authPass string
 }
 
 func NewHysteria() *Hysteria {
 	return &Hysteria{
-		name:   "hysteria",
-		status: StatusInactive,
-		metrics: &Metrics{},
-		port:   8443,
+		BaseTransport: NewBase("hysteria", "hysteria", 8444, ScoringWeights{0.20, 0.35, 0.15, 0.30}, 300),
 	}
 }
 
-func (h *Hysteria) Name() string { return h.name }
-func (h *Hysteria) Type() string { return "hysteria" }
+func (h *Hysteria) Name() string  { return h.BaseName() }
+func (h *Hysteria) Type() string { return h.BaseType() }
 
 func (h *Hysteria) Init(cfg map[string]string) error {
 	h.mu.Lock()
@@ -36,121 +26,75 @@ func (h *Hysteria) Init(cfg map[string]string) error {
 	if p, ok := cfg["port"]; ok {
 		fmt.Sscanf(p, "%d", &h.port)
 	}
+	if a, ok := cfg["auth"]; ok {
+		h.authPass = a
+	}
 	log.Printf("[hysteria] initialized (port: %d)", h.port)
 	return nil
 }
 
 func (h *Hysteria) Connect(remoteAddr string) error {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
-	h.remoteAddr = remoteAddr
-	h.status = StatusTesting
-	h.updateMetrics()
-
-	if h.metrics.PacketLoss > 80 {
-		h.status = StatusFailed
-		return fmt.Errorf("high loss (%.1f%%)", h.metrics.PacketLoss)
+	ctx := h.CancelContext()
+	h.KillOldProcess()
+	if err := h.BaseConnectInit(remoteAddr); err != nil {
+		return err
 	}
 
-	if !commandExists("hysteria") {
-		log.Printf("[hysteria] binary not found, ping score only")
-		h.status = StatusActive
+	if !CommandExists("hysteria") {
+		h.Logf("binary not found, ping score only")
+		h.SetStatusActive()
 		return nil
+	}
+
+	auth := h.authPass
+	if auth == "" {
+		auth = "nyxora-hy2-fallback"
 	}
 
 	config := fmt.Sprintf(`server: %s:%d
-auth: nyxora-hy2-auth
-transport:
-  type: udp
-  udp:
-    hopInterval: 5s
+auth: %s
+tls:
+  insecure: true
 bandwidth:
-  up: 100 mbps
-  down: 500 mbps
+  up: "100 mbps"
+  down: "500 mbps"
 socks5:
-  listen: 127.0.0.1:1082
-`, remoteAddr, h.port)
+  listen: "127.0.0.1:1082"
+`, remoteAddr, h.port, auth)
 
 	tmpPath := fmt.Sprintf("/tmp/nyxora-hy2-%s.yaml", remoteAddr)
-	if err := writeConfig(tmpPath, config); err != nil {
-		log.Printf("[hysteria] config error: %v", err)
-		h.status = StatusActive
+	if err := WriteConfig(tmpPath, config); err != nil {
+		h.Logf("config error: %v", err)
+		h.SetStatusActive()
 		return nil
 	}
+	h.AddTmpFile(tmpPath)
 
-	go func() {
-		cmd := exec.Command("hysteria", "client", "-c", tmpPath)
+	cmd := exec.Command("hysteria", "client", "-c", tmpPath)
+	h.SetCmd(cmd)
+
+	h.RunInBackground(func() {
 		if err := cmd.Start(); err != nil {
-			log.Printf("[hysteria] start error: %v", err)
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+			h.Logf("start error: %v", err)
 			return
 		}
-		h.mu.Lock()
-		h.cmd = cmd
-		h.mu.Unlock()
+		h.SetStatusActive()
+		h.KillOnCancel()
 		cmd.Wait()
-	}()
+	})
 
-	log.Printf("[hysteria] connecting to %s:%d", remoteAddr, h.port)
-	h.status = StatusActive
+	h.Logf("connecting to %s:%d", remoteAddr, h.port)
+	h.SetStatusActive()
 	return nil
 }
 
-func (h *Hysteria) Disconnect() error {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	if h.cmd != nil && h.cmd.Process != nil {
-		h.cmd.Process.Kill()
-		h.cmd = nil
-	}
-	h.status = StatusInactive
-	log.Printf("[hysteria] disconnected")
-	return nil
-}
-
-func (h *Hysteria) Status() Status {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-	return h.status
-}
-
-func (h *Hysteria) Metrics() *Metrics {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-	m := *h.metrics
-	return &m
-}
-
-func (h *Hysteria) Health() bool {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-	return h.status == StatusActive
-}
-
-func (h *Hysteria) Score() float64 {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-	h.updateMetrics()
-	m := h.metrics
-	if m.PacketLoss > 60 {
-		return 0
-	}
-	if m.LatencyMs <= 0 {
-		return 5
-	}
-	return math.Max(0, 100-m.LatencyMs/4)*0.20 + math.Max(0, 100-m.PacketLoss*1.5)*0.35 +
-		math.Max(0, 100-m.JitterMs*2)*0.15 + (m.Stability*100)*0.30
-}
-
-func (h *Hysteria) updateMetrics() {
-	lat, loss, jitter := measureLatency(h.remoteAddr, 3)
-	h.metrics.LatencyMs = lat
-	h.metrics.PacketLoss = loss
-	h.metrics.JitterMs = jitter
-	if loss < 20 || lat < 400 {
-		h.metrics.Stability = math.Min(1, h.metrics.Stability+0.07)
-	} else {
-		h.metrics.Stability = math.Max(0, h.metrics.Stability-0.10)
-	}
-	h.metrics.Bandwidth = 300
-}
+func (h *Hysteria) Disconnect() error { return h.BaseDisconnect() }
+func (h *Hysteria) Status() Status    { return h.BaseStatus() }
+func (h *Hysteria) Metrics() *Metrics { return h.BaseMetrics() }
+func (h *Hysteria) Health() bool      { return h.BaseHealth() }
+func (h *Hysteria) Score() float64    { return h.BaseScore() }

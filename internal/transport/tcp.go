@@ -1,40 +1,32 @@
 package transport
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"net"
 	"sync"
 	"time"
 )
 
 type TCP struct {
-	mu          sync.RWMutex
-	name        string
-	status      Status
-	metrics     *Metrics
-	remoteAddr  string
-	port        int
+	BaseTransport
 	localPort   int
 	listener    net.Listener
 	connections []net.Conn
+	mu          sync.Mutex
 }
 
 func NewTCP() *TCP {
 	return &TCP{
-		name:      "tcp",
-		status:    StatusInactive,
-		metrics:   &Metrics{},
-		port:      9924,
-		localPort: 9925,
+		BaseTransport: NewBase("tcp", "tcp", 9924, ScoringWeights{0.25, 0.35, 0.15, 0.25}, 0),
+		localPort:     9925,
 	}
 }
 
-func (t *TCP) Name() string { return t.name }
-
-func (t *TCP) Type() string { return "tcp" }
+func (t *TCP) Name() string  { return t.BaseName() }
+func (t *TCP) Type() string { return t.BaseType() }
 
 func (t *TCP) Init(cfg map[string]string) error {
 	t.mu.Lock()
@@ -50,46 +42,58 @@ func (t *TCP) Init(cfg map[string]string) error {
 }
 
 func (t *TCP) Connect(remoteAddr string) error {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	t.remoteAddr = remoteAddr
-	t.status = StatusTesting
-
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", remoteAddr, t.port), 5*time.Second)
-	if err != nil {
-		t.status = StatusFailed
-		return fmt.Errorf("tcp connect failed: %w", err)
+	ctx := t.CancelContext()
+	t.KillOldProcess()
+	if err := t.BaseConnectInit(remoteAddr); err != nil {
+		return err
 	}
-	t.connections = append(t.connections, conn)
 
-	t.status = StatusActive
-	log.Printf("[tcp] connected to %s:%d", remoteAddr, t.port)
+	remoteConn, err := net.DialTimeout("tcp", net.JoinHostPort(remoteAddr, fmt.Sprintf("%d", t.port)), 5*time.Second)
+	if err != nil {
+		t.Logf("remote %d unreachable: %v, ping-only mode", t.port, err)
+		t.SetStatusActive()
+		return nil
+	}
 
-	go t.handleConnection(conn)
+	t.mu.Lock()
+	t.connections = append(t.connections, remoteConn)
+	t.mu.Unlock()
+
+	t.SetStatusActive()
+	t.Logf("connected to %s:%d", remoteAddr, t.port)
+
+	go t.proxy(ctx, remoteConn)
 	return nil
 }
 
-func (t *TCP) handleConnection(conn net.Conn) {
+func (t *TCP) proxy(ctx context.Context, remoteConn net.Conn) {
+	defer remoteConn.Close()
 	buf := make([]byte, 4096)
 	for {
-		_, err := conn.Read(buf)
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+		remoteConn.SetReadDeadline(time.Now().Add(30 * time.Second))
+		n, err := remoteConn.Read(buf)
 		if err != nil {
 			if err != io.EOF {
-				log.Printf("[tcp] connection read error: %v", err)
+				t.Logf("connection read error: %v", err)
 			}
-			t.mu.Lock()
-			t.status = StatusFailed
-			t.mu.Unlock()
+			t.SetStatusFailed()
 			return
+		}
+		if n > 0 {
+			remoteConn.Write(buf[:n])
 		}
 	}
 }
 
 func (t *TCP) Disconnect() error {
+	t.cancel()
 	t.mu.Lock()
 	defer t.mu.Unlock()
-
 	for _, conn := range t.connections {
 		conn.Close()
 	}
@@ -99,61 +103,11 @@ func (t *TCP) Disconnect() error {
 		t.listener = nil
 	}
 	t.status = StatusInactive
-	log.Printf("[tcp] disconnected")
+	t.Logf("disconnected")
 	return nil
 }
 
-func (t *TCP) Status() Status {
-	t.mu.RLock()
-	defer t.mu.RUnlock()
-	return t.status
-}
-
-func (t *TCP) Metrics() *Metrics {
-	t.mu.RLock()
-	defer t.mu.RUnlock()
-	m := *t.metrics
-	return &m
-}
-
-func (t *TCP) Health() bool {
-	t.mu.RLock()
-	defer t.mu.RUnlock()
-	return t.status == StatusActive
-}
-
-func (t *TCP) Score() float64 {
-	t.mu.Lock()
-	defer t.mu.Unlock()
-
-	t.updateMetrics()
-
-	m := t.metrics
-	if m.PacketLoss > 50 {
-		return 0
-	}
-	if m.LatencyMs <= 0 {
-		return 5
-	}
-
-	latencyScore := math.Max(0, 100-m.LatencyMs/2)
-	lossScore := math.Max(0, 100-m.PacketLoss*2)
-	jitterScore := math.Max(0, 100-m.JitterMs*3)
-	stabilityScore := m.Stability * 100
-
-	score := latencyScore*0.25 + lossScore*0.35 + jitterScore*0.15 + stabilityScore*0.25
-	return score
-}
-
-func (t *TCP) updateMetrics() {
-	latency, loss, jitter := measureLatency(t.remoteAddr, 3)
-	t.metrics.LatencyMs = latency
-	t.metrics.PacketLoss = loss
-	t.metrics.JitterMs = jitter
-
-	if loss < 10 && latency < 200 {
-		t.metrics.Stability = math.Min(1, t.metrics.Stability+0.05)
-	} else {
-		t.metrics.Stability = math.Max(0, t.metrics.Stability-0.1)
-	}
-}
+func (t *TCP) Status() Status    { return t.BaseStatus() }
+func (t *TCP) Metrics() *Metrics { return t.BaseMetrics() }
+func (t *TCP) Health() bool      { return t.BaseHealth() }
+func (t *TCP) Score() float64    { return t.BaseScore() }

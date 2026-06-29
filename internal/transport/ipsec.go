@@ -3,31 +3,24 @@ package transport
 import (
 	"fmt"
 	"log"
-	"math"
 	"os/exec"
-	"sync"
 )
 
 type IPsec struct {
-	mu          sync.RWMutex
-	name        string
-	status      Status
-	metrics     *Metrics
-	remoteAddr  string
-	port        int
+	BaseTransport
+	localIP  string
+	targetIP string
+	psk      string
 }
 
 func NewIPsec() *IPsec {
 	return &IPsec{
-		name:   "ipsec",
-		status: StatusInactive,
-		metrics: &Metrics{},
-		port:   500,
+		BaseTransport: NewBase("ipsec", "ipsec", 500, ScoringWeights{0.25, 0.25, 0.20, 0.30}, 500),
 	}
 }
 
-func (i *IPsec) Name() string { return i.name }
-func (i *IPsec) Type() string { return "ipsec" }
+func (i *IPsec) Name() string  { return i.BaseName() }
+func (i *IPsec) Type() string { return i.BaseType() }
 
 func (i *IPsec) Init(cfg map[string]string) error {
 	i.mu.Lock()
@@ -35,116 +28,94 @@ func (i *IPsec) Init(cfg map[string]string) error {
 	if p, ok := cfg["port"]; ok {
 		fmt.Sscanf(p, "%d", &i.port)
 	}
+	if lip, ok := cfg["local_ip"]; ok {
+		i.localIP = lip
+	}
+	if rip, ok := cfg["remote_ip"]; ok {
+		i.targetIP = rip
+	}
+	if p, ok := cfg["psk"]; ok {
+		i.psk = p
+	}
 	log.Printf("[ipsec] initialized (port: %d)", i.port)
 	return nil
 }
 
 func (i *IPsec) Connect(remoteAddr string) error {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-
-	i.remoteAddr = remoteAddr
-	i.status = StatusTesting
-	i.updateMetrics()
-
-	if i.metrics.PacketLoss > 80 {
-		i.status = StatusFailed
-		return fmt.Errorf("high loss (%.1f%%)", i.metrics.PacketLoss)
+	ctx := i.CancelContext()
+	if err := i.BaseConnectInit(remoteAddr); err != nil {
+		return err
 	}
 
-	if !commandExists("ipsec") {
-		log.Printf("[ipsec] strongswan not installed, ping score only")
-		i.status = StatusActive
+	if !CommandExists("ipsec") {
+		i.Logf("strongswan not installed, ping score only")
+		i.SetStatusActive()
 		return nil
 	}
 
-	secret := fmt.Sprintf("%s : PSK \"nyxora-ipsec-psk\"\n", remoteAddr)
-	secretPath := "/etc/ipsec.secrets"
-	writeConfig(secretPath, secret)
+	connectTo := i.targetIP
+	if connectTo == "" {
+		connectTo = remoteAddr
+	}
 
-	config := fmt.Sprintf(`conn nyxora
-    left=%%any
-    leftsubnet=0.0.0.0/0
+	psk := i.psk
+	if psk == "" {
+		psk = "nyxora-ipsec-fallback"
+	}
+
+	secret := fmt.Sprintf("%s : PSK \"%s\"\n", connectTo, psk)
+	WriteConfig("/etc/ipsec.secrets", secret)
+
+	leftIP := i.localIP
+	if leftIP == "" {
+		leftIP = "%any"
+	}
+
+	config := fmt.Sprintf(`config setup
+
+conn nyxora
+    left=%s
     right=%s
-    rightsubnet=0.0.0.0/0
     authby=secret
     ike=aes256-sha256-modp2048
     esp=aes256-sha256
     auto=start
-`, remoteAddr)
+    type=transport
+`, leftIP, connectTo)
 
-	confPath := "/etc/ipsec.conf"
-	writeConfig(confPath, config)
+	WriteConfig("/etc/ipsec.conf", config)
 
-	go func() {
-		cmd := exec.Command("ipsec", "restart")
-		if err := cmd.Run(); err != nil {
-			log.Printf("[ipsec] restart error: %v", err)
-			i.mu.Lock()
-			i.status = StatusFailed
-			i.mu.Unlock()
+	i.RunInBackground(func() {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+		if err := exec.Command("ipsec", "restart").Run(); err != nil {
+			select {
+			case <-ctx.Done():
+				return
+			default:
+			}
+			i.Logf("restart error: %v", err)
+			i.SetStatusFailed()
 			return
 		}
 		exec.Command("ipsec", "up", "nyxora").Run()
-	}()
+	})
 
-	log.Printf("[ipsec] connecting to %s", remoteAddr)
-	i.status = StatusActive
+	i.Logf("connecting to %s", connectTo)
+	i.SetStatusActive()
 	return nil
 }
 
 func (i *IPsec) Disconnect() error {
-	i.mu.Lock()
-	defer i.mu.Unlock()
 	exec.Command("ipsec", "down", "nyxora").Run()
-	i.status = StatusInactive
-	log.Printf("[ipsec] disconnected")
-	return nil
+	exec.Command("ipsec", "stop").Run()
+	return i.BaseDisconnect()
 }
 
-func (i *IPsec) Status() Status {
-	i.mu.RLock()
-	defer i.mu.RUnlock()
-	return i.status
-}
-
-func (i *IPsec) Metrics() *Metrics {
-	i.mu.RLock()
-	defer i.mu.RUnlock()
-	m := *i.metrics
-	return &m
-}
-
-func (i *IPsec) Health() bool {
-	i.mu.RLock()
-	defer i.mu.RUnlock()
-	return i.status == StatusActive
-}
-
-func (i *IPsec) Score() float64 {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	i.updateMetrics()
-	m := i.metrics
-	if m.PacketLoss > 50 {
-		return 0
-	}
-	if m.LatencyMs <= 0 {
-		return 5
-	}
-	return math.Max(0, 100-m.LatencyMs/2)*0.25 + math.Max(0, 100-m.PacketLoss*2)*0.25 +
-		math.Max(0, 100-m.JitterMs*3)*0.20 + (m.Stability*100)*0.30
-}
-
-func (i *IPsec) updateMetrics() {
-	lat, loss, jitter := measureLatency(i.remoteAddr, 3)
-	i.metrics.LatencyMs = lat
-	i.metrics.PacketLoss = loss
-	i.metrics.JitterMs = jitter
-	if loss < 5 && lat < 100 {
-		i.metrics.Stability = math.Min(1, i.metrics.Stability+0.08)
-	} else {
-		i.metrics.Stability = math.Max(0, i.metrics.Stability-0.15)
-	}
-	i.metrics.Bandwidth = 500
-}
+func (i *IPsec) Status() Status  { return i.BaseStatus() }
+func (i *IPsec) Metrics() *Metrics { return i.BaseMetrics() }
+func (i *IPsec) Health() bool    { return i.BaseHealth() }
+func (i *IPsec) Score() float64  { return i.BaseScore() }

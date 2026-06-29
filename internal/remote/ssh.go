@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 type Host struct {
@@ -35,30 +37,54 @@ func NewHost(addr string, port int, user, password string) *Host {
 	}
 }
 
+func (h *Host) sshConfig() *ssh.ClientConfig {
+	auth := []ssh.AuthMethod{}
+	if h.Password != "" {
+		auth = append(auth, ssh.Password(h.Password))
+	}
+	if h.KeyPath != "" {
+		key, err := os.ReadFile(h.KeyPath)
+		if err == nil {
+			signer, err := ssh.ParsePrivateKey(key)
+			if err == nil {
+				auth = append(auth, ssh.PublicKeys(signer))
+			}
+		}
+	}
+	return &ssh.ClientConfig{
+		User:            h.User,
+		Auth:            auth,
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         10 * time.Second,
+	}
+}
+
+func (h *Host) dial() (*ssh.Client, error) {
+	addr := fmt.Sprintf("%s:%d", h.Address, h.Port)
+	return ssh.Dial("tcp", addr, h.sshConfig())
+}
+
 func (h *Host) SSHCommand(cmd string) (string, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	sshCmd := exec.Command("sshpass",
-		"-p", h.Password,
-		"ssh",
-		"-o", "StrictHostKeyChecking=no",
-		"-o", "UserKnownHostsFile=/dev/null",
-		"-o", "ConnectTimeout=10",
-		"-o", "LogLevel=QUIET",
-		"-p", fmt.Sprintf("%d", h.Port),
-		fmt.Sprintf("%s@%s", h.User, h.Address),
-		cmd,
-	)
-
-	output, err := sshCmd.Output()
+	client, err := h.dial()
 	if err != nil {
-		exitErr, ok := err.(*exec.ExitError)
-		if ok {
-			stderr := strings.TrimSpace(string(exitErr.Stderr))
-			if stderr != "" {
-				return "", fmt.Errorf("%s", stderr)
-			}
+		return "", fmt.Errorf("ssh dial: %w", err)
+	}
+	defer client.Close()
+
+	session, err := client.NewSession()
+	if err != nil {
+		return "", fmt.Errorf("ssh session: %w", err)
+	}
+	defer session.Close()
+
+	output, err := session.CombinedOutput(cmd)
+	if err != nil {
+		stderr := strings.TrimSpace(string(output))
+		if stderr != "" {
+			return "", fmt.Errorf("%s", stderr)
 		}
 		return "", fmt.Errorf("ssh: %v", err)
 	}
@@ -232,8 +258,9 @@ func (h *Host) CheckPort(port int, proto string) bool {
 }
 
 func (h *Host) CheckConnectivity() (string, bool) {
+	addr := net.JoinHostPort(h.Address, fmt.Sprintf("%d", h.Port))
 	dialer := net.Dialer{Timeout: 5 * time.Second}
-	conn, err := dialer.Dial("tcp", fmt.Sprintf("%s:%d", h.Address, h.Port))
+	conn, err := dialer.Dial("tcp", addr)
 	if err != nil {
 		return fmt.Sprintf("cannot reach %s:%d - %v", h.Address, h.Port, err), false
 	}
@@ -319,4 +346,51 @@ func SCPFile(local, remote, password string) error {
 		fmt.Sprintf("%s@%s:%s", user, host, remotePath),
 	)
 	return cmd.Run()
+}
+
+type RemoteResources struct {
+	Hostname    string
+	OSInfo      string
+	Arch        string
+	RAMMB       uint64
+	CPUCores    int
+	DiskGB      uint64
+	PortsOpen   []int
+}
+
+func (h *Host) CheckResources() (*RemoteResources, error) {
+	res := &RemoteResources{}
+
+	out, _ := h.SSHCommand("hostname")
+	res.Hostname = strings.TrimSpace(out)
+
+	out, _ = h.SSHCommand("cat /proc/meminfo 2>/dev/null | grep MemTotal | awk '{print $2}'")
+	if out != "" {
+		var kb uint64
+		fmt.Sscanf(strings.TrimSpace(out), "%d", &kb)
+		res.RAMMB = kb / 1024
+	}
+
+	out, _ = h.SSHCommand("nproc 2>/dev/null || echo 1")
+	fmt.Sscanf(strings.TrimSpace(out), "%d", &res.CPUCores)
+
+	out, _ = h.SSHCommand("df -BG / 2>/dev/null | tail -1 | awk '{print $2}' | tr -d 'G'")
+	fmt.Sscanf(strings.TrimSpace(out), "%d", &res.DiskGB)
+
+	return res, nil
+}
+
+func (h *Host) CheckResourcesForMode(mode string, minRAMMB uint64) (bool, string) {
+	res, err := h.CheckResources()
+	if err != nil {
+		return false, fmt.Sprintf("cannot check resources: %v", err)
+	}
+
+	if res.RAMMB < minRAMMB {
+		return false, fmt.Sprintf("remote server has %dMB RAM, %s mode requires %dMB+ (hostname: %s)",
+			res.RAMMB, mode, minRAMMB, res.Hostname)
+	}
+
+	return true, fmt.Sprintf("remote: %s | %dMB RAM | %d CPU | %dGB disk",
+		res.Hostname, res.RAMMB, res.CPUCores, res.DiskGB)
 }
