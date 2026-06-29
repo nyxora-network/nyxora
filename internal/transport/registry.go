@@ -184,9 +184,9 @@ func InstallScript(name string) string {
 	case "quic":
 		return "" // built-in
 	case "frp":
-		return `bash -c "$(curl -sL https://github.com/fatedier/frp/releases/latest/download/install_frp.sh)"`
+		return `TAG=$(curl -sL https://api.github.com/repos/fatedier/frp/releases/latest | grep tag_name | cut -d'"' -f4) && VER=${TAG#v} && curl -sL "https://github.com/fatedier/frp/releases/download/${TAG}/frp_${VER}_linux_amd64.tar.gz" -o /tmp/frp.tar.gz && tar -xzf /tmp/frp.tar.gz -C /tmp/ && cp /tmp/frp_*/frpc /usr/local/bin/frpc && chmod +x /usr/local/bin/frpc`
 	case "rathole":
-		return `bash -c "$(curl -sL https://raw.githubusercontent.com/rapiz1/rathole/main/install.sh)"`
+		return `apt-get install -y unzip >/dev/null 2>&1; TAG=$(curl -sL https://api.github.com/repos/rathole-org/rathole/releases/latest | grep tag_name | cut -d'"' -f4) && curl -sL "https://github.com/rathole-org/rathole/releases/download/${TAG}/rathole-x86_64-unknown-linux-gnu.zip" -o /tmp/rathole.zip && unzip -o /tmp/rathole.zip -d /usr/local/bin/ && chmod +x /usr/local/bin/rathole`
 	case "cloudflare":
 		return `curl -sL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared && chmod +x /usr/local/bin/cloudflared`
 	case "ipsec":
