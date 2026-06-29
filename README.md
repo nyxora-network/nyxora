@@ -443,15 +443,243 @@ nyxora/
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md).
+> **We love contributions!** Whether you're fixing a typo, reporting a bug, or adding a new transport — every contribution matters. NYXORA is community-driven and we want YOU to be part of it.
 
-**Ways to contribute:**
-- Report bugs via [GitHub Issues](https://github.com/nyxorammd-lgtm/nyxora/issues)
-- Suggest new transport types
-- Improve the TUI / dashboard
-- Add support for more OS targets
-- Write tests and documentation
-- Submit PRs for open issues
+**[Read the full Contributing Guide →](CONTRIBUTING.md)**
+
+---
+
+### 🎯 Ways to Contribute
+
+| Type | Difficulty | Description |
+|------|------------|-------------|
+| 🐛 **Bug Reports** | Easy | Found something broken? Tell us! |
+| 📝 **Documentation** | Easy | Fix typos, improve guides, add examples |
+| 🧪 **Tests** | Medium | Add test coverage for existing code |
+| 🎨 **TUI Improvements** | Medium | Enhance themes, layouts, animations |
+| 🔧 **Bug Fixes** | Medium | Fix reported issues |
+| 🚀 **New Features** | Hard | Add new commands, modes, options |
+| 🌐 **New Transports** | Hard | Implement new tunnel protocols |
+
+**First time contributing?** Look for issues labeled [`good first issue`](https://github.com/nyxorammd-lgtm/nyxora/labels/good%20first%20issue) — they're perfect for getting started!
+
+---
+
+### 🐛 Reporting Bugs
+
+**Before submitting:**
+1. Search [existing issues](https://github.com/nyxorammd-lgtm/nyxora/issues) — your bug might already be there
+2. Try reproducing on a clean install (fresh `nyxora install`)
+3. Update to the latest version (`nyxora update`) — the bug might be fixed already
+
+**How to submit a great bug report:**
+
+1. Click [**New Bug Report**](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=bug_report.md)
+2. Fill in **all sections** (the more detail, the faster we can fix it):
+
+| Section | What to Include |
+|---------|-----------------|
+| **Describe the Bug** | What happened? What did you expect? |
+| **To Reproduce** | Exact commands you ran, step by step |
+| **Expected Behavior** | What should have happened instead |
+| **Terminal Output** | Copy the FULL error (use ```code blocks```) |
+| **Environment** | OS, Go version, NYXORA version, remote server OS |
+
+**📋 Example Bug Report:**
+
+```markdown
+**Describe the Bug**
+`nyxora connect` fails with "connection refused" when connecting to CentOS 8 server
+
+**To Reproduce**
+1. Run `nyxora install`
+2. Run `nyxora connect 192.168.1.50 --user root --password mypassword`
+3. Error appears at step 5 (INSTALL)
+
+**Expected Behavior**
+Tunnel binaries should install successfully on CentOS 8
+
+**Terminal Output**
+```bash
+[STEP 1] PING: measuring latency...
+[STEP 2] SSH: authenticating...
+[STEP 3] DETECT OS: CentOS 8 detected
+[STEP 4] INSTALL: deploying tunnel binaries...
+Error: ssh: connect to host 192.168.1.50 port 22: connection refused
+```
+
+**Environment**
+- OS (local): Ubuntu 22.04
+- Go Version: 1.25.0
+- NYXORA Version: 0.2.0
+- Remote Server OS: CentOS 8
+- RAM: 512MB
+```
+
+> **💡 Tip:** Screenshots and terminal recordings help a lot! You can use [asciinema](https://asciinema.org/) for terminal recordings.
+
+---
+
+### 📋 Pull Request Rules
+
+#### 🚀 Quick Start for Contributors
+
+```bash
+# 1. Fork & clone
+git clone https://github.com/YOUR_USERNAME/nyxora.git
+cd nyxora
+
+# 2. Create feature branch
+git checkout -b feat/your-feature-name
+
+# 3. Make changes, then test
+make test
+make vet
+
+# 4. Commit & push
+git commit -m "feat: add your feature"
+git push origin feat/your-feature-name
+
+# 5. Open PR on GitHub
+```
+
+#### 📌 Before You Start
+
+| ✅ Do | ❌ Don't |
+|-------|---------|
+| Open an issue first for discussion | Submit huge PRs without prior discussion |
+| Keep PRs focused (one feature/fix) | Mix multiple features in one PR |
+| Write tests for new functionality | Submit code without tests |
+| Follow existing code style | Rewrite everything your own way |
+| Update documentation | Forget to update README |
+
+#### 🏷️ Branch Naming Convention
+
+| Prefix | When to Use | Example |
+|--------|-------------|---------|
+| `feat/` | New feature or transport | `feat/add-vless-transport` |
+| `fix/` | Bug fix | `fix/failover-race-condition` |
+| `docs/` | Documentation only | `docs/update-api-reference` |
+| `test/` | Adding tests | `test/add-wireguard-unit-tests` |
+| `refactor/` | Code restructuring | `refactor/extract-ssh-client` |
+| `hotfix/` | Urgent production fix | `hotfix/crash-on-startup` |
+
+#### ✅ PR Requirements (Must Pass)
+
+Your PR **will not be merged** until these are all green:
+
+| Check | Command | Status |
+|-------|---------|--------|
+| Tests | `make test` | ✅ All pass |
+| Linting | `make vet` | ✅ No warnings |
+| Style | See [STYLE_GUIDE.md](STYLE_GUIDE.md) | ✅ Consistent |
+| Docs | Updated if behavior changed | ✅ Complete |
+
+#### 📝 PR Description Template
+
+Copy this into your PR description:
+
+```markdown
+## 📋 Description
+<!-- Briefly describe what this PR does and why -->
+
+## 🔗 Related Issue
+<!-- Link the issue this PR fixes -->
+Closes #123
+
+## 📝 Type of Change
+- [ ] 🐛 Bug fix (non-breaking change that fixes an issue)
+- [ ] ✨ New feature (non-breaking change that adds functionality)
+- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to change)
+- [ ] 📝 Documentation update
+- [ ] 🧪 Test update
+- [ ] 🔧 Refactor (no functional change)
+
+## 🧪 Testing
+<!-- Describe the tests you ran and how to reproduce -->
+- [ ] `make test` passes
+- [ ] `make vet` passes
+- [ ] Manual testing:
+  - Tested on: [OS]
+  - Tested with: [remote server OS]
+  - Steps: [describe]
+
+## 📸 Screenshots / Logs
+<!-- If UI change, add screenshots. If bug fix, add before/after logs -->
+
+## ✅ Checklist
+- [ ] My code follows the project's style guide
+- [ ] I have added tests that prove my fix/feature works
+- [ ] All new and existing tests pass
+- [ ] I have updated the documentation accordingly
+- [ ] I have added an entry to CHANGELOG.md (if applicable)
+- [ ] My changes generate no new warnings
+- [ ] Any dependent changes have been merged and published
+
+## 💬 Additional Notes
+<!-- Any other context about the PR -->
+```
+
+#### 💬 Commit Message Convention
+
+We use [Conventional Commits](https://www.conventionalcommits.org/) — this helps us auto-generate changelogs:
+
+| Prefix | When | Example |
+|--------|------|---------|
+| `feat:` | New feature | `feat: add VLESS transport support` |
+| `fix:` | Bug fix | `fix: resolve failover race condition` |
+| `docs:` | Documentation | `docs: add Chinese translation` |
+| `test:` | Tests | `test: add WireGuard unit tests` |
+| `refactor:` | Code cleanup | `refactor: extract SSH client module` |
+| `perf:` | Performance | `perf: optimize ping latency calculation` |
+| `style:` | Formatting | `style: fix indentation in dashboard.go` |
+| `chore:` | Maintenance | `chore: update Go dependencies` |
+| `ci:` | CI/CD | `ci: add GitHub Actions workflow` |
+
+**Format:** `<type>: <description>`
+
+**Examples:**
+```
+feat: add VLESS transport with TLS support
+fix: resolve connection timeout on slow networks
+docs: update API reference for v0.3.0
+test: add integration tests for failover engine
+```
+
+#### 👀 Review Process
+
+1. **Automated checks** must pass (CI/CD)
+2. **Code review** by at least **1 maintainer**
+3. **No merge conflicts** with `main`
+4. **Squash and merge** — keeps commit history clean
+
+**What reviewers look for:**
+- ✅ Code is clean and follows existing patterns
+- ✅ Tests cover new functionality
+- ✅ Documentation is updated
+- ✅ No breaking changes (or clearly documented)
+- ✅ Performance is not degraded
+
+---
+
+### 🏆 Recognition
+
+All contributors are recognized in our [Contributors section](#-contributors). We also:
+
+- Mention contributors in release notes
+- Give special recognition for significant contributions
+- Welcome new contributors with a warm welcome in PR comments
+
+---
+
+### 💬 Need Help?
+
+- 📖 Read the [Contributing Guide](CONTRIBUTING.md) for detailed instructions
+- 💬 Join our [Telegram Channel](https://t.me/NyxoraCore) for questions
+- 🐛 Check [existing issues](https://github.com/nyxorammd-lgtm/nyxora/issues) for inspiration
+- 📧 Email maintainers for private concerns
+
+> **Remember:** There are no stupid questions! We were all beginners once. Don't hesitate to ask for help.
 
 ## 🌟 Contributors
 
