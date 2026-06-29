@@ -29,23 +29,15 @@ const (
 	CYAN    = "\033[36m"
 	WHITE   = "\033[37m"
 
-	BG_BLACK   = "\033[40m"
-	BG_RED     = "\033[41m"
-	BG_GREEN   = "\033[42m"
-	BG_YELLOW  = "\033[43m"
-	BG_BLUE    = "\033[44m"
-	BG_MAGENTA = "\033[45m"
-	BG_CYAN    = "\033[46m"
-	BG_DARK    = "\033[48;5;236m"
-
 	GRAY   = "\033[90m"
-	LGRAY  = "\033[37m"
 	ORANGE = "\033[38;5;214m"
 	PURPLE = "\033[38;5;141m"
 	TEAL   = "\033[38;5;80m"
 
 	BAR_CHAR = "━"
 	DOT      = "●"
+	CHECK    = "✓"
+	CROSS    = "✗"
 	ARROW    = "➜"
 )
 
@@ -71,7 +63,6 @@ func NewTUI(intervalSec int) *TUI {
 	if output, err := cmd.Output(); err == nil {
 		fmt.Sscanf(string(output), "%d %d", &height, &width)
 	}
-
 	return &TUI{
 		interval:  time.Duration(intervalSec) * time.Second,
 		stopCh:    make(chan struct{}),
@@ -102,7 +93,7 @@ func (t *TUI) Start() error {
 		for {
 			select {
 			case <-t.stopCh:
-				fmt.Print(SHOW)
+				fmt.Print(SHOW + "\n")
 				return
 			default:
 				t.render()
@@ -110,7 +101,6 @@ func (t *TUI) Start() error {
 			}
 		}
 	}()
-
 	return nil
 }
 
@@ -134,7 +124,6 @@ func (t *TUI) ensureSize() {
 
 func (t *TUI) render() {
 	t.ensureSize()
-
 	t.mu.Lock()
 	provider := t.provider
 	t.mu.Unlock()
@@ -143,7 +132,7 @@ func (t *TUI) render() {
 	out.WriteString(HOME)
 
 	if provider == nil {
-		out.WriteString(t.center("NYXORA", t.width))
+		out.WriteString(t.center(" NYXORA", t.width))
 		out.WriteString("\n\n")
 		out.WriteString(t.center("initializing...", t.width))
 		fmt.Print(out.String())
@@ -152,90 +141,116 @@ func (t *TUI) render() {
 
 	status := provider.Status()
 
-	// Header
-	header := fmt.Sprintf(" %sNYXORA%s  %sAdaptive Tunnel Orchestrator%s",
-		PURPLE+BOLD, RESET, DIM+GRAY, RESET)
-	out.WriteString(header)
-	out.WriteString("\n")
+	// ── Header ──
+	header := fmt.Sprintf(" %s%sNYXORA%s  %s%s%s  %s%s%s",
+		PURPLE+BOLD, DOT, RESET,
+		DIM+GRAY, "Adaptive Tunnel Orchestrator", RESET,
+		DIM, "v0.1.0", RESET)
+	out.WriteString(header + "\n")
+	out.WriteString(fmt.Sprintf(" %s%s%s\n", DIM+GRAY, strings.Repeat("━", t.width-2), RESET))
 
-	// Separator line
-	sep := strings.Repeat("━", t.width-1)
-	out.WriteString(fmt.Sprintf("%s%s%s\n", DIM+GRAY, sep, RESET))
-
-	// Status bar
+	// ── Status Bar ──
 	running, _ := status["running"].(bool)
 	connected, _ := status["connected"].(bool)
+	_, _ = status["phase"].(string)
 	active, _ := status["active_transport"].(string)
-	bestPath, _ := status["best_path"].(string)
-	bestScore, _ := status["best_score"].(float64)
-	mode, _ := status["server_mode"].(bool)
-	allActive, _ := status["all_active"].(bool)
-	remoteAddr, _ := status["remote_addr"].(string)
+	nodeID, _ := status["node_id"].(string)
+	uptime, _ := status["uptime"].(string)
 
-	modeStr := "smart"
-	if mode {
-		modeStr = "server"
-	} else if allActive {
-		modeStr = "all-active"
-	}
-
-	statusIcon := RED + DOT
-	statusLabel := "disconnected"
-	if connected {
-		statusIcon = GREEN + DOT
+	statusIcon := GRAY + "●"
+	statusLabel := "idle"
+	switch {
+	case connected:
+		statusIcon = GREEN + "●"
 		statusLabel = "connected"
-	} else if running {
-		statusIcon = YELLOW + DOT
+	case running:
+		statusIcon = YELLOW + "●"
 		statusLabel = "running"
 	}
 
-	uptime := time.Since(t.startTime).Round(time.Second).String()
-
-	out.WriteString(fmt.Sprintf("\n %s %s%s %s  %s %s  %s %s  %s %s\n",
-		CYAN+BOLD+"STATUS", RESET,
-		statusIcon, statusLabel,
-		GREEN+DOT+" active",
-		tern(active != "", active, "none"),
-		BLUE+DOT+" mode", modeStr,
-		MAGENTA+DOT+" up", uptime,
+	out.WriteString(fmt.Sprintf(" %s%s %s %s  %s%s %s  %s%s %s\n",
+		CYAN+BOLD, "STATUS", RESET,
+		statusIcon+" "+statusLabel,
+		TEAL, "NODE", RESET,
+		truncate(nodeID, 12),
+		BLUE, "UP", uptime,
 	))
 
-	if remoteAddr != "" {
-		out.WriteString(fmt.Sprintf(" %s %s%s\n", GRAY+ARROW, RESET, remoteAddr))
+	if connected {
+		out.WriteString(fmt.Sprintf(" %s%s %s  %s%s %s\n",
+			GREEN, "TUNNEL", RESET,
+			active, DIM+GRAY, "(click for details)", RESET,
+		))
 	}
 
-	if bestPath != "" && bestScore > 0 {
-		out.WriteString(fmt.Sprintf(" %s%s best: %s%s (%.1f)\n",
-			YELLOW, "★", RESET, bestPath, bestScore))
+	// ── Remote Host Info ──
+	if remote, ok := status["remote"].(map[string]interface{}); ok {
+		hostname, _ := remote["hostname"].(string)
+		addr, _ := remote["address"].(string)
+		osInfo, _ := remote["os"].(string)
+		arch, _ := remote["arch"].(string)
+
+		out.WriteString(fmt.Sprintf("\n %s%sREMOTE HOST%s\n", BOLD, CYAN, RESET))
+		out.WriteString(fmt.Sprintf("   %s%s %s%s\n", BOLD, hostname, GRAY, addr, RESET))
+		out.WriteString(fmt.Sprintf("   %s%s  %s%s  %s\n", DIM, osInfo, arch, RESET))
 	}
 
-	// Transports table
-	transportsRaw, ok := status["transports"].([]interface{})
-	if ok && len(transportsRaw) > 0 {
-		out.WriteString(fmt.Sprintf("\n %s%sTRANSPORTS%s\n", BOLD, CYAN, RESET))
+	// ── Steps Wizard ──
+	if stepsRaw, ok := status["steps"].([]interface{}); ok && len(stepsRaw) > 0 {
+		out.WriteString(fmt.Sprintf("\n %s%sSETUP STEPS%s\n", BOLD, MAGENTA, RESET))
+		for _, sRaw := range stepsRaw {
+			if s, ok := sRaw.(map[string]interface{}); ok {
+				name, _ := s["name"].(string)
+				stat, _ := s["status"].(string)
+				detail, _ := s["detail"].(string)
+				done, _ := s["done"].(bool)
 
-		var transportList []map[string]interface{}
-		for _, tRaw := range transportsRaw {
-			if t, ok := tRaw.(map[string]interface{}); ok {
-				transportList = append(transportList, t)
+				icon := DIM + "○" + RESET
+				color := GRAY
+				switch stat {
+				case "OK":
+					icon = GREEN + CHECK + RESET
+					color = GREEN
+				case "FAILED":
+					icon = RED + CROSS + RESET
+					color = RED
+				case "RUNNING":
+					icon = YELLOW + "◉" + RESET
+					color = YELLOW
+				case "WARN":
+					icon = ORANGE + "△" + RESET
+					color = ORANGE
+				}
+
+				detailStr := ""
+				if detail != "" && done {
+					detailStr = fmt.Sprintf(" %s%s%s", DIM+GRAY, detail, RESET)
+				}
+				out.WriteString(fmt.Sprintf("   %s %s%s%s%s\n", icon, color, name, RESET, detailStr))
 			}
 		}
+	}
 
-		sort.Slice(transportList, func(i, j int) bool {
-			si, _ := transportList[i]["score"].(float64)
-			sj, _ := transportList[j]["score"].(float64)
+	// ── Transports Table ──
+	if transportsRaw, ok := status["transports"].([]interface{}); ok && len(transportsRaw) > 0 {
+		out.WriteString(fmt.Sprintf("\n %s%sTRANSPORTS%s\n", BOLD, CYAN, RESET))
+		out.WriteString(fmt.Sprintf(" %s%-12s %-6s %-7s %-6s %-8s %-6s %s%s\n",
+			DIM+GRAY, "NAME", "TYPE", "STATUS", "SCORE", "LATENCY", "LOSS", "BAR", RESET))
+		out.WriteString(fmt.Sprintf(" %s%s%s\n", DIM+GRAY, strings.Repeat("─", t.width-4), RESET))
+
+		var list []map[string]interface{}
+		for _, r := range transportsRaw {
+			if t, ok := r.(map[string]interface{}); ok {
+				list = append(list, t)
+			}
+		}
+		sort.Slice(list, func(i, j int) bool {
+			si, _ := list[i]["score"].(float64)
+			sj, _ := list[j]["score"].(float64)
 			return si > sj
 		})
 
-		// Table header
-		headerFmt := fmt.Sprintf(" %s%%-12s %%-8s %%-8s %%-10s %%-10s %%-8s %%-6s%s\n",
-			DIM+GRAY, RESET)
-		out.WriteString(fmt.Sprintf(headerFmt, "NAME", "TYPE", "STATUS", "SCORE", "LATENCY", "LOSS", "BAR"))
-
-		// Separator
-		out.WriteString(fmt.Sprintf(" %s%s%s\n", DIM+GRAY, strings.Repeat("─", t.width-3), RESET))
-
-		for _, tr := range transportList {
+		for _, tr := range list {
 			name, _ := tr["name"].(string)
 			typ, _ := tr["type"].(string)
 			stat, _ := tr["status"].(string)
@@ -243,77 +258,54 @@ func (t *TUI) render() {
 			latency, _ := tr["latency"].(float64)
 			loss, _ := tr["loss"].(float64)
 
-			statColor := RED
-			statIcon := "○"
+			sColor := GRAY
+			sIcon := "○"
 			switch stat {
 			case "active":
-				statColor = GREEN
-				statIcon = "●"
-			case "testing":
-				statColor = YELLOW
-				statIcon = "◉"
+				sColor = GREEN
+				sIcon = "●"
 			case "failed":
-				statColor = RED
-				statIcon = "✕"
+				sColor = RED
+				sIcon = "✗"
 			default:
-				statColor = GRAY
-				statIcon = "○"
+				sColor = GRAY
+				sIcon = "○"
 			}
 
-			scoreColor := RED
+			scColor := RED
 			if score >= 70 {
-				scoreColor = GREEN
+				scColor = GREEN
 			} else if score >= 40 {
-				scoreColor = YELLOW
+				scColor = YELLOW
 			}
 
-			latColor := GREEN
-			if latency > 150 {
-				latColor = RED
-			} else if latency > 80 {
-				latColor = YELLOW
-			}
-
-			lossColor := GREEN
-			if loss > 10 {
-				lossColor = RED
-			} else if loss > 3 {
-				lossColor = YELLOW
-			}
-
-			// Score bar
-			barLen := 15
+			barLen := 12
 			filled := int((score / 100) * float64(barLen))
 			if filled > barLen {
 				filled = barLen
 			}
 			bar := strings.Repeat(BAR_CHAR, filled) + strings.Repeat("─", barLen-filled)
-			barColor := scoreColor
 
-			activeMarker := ""
+			marker := "  "
 			if name == active {
-				activeMarker = GREEN + "◀" + RESET + " "
-			} else {
-				activeMarker = "   "
+				marker = GREEN + "◀ " + RESET
 			}
 
-			row := fmt.Sprintf(" %s%s %-10s%s %s%-7s %s%s%-7s%s %s%5.1f%s %s%7.1fms%s %s%5.1f%%%s %s%s%s\n",
-				activeMarker,
-				BOLD, name, RESET,
+			out.WriteString(fmt.Sprintf(" %s%-10s %s %-5s %s%s%-5s %s%5.1f %s%6.1fms %s%4.1f%% %s%s%s\n",
+				marker,
+				BOLD+name+RESET,
 				DIM+typ+RESET,
-				statColor, statIcon+" "+stat, RESET,
-				scoreColor, score, RESET,
-				latColor, latency, RESET,
-				lossColor, loss, RESET,
-				barColor, bar, RESET,
-			)
-			out.WriteString(row)
+				sColor+sIcon+RESET,
+				scColor, fmt.Sprintf("%.1f", score), RESET,
+				latency,
+				loss,
+				scColor, bar, RESET,
+			))
 		}
 	}
 
-	// Failover status
-	failoverRaw, ok := status["failover"].(map[string]interface{})
-	if ok && len(failoverRaw) > 0 {
+	// ── Failover ──
+	if failoverRaw, ok := status["failover"].(map[string]interface{}); ok && len(failoverRaw) > 0 {
 		out.WriteString(fmt.Sprintf("\n %s%sFAILOVER%s\n", BOLD, MAGENTA, RESET))
 		var names []string
 		for k := range failoverRaw {
@@ -329,17 +321,14 @@ func (t *TUI) render() {
 			case "down":
 				fColor = RED
 			}
-			out.WriteString(fmt.Sprintf("  %s: %s%s%s\n", name, fColor, val, RESET))
+			out.WriteString(fmt.Sprintf("   %s: %s%s%s\n", name, fColor, val, RESET))
 		}
 	}
 
-	// Network stats footer
-	out.WriteString(fmt.Sprintf("\n %s%s", DIM+GRAY, strings.Repeat("━", t.width-1)))
-	out.WriteString(fmt.Sprintf("\n  %snyxora v0.1.0%s  │  %srefresh: %.0fs%s  │  %sctrl+c to exit%s\n",
-		PURPLE, RESET,
-		DIM, t.interval.Seconds(), RESET,
-		GRAY, RESET,
-	))
+	// ── Help Footer ──
+	out.WriteString(fmt.Sprintf("\n %s%s", DIM+GRAY, strings.Repeat("━", t.width-2)))
+	out.WriteString(fmt.Sprintf("\n %s%s nyxora connect <ip> --user root --port 22 %s", DIM, ARROW, RESET))
+	out.WriteString(fmt.Sprintf("\n %s%s ctrl+c to exit %s", DIM, ARROW, RESET))
 
 	fmt.Print(out.String())
 }
@@ -352,11 +341,9 @@ func (t *TUI) center(s string, width int) string {
 	return strings.Repeat(" ", padding) + s
 }
 
-func tern(cond bool, a, b string) string {
-	if cond {
-		return a
+func truncate(s string, n int) string {
+	if len(s) <= n {
+		return s
 	}
-	return b
+	return s[:n] + ".."
 }
-
-

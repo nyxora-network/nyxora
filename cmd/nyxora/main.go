@@ -5,16 +5,17 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
+	"strings"
 
-	"github.com/nyxora/nyxora/internal/agent"
 	"github.com/nyxora/nyxora/internal/config"
+	"github.com/nyxora/nyxora/internal/orchestrator"
 )
 
 var version = "0.1.0"
 
 func main() {
-	log.SetFlags(log.Ldate | log.Ltime | log.Lmsgprefix)
-	log.SetPrefix("[nyxora] ")
+	log.SetFlags(0)
 
 	if len(os.Args) < 2 {
 		printUsage()
@@ -31,8 +32,6 @@ func main() {
 		cmdDisconnect()
 	case "status":
 		cmdStatus()
-	case "monitor":
-		cmdMonitor()
 	case "dashboard":
 		cmdDashboard()
 	case "daemon":
@@ -49,30 +48,34 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Println(`NYXORA - Adaptive Tunnel Orchestrator
+	fmt.Println(`NYXORA  -  Adaptive Tunnel Orchestrator
 
-Usage:
-  nyxora install                 Install nyxora and check dependencies
-  nyxora connect <remote>        Connect to remote (tests all tunnels, picks best)
-  nyxora disconnect              Disconnect all tunnels
-  nyxora status                  Show connection status
-  nyxora monitor <remote>        Monitor latency/packet loss to remote
-  nyxora dashboard               Live terminal dashboard (TUI)
-  nyxora daemon                  Run as background agent
-  nyxora version                 Show version
-  nyxora help                    Show this help
+USAGE
+  nyxora install                    Check dependencies & setup directories
+  nyxora connect <host>             Connect to remote server (interactive)
+  nyxora disconnect                 Close all tunnels
+  nyxora status                     Show connection info
+  nyxora dashboard                  Live terminal dashboard
+  nyxora daemon                     Run as background service
+  nyxora version                    Show version
+  nyxora help                       This page
 
-Examples:
+EXAMPLES
   nyxora connect 213.32.69.147
+  nyxora connect 213.32.69.147 --user root --port 22
   nyxora dashboard
-  nyxora daemon`)
+
+WHAT IS NYXORA?
+  Install on ONE server. It connects to your remote server via SSH,
+  installs what's needed, sets up the fastest tunnel, and keeps it
+  healthy — automatically. No agent needed on the other side.
+`)
 }
 
 func loadConfig() *config.Config {
 	cfgPath := os.Getenv("NYXORA_CONFIG")
 	cfg, err := config.Load(cfgPath)
 	if err != nil {
-		log.Printf("warning: %v (using defaults)", err)
 		cfg = &config.DefaultConfig
 	}
 	if v := os.Getenv("NYXORA_ALL_ACTIVE"); v == "true" || v == "1" {
@@ -82,154 +85,183 @@ func loadConfig() *config.Config {
 }
 
 func cmdInstall() {
-	fmt.Println("[nyxora] installing nyxora...")
+	fmt.Println()
+	fmt.Println("  " + "\033[38;5;141m● NYXORA\033[0m  \033[90mInstallation\033[0m")
+	fmt.Println("  " + "\033[90m" + strings.Repeat("━", 40) + "\033[0m")
+	fmt.Println()
 
 	for _, dir := range []string{"/etc/nyxora", "/etc/nyxora/tunnels", "/etc/nyxora/cache", "/var/log/nyxora"} {
-		os.MkdirAll(dir, 0755)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			log.Fatalf("create dir %s: %v", dir, err)
+		}
+		fmt.Printf("  \033[32m✓\033[0m %s\n", dir)
 	}
 
 	cfg := loadConfig()
 	cfg.Save("/etc/nyxora/config.json")
 
-	fmt.Println("[nyxora] checking dependencies...")
-	for _, dep := range []string{"ping", "wg", "ssh", "curl"} {
+	fmt.Println()
+	fmt.Println("  \033[1mChecking dependencies:\033[0m")
+	for _, dep := range []string{"ping", "wg", "ssh", "sshpass", "curl"} {
 		path, err := exec.LookPath(dep)
 		if err == nil {
-			fmt.Printf("  [OK] %s: %s\n", dep, path)
+			fmt.Printf("  \033[32m✓\033[0m %-12s %s\n", dep, path)
 		} else {
-			fmt.Printf("  [WARN] %s not found (install manually if needed)\n", dep)
+			fmt.Printf("  \033[33m△\033[0m %-12s \033[90mnot found (install: apt install %s)\033[0m\n", dep, dep)
 		}
 	}
 
 	fmt.Println()
-	fmt.Println("nyxora installed successfully!")
+	fmt.Println("  \033[32m● NYXORA installed successfully\033[0m")
 	fmt.Println()
-	fmt.Println("Quick start:")
-	fmt.Println("  nyxora connect <remote-ip>")
-	fmt.Println("  nyxora dashboard")
+	fmt.Println("  \033[90mNext step:\033[0m")
+	fmt.Println("  \033[1m  nyxora connect <remote-ip>\033[0m")
+	fmt.Println()
 }
 
 func cmdConnect() {
-	if len(os.Args) < 3 {
-		fmt.Println("usage: nyxora connect <remote-ip>")
+	addr := ""
+	user := "root"
+	port := 22
+	password := ""
+
+	if len(os.Args) >= 3 {
+		addr = os.Args[2]
+	}
+
+	for i, arg := range os.Args {
+		switch arg {
+		case "--user", "-u":
+			if i+1 < len(os.Args) {
+				user = os.Args[i+1]
+			}
+		case "--port", "-p":
+			if i+1 < len(os.Args) {
+				p, err := strconv.Atoi(os.Args[i+1])
+				if err == nil {
+					port = p
+				}
+			}
+		case "--password", "--pass":
+			if i+1 < len(os.Args) {
+				password = os.Args[i+1]
+			}
+		}
+	}
+
+	if addr == "" {
+		fmt.Print("  Enter remote server IP: ")
+		fmt.Scanln(&addr)
+	}
+	if addr == "" {
+		log.Fatalf("remote address is required")
+	}
+
+	if password == "" {
+		fmt.Print("  Enter SSH password: ")
+		fmt.Scanln(&password)
+	}
+	if password == "" {
+		log.Fatalf("password is required")
+	}
+
+	fmt.Println()
+	fmt.Printf("  \033[36m● Connecting to %s@%s:%d ...\033[0m\n", user, addr, port)
+	fmt.Println()
+
+	cfg := loadConfig()
+	o := orchestrator.New(cfg)
+	if err := o.Init(); err != nil {
+		log.Fatalf("\033[31m✗ init: %v\033[0m", err)
+	}
+
+	o.OnStepUpdate(func(step orchestrator.StepStatus) {
+		icon := "\033[90m○\033[0m"
+		switch step.Status {
+		case "OK":
+			icon = "\033[32m✓\033[0m"
+		case "FAILED":
+			icon = "\033[31m✗\033[0m"
+		case "RUNNING":
+			icon = "\033[33m◉\033[0m"
+		case "WARN":
+			icon = "\033[38;5;214m△\033[0m"
+		}
+		detail := ""
+		if step.Detail != "" && step.Done {
+			detail = " \033[90m" + step.Detail + "\033[0m"
+		}
+		fmt.Printf("  %s %s%s\n", icon, step.Name, detail)
+	})
+
+	fmt.Println()
+	if err := o.ConnectToRemote(addr, port, user, password); err != nil {
+		fmt.Printf("\n  \033[31m✗ Connection failed: %v\033[0m\n", err)
 		os.Exit(1)
 	}
 
-	cfg := loadConfig()
-	a := agent.New(cfg)
-	if err := a.Init(); err != nil {
-		log.Fatalf("init: %v", err)
-	}
-
-	fmt.Printf("[nyxora] testing all transports to %s...\n", os.Args[2])
-	if err := a.Connect(os.Args[2]); err != nil {
-		log.Fatalf("connect: %v", err)
-	}
-
-	printStatus(a.Status())
+	fmt.Println()
+	fmt.Println("  \033[32m● Tunnel established successfully\033[0m")
+	fmt.Println("  \033[90m  Run 'nyxora dashboard' for live monitoring\033[0m")
+	fmt.Println()
 }
 
 func cmdDisconnect() {
+	fmt.Println("  \033[33m◉ disconnect ...\033[0m")
 	cfg := loadConfig()
-	a := agent.New(cfg)
-	a.Init()
-	a.Disconnect()
-	fmt.Println("[nyxora] disconnected all transports")
+	o := orchestrator.New(cfg)
+	o.Init()
+	o.Stop()
+	fmt.Println("  \033[32m✓ disconnected\033[0m")
 }
 
 func cmdStatus() {
 	cfg := loadConfig()
-	a := agent.New(cfg)
-	a.Init()
-	printStatus(a.Status())
-}
+	o := orchestrator.New(cfg)
+	o.Init()
 
-func cmdMonitor() {
-	if len(os.Args) < 3 {
-		fmt.Println("usage: nyxora monitor <remote-ip>")
-		os.Exit(1)
+	status := o.Status()
+	fmt.Println()
+	fmt.Println("  \033[38;5;141m● NYXORA STATUS\033[0m")
+	fmt.Println("  \033[90m" + strings.Repeat("━", 35) + "\033[0m")
+	fmt.Printf("  \033[1mStatus:\033[0m        ")
+	if c, _ := status["connected"].(bool); c {
+		fmt.Println("\033[32mconnected\033[0m")
+	} else {
+		fmt.Println("\033[33midle\033[0m")
 	}
-	cfg := loadConfig()
-	a := agent.New(cfg)
-	a.Init()
-	a.Connect(os.Args[2])
+	fmt.Printf("  \033[1mActive Tunnel:\033[0m %s\n", status["active_transport"])
+	if r, ok := status["remote"].(map[string]interface{}); ok {
+		fmt.Printf("  \033[1mRemote Host:\033[0m   %s (%s)\n", r["hostname"], r["address"])
+	}
+	if p, ok := status["phase"].(string); ok {
+		fmt.Printf("  \033[1mPhase:\033[0m         %s\n", p)
+	}
+	fmt.Println()
 }
 
 func cmdDashboard() {
-	cfg := loadConfig()
-	a := agent.New(cfg)
-	if err := a.Init(); err != nil {
-		log.Fatalf("init: %v", err)
-	}
-	fmt.Print("\033[?25l")
+	fmt.Print("\033[?25l\033[2J")
 	defer fmt.Print("\033[?25h")
 
-	if err := a.RunDashboard(); err != nil {
+	cfg := loadConfig()
+	o := orchestrator.New(cfg)
+	if err := o.Init(); err != nil {
+		log.Fatalf("init: %v", err)
+	}
+	if err := o.Start(); err != nil {
 		log.Fatalf("dashboard: %v", err)
 	}
-
-	sigCh := make(chan os.Signal, 1)
-	<-sigCh
 }
 
 func cmdDaemon() {
 	cfg := loadConfig()
 	log.Printf("starting nyxora daemon v%s", version)
-
-	a := agent.New(cfg)
-	if err := a.Init(); err != nil {
-		log.Fatalf("agent init: %v", err)
+	o := orchestrator.New(cfg)
+	if err := o.Init(); err != nil {
+		log.Fatalf("init: %v", err)
 	}
-	if err := a.Start(); err != nil {
-		log.Fatalf("agent error: %v", err)
+	if err := o.Start(); err != nil {
+		log.Fatalf("daemon: %v", err)
 	}
-}
-
-func printStatus(status map[string]interface{}) {
-	running, _ := status["running"].(bool)
-	active, _ := status["active_transport"].(string)
-	serverMode, _ := status["server_mode"].(bool)
-	allActive, _ := status["all_active"].(bool)
-	bestPath, _ := status["best_path"].(string)
-	bestScore, _ := status["best_score"].(float64)
-
-	fmt.Println("============= NYXORA STATUS =============")
-	fmt.Printf("  Running:       %v\n", running)
-	fmt.Printf("  Server Mode:   %v\n", serverMode)
-	fmt.Printf("  All Active:    %v\n", allActive)
-	fmt.Printf("  Active Tunnel: %s\n", active)
-	fmt.Printf("  Best Path:     %s (score: %.1f)\n", bestPath, bestScore)
-	fmt.Println("------------------------------------------")
-	fmt.Println("  Transports:")
-
-	transportsRaw, ok := status["transports"].([]interface{})
-	if !ok || len(transportsRaw) == 0 {
-		fmt.Println("  (none)")
-		fmt.Println("==========================================")
-		return
-	}
-
-	for _, tRaw := range transportsRaw {
-		t, ok := tRaw.(map[string]interface{})
-		if !ok {
-			continue
-		}
-		name, _ := t["name"].(string)
-		typ, _ := t["type"].(string)
-		stat, _ := t["status"].(string)
-		score, _ := t["score"].(float64)
-		latency, _ := t["latency"].(float64)
-		loss, _ := t["loss"].(float64)
-
-		icon := "○"
-		if stat == "active" {
-			icon = "●"
-		}
-
-		fmt.Printf("    %s %s (%s)\n", icon, name, typ)
-		fmt.Printf("      Score:   %.1f\n", score)
-		fmt.Printf("      Latency: %.1f ms\n", latency)
-		fmt.Printf("      Loss:    %.1f %%\n", loss)
-	}
-	fmt.Println("==========================================")
 }
