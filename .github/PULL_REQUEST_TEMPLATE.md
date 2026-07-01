@@ -1,34 +1,21 @@
 ## Description
 
-<!-- Briefly describe the changes -->
+<!-- Please include a summary of the change -->
 
 ## Type of Change
 
 - [ ] Bug fix
-- [ ] New feature (new transport, new command)
-- [ ] Refactor (no functional change)
+- [ ] New feature
+- [ ] Breaking change
 - [ ] Documentation update
-- [ ] Test update
-- [ ] CI / build change
 
-## Testing
+## How Has This Been Tested?
 
-- [ ] `make test` passes
-- [ ] `make vet` passes
-- [ ] Manual testing done (describe below)
+- [ ] Unit tests
+- [ ] Manual testing
 
 ## Checklist
 
-- [ ] Code follows project style (see STYLE_GUIDE.md)
-- [ ] Added/updated tests for new functionality
-- [ ] Updated documentation (README, API docs)
-- [ ] Added entry to CHANGELOG.md
-- [ ] No breaking changes (or documented in PR description)
-
-## Screenshots / Logs
-
-<!-- If UI change, add screenshots -->
-
-## Additional Notes
-
-<!-- Any other context -->
+- [ ] My code follows the project style
+- [ ] I have updated the documentation
+- [ ] My changes generate no new warnings

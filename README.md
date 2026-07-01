@@ -3,8 +3,11 @@
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="License">
   <img src="https://img.shields.io/badge/status-active-success?style=flat" alt="Status">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat" alt="PRs Welcome">
-  <img src="https://goreportcard.com/badge/github.com/nyxorammd-lgtm/nyxora" alt="Go Report Card">
+  <a href="https://goreportcard.com/report/github.com/nyxorammd-lgtm/nyxora"><img src="https://goreportcard.com/badge/github.com/nyxorammd-lgtm/nyxora" alt="Go Report Card"></a>
+  <img src="https://img.shields.io/github/stars/nyxorammd-lgtm/nyxora?style=flat&logo=github" alt="Stars">
   <br>
+  <a href="https://github.com/nyxorammd-lgtm/nyxora/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxorammd-lgtm/nyxora/ci.yml?branch=main&label=CI&logo=github" alt="CI"></a>
+  <a href="https://github.com/nyxorammd-lgtm/nyxora/actions/workflows/codeql.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxorammd-lgtm/nyxora/codeql.yml?branch=main&label=CodeQL&logo=github" alt="CodeQL"></a>
   <img src="https://img.shields.io/badge/transports-11-ff69b4?style=flat" alt="11 Transports">
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="Platform">
   <img src="https://img.shields.io/badge/coverage-80%25-yellowgreen?style=flat" alt="Coverage">

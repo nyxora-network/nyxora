@@ -1,13 +1,2 @@
-# These are supported funding model platforms
-
-github: [nyxorammd-lgtm]
-patreon: # Replace with your Patreon
-open_collective: # Replace with your Open Collective
-ko_fi: # Replace with your Ko-fi
-tidelift: # Replace with your Tidelift
-community_bridge: # Replace with your Community Bridge
-liberapay: # Replace with your Liberapay
-issuehunt: # Replace with your IssueHunt
-lfx_crowdfunding: # Replace with your LFX
-polar: # Replace with your Polar
-custom: ['https://t.me/NyxoraCore']
+github: nyxorammd-lgtm
+custom: ["https://z.ai"]
