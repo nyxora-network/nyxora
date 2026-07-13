@@ -230,15 +230,12 @@ func (m *model) handleKeyMsg(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "1":
 		m.theme = "catppuccin-mocha"
 		currentTheme = themes["catppuccin-mocha"]
-		currentThemeName = "catppuccin-mocha"
 	case "2":
 		m.theme = "tokyo-night"
 		currentTheme = themes["tokyo-night"]
-		currentThemeName = "tokyo-night"
 	case "3":
 		m.theme = "catppuccin-latte"
 		currentTheme = themes["catppuccin-latte"]
-		currentThemeName = "catppuccin-latte"
 
 	case "s":
 		m.showStatus = !m.showStatus
@@ -670,11 +667,6 @@ func (m transportStatusModel) renderTransportRow(i int, t TransportStatus) strin
 		scoreStyle = successStyle()
 	} else if t.Score >= 40 {
 		scoreStyle = warningStyle()
-	}
-
-	icon := transportIcons[strings.ToLower(t.Name)]
-	if icon == "" {
-		icon = "\033[38;5;141m●\033[0m"
 	}
 
 	gradientBar := renderGradientBar(t.Score, 15, currentTheme.GradientA, currentTheme.GradientB)

@@ -45,10 +45,6 @@ func trueColor(r, g, b int) string {
 	return fmt.Sprintf("\033[38;2;%d;%d;%dm", r, g, b)
 }
 
-func trueColorBG(r, g, b int) string {
-	return fmt.Sprintf("\033[48;2;%d;%d;%dm", r, g, b)
-}
-
 var (
 	catppuccinBase   = trueColor(203, 166, 247)
 	catppuccinMauve  = trueColor(137, 180, 250)
@@ -56,10 +52,7 @@ var (
 	catppuccinYellow = trueColor(249, 226, 175)
 	catppuccinRed    = trueColor(243, 139, 168)
 	catppuccinTeal   = trueColor(148, 226, 213)
-	catppuccinText   = trueColor(205, 214, 244)
 	catppuccinSub    = trueColor(108, 112, 134)
-	catppuccinSurf   = trueColor(49, 50, 68)
-	catppuccinMantl  = trueColor(30, 30, 46)
 )
 
 type StatusProvider interface {

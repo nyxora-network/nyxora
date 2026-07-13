@@ -236,10 +236,3 @@ func (t *TUI) renderFailover(status map[string]interface{}) string {
 	}
 	return result
 }
-
-func (t *TUI) renderFooter() string {
-	result := fmt.Sprintf("\n %s%s", DIM+catppuccinSub, strings.Repeat("━", t.width-2))
-	result += fmt.Sprintf("\n %s%s nyxora connect <ip> --user root --port 22 %s", DIM, ARROW, RESET)
-	result += fmt.Sprintf("\n %s%s ctrl+c to exit %s", DIM, ARROW, RESET)
-	return result
-}
