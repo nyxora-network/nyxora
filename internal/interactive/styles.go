@@ -11,10 +11,6 @@ func primaryStyle() lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(lipgloss.Color(currentTheme.Primary)).Bold(true)
 }
 
-func secondaryStyle() lipgloss.Style {
-	return lipgloss.NewStyle().Foreground(lipgloss.Color(currentTheme.Secondary))
-}
-
 func accentStyle() lipgloss.Style {
 	return lipgloss.NewStyle().Foreground(lipgloss.Color(currentTheme.Accent)).Bold(true)
 }
@@ -183,36 +179,4 @@ func clamp(v int) int {
 		return 255
 	}
 	return v
-}
-
-func sparkline(values []float64, width int) string {
-	if len(values) == 0 {
-		return ""
-	}
-	maxVal := 0.0
-	for _, v := range values {
-		if v > maxVal {
-			maxVal = v
-		}
-	}
-	if maxVal == 0 {
-		maxVal = 1
-	}
-
-	chars := []string{"▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"}
-	var result strings.Builder
-	step := float64(len(values)) / float64(width)
-	for i := 0; i < width; i++ {
-		idx := int(float64(i) * step)
-		if idx >= len(values) {
-			idx = len(values) - 1
-		}
-		normalized := values[idx] / maxVal
-		charIdx := int(normalized * float64(len(chars)-1))
-		if charIdx >= len(chars) {
-			charIdx = len(chars) - 1
-		}
-		result.WriteString(infoStyle().Render(chars[charIdx]))
-	}
-	return result.String()
 }

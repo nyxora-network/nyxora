@@ -14,7 +14,6 @@ import (
 
 type QUIC struct {
 	BaseTransport
-	listener    quic.Listener
 	connections []*quic.Conn
 	mu          sync.Mutex
 }

@@ -17,7 +17,6 @@ type connectWizard struct {
 	passInput   textinput.Model
 	mode        string
 	transports  string
-	ports       string
 	width       int
 	height      int
 	cursor      int

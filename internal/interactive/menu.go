@@ -2,7 +2,6 @@ package interactive
 
 import (
 	"fmt"
-	"math"
 	"os"
 	"runtime"
 	"strconv"
@@ -675,7 +674,7 @@ func (m transportStatusModel) renderTransportRow(i int, t TransportStatus) strin
 
 	icon := transportIcons[strings.ToLower(t.Name)]
 	if icon == "" {
-		icon = "●"
+		icon = "\033[38;5;141m●\033[0m"
 	}
 
 	gradientBar := renderGradientBar(t.Score, 15, currentTheme.GradientA, currentTheme.GradientB)
@@ -704,15 +703,4 @@ func RunMenu() (int, error) {
 	}
 	result := m.(model)
 	return result.cursor, nil
-}
-
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-func abs(x float64) float64 {
-	return math.Abs(x)
 }
