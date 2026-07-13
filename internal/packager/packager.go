@@ -18,7 +18,7 @@ type Packager struct {
 
 func NewPackager(baseDir string) *Packager {
 	cacheDir := filepath.Join(baseDir, "cache")
-	os.MkdirAll(cacheDir, 0755)
+	_ = os.MkdirAll(cacheDir, 0755)
 	return &Packager{
 		baseDir: baseDir,
 		cacheDir: cacheDir,
@@ -41,7 +41,9 @@ func (p *Packager) Pack(name, sourceDir string) error {
 	if err != nil {
 		return fmt.Errorf("create archive: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 
 	gw := gzip.NewWriter(file)
 	defer gw.Close()

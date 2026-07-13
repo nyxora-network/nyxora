@@ -82,7 +82,7 @@ func NewTUI(intervalSec int) *TUI {
 	cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin
 	if output, err := cmd.Output(); err == nil {
-		fmt.Sscanf(string(output), "%d %d", &height, &width)
+		_, _ = fmt.Sscanf(string(output), "%d %d", &height, &width)
 	}
 	return &TUI{
 		interval:  time.Duration(intervalSec) * time.Second,
@@ -139,7 +139,7 @@ func (t *TUI) ensureSize() {
 	cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin
 	if output, err := cmd.Output(); err == nil {
-		fmt.Sscanf(string(output), "%d %d", &t.height, &t.width)
+		_, _ = fmt.Sscanf(string(output), "%d %d", &t.height, &t.width)
 	}
 }
 

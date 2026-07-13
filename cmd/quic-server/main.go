@@ -27,6 +27,8 @@ func main() {
 		if err != nil {
 			continue
 		}
-		conn.WriteToUDP(buf[:n], client)
+		if _, err := conn.WriteToUDP(buf[:n], client); err != nil {
+			continue
+		}
 	}
 }
