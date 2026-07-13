@@ -176,7 +176,7 @@ func (c *Collector) Promethize() string {
 		out += fmt.Sprintf("nyxora_%s_count %d\n", name, h.Count())
 		out += fmt.Sprintf("nyxora_%s_sum %f\n", name, h.Sum())
 	}
-	out += fmt.Sprintf("# TYPE nyxora_uptime_seconds gauge\n")
+	out += "# TYPE nyxora_uptime_seconds gauge\n"
 	out += fmt.Sprintf("nyxora_uptime_seconds %f\n", c.UptimeSeconds())
 	return out
 }
