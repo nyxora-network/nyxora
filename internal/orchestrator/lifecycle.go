@@ -64,10 +64,17 @@ func (o *Orchestrator) Stop() {
 }
 
 func (o *Orchestrator) Status() map[string]interface{} {
+	o.mu.Lock()
+	running := o.running
+	connected := o.connected
+	phase := o.phase
+	remoteHost := o.remoteHost
+	o.mu.Unlock()
+
 	status := map[string]interface{}{
-		"running":          o.running,
-		"connected":        o.connected,
-		"phase":            string(o.phase),
+		"running":          running,
+		"connected":        connected,
+		"phase":            string(phase),
 		"node_id":          o.localNodeID,
 		"active_transport": o.transportM.ActiveNames(),
 		"all_active":       o.cfg.AllTunnelsActive,
@@ -75,13 +82,13 @@ func (o *Orchestrator) Status() map[string]interface{} {
 		"uptime":           time.Since(o.startTime).Round(time.Second).String(),
 	}
 
-	if o.remoteHost != nil {
+	if remoteHost != nil {
 		status["remote"] = map[string]interface{}{
-			"hostname": o.remoteHost.Hostname(),
-			"address":  o.remoteHost.Address,
-			"port":     o.remoteHost.Port,
-			"os":       o.remoteHost.OSInfo(),
-			"arch":     o.remoteHost.Arch(),
+			"hostname": remoteHost.Hostname(),
+			"address":  remoteHost.Address,
+			"port":     remoteHost.Port,
+			"os":       remoteHost.OSInfo(),
+			"arch":     remoteHost.Arch(),
 		}
 	}
 
@@ -153,11 +160,17 @@ func (o *Orchestrator) startMonitoring(remoteAddr string) {
 	defer ticker.Stop()
 
 	for {
-		if !o.running && !o.connected {
+		o.mu.Lock()
+		running := o.running
+		connected := o.connected
+		host := o.remoteHost
+		o.mu.Unlock()
+
+		if !running && !connected {
 			return
 		}
 
-		lat, loss := o.remoteHost.Ping(2)
+		lat, loss := host.Ping(2)
 
 		for _, info := range o.transportM.List() {
 			o.routeEngine.Update(info.Name, info.Type, lat, info.Jitter, loss, info.Stability, info.Bandwidth)

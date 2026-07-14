@@ -372,6 +372,10 @@ func (m DistributionMode) String() string {
 }
 
 func (s *Scheduler) String() string {
+	s.mu.RLock()
+	mode := s.mode
+	s.mu.RUnlock()
+
 	paths := s.AllPaths()
 	active := 0
 	for _, p := range paths {
@@ -382,7 +386,7 @@ func (s *Scheduler) String() string {
 	return fmt.Sprintf("multipath: %d/%d active, best=%s, mode=%s, bw=%d",
 		active, len(paths),
 		s.Stats().BestPath,
-		s.mode.String(),
+		mode.String(),
 		s.AggregateBandwidth(),
 	)
 }

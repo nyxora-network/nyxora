@@ -99,7 +99,7 @@ log_level = "error"
 		cmd.Wait()
 	})
 
-	b.Logf("connecting %s to %s:%d", b.transport, remoteAddr, b.port)
+	b.Logf("connecting %s to %s:%d", tr, remoteAddr, port)
 	b.SetStatusActive()
 	return nil
 }

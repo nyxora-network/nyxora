@@ -14,8 +14,8 @@ import (
 
 type QUIC struct {
 	BaseTransport
+	connMu      sync.Mutex
 	connections []*quic.Conn
-	mu          sync.Mutex
 	tlsVerify   bool
 }
 
@@ -34,9 +34,11 @@ func (q *QUIC) Init(cfg map[string]string) error {
 	if p, ok := cfg["port"]; ok {
 		fmt.Sscanf(p, "%d", &q.port)
 	}
+	q.connMu.Lock()
 	if v, ok := cfg["tls_verify"]; ok {
 		q.tlsVerify = v == "true" || v == "1"
 	}
+	q.connMu.Unlock()
 	log.Printf("[quic] initialized (port: %d, tls_verify: %v)", q.port, q.tlsVerify)
 	return nil
 }
@@ -48,16 +50,17 @@ func (q *QUIC) Connect(remoteAddr string) error {
 		return err
 	}
 
-	q.mu.Lock()
+	q.connMu.Lock()
 	tlsVerify := q.tlsVerify
-	q.mu.Unlock()
+	q.connMu.Unlock()
 
 	tlsConf := &tls.Config{
 		InsecureSkipVerify: !tlsVerify,
 		NextProtos:         []string{"nyxora-quic"},
 	}
 
-	endpoint := fmt.Sprintf("%s:%d", remoteAddr, q.port)
+	port := q.BasePort()
+	endpoint := fmt.Sprintf("%s:%d", remoteAddr, port)
 	conn, err := quic.DialAddr(ctx, endpoint, tlsConf, &quic.Config{
 		MaxIdleTimeout: 30 * time.Second,
 	})
@@ -67,14 +70,14 @@ func (q *QUIC) Connect(remoteAddr string) error {
 		return nil
 	}
 
-	q.mu.Lock()
+	q.connMu.Lock()
 	q.connections = append(q.connections, conn)
-	q.mu.Unlock()
+	q.connMu.Unlock()
 
 	go q.acceptStreams(ctx, conn)
 
 	q.SetStatusActive()
-	q.Logf("connected to %s:%d via QUIC", remoteAddr, q.port)
+	q.Logf("connected to %s:%d via QUIC", remoteAddr, port)
 	return nil
 }
 
@@ -111,9 +114,11 @@ func (q *QUIC) handleStream(stream *quic.Stream) {
 func (q *QUIC) Disconnect() error {
 	q.mu.Lock()
 	cancel := q.cancel
+	q.status = StatusInactive
+	q.connMu.Lock()
 	conns := q.connections
 	q.connections = nil
-	q.status = StatusInactive
+	q.connMu.Unlock()
 	q.mu.Unlock()
 	cancel()
 	for _, conn := range conns {

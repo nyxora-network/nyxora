@@ -142,9 +142,9 @@ func (f *Failover) Update(name string, latency, packetLoss float64) {
 
 func (f *Failover) evaluate() {
 	f.mu.RLock()
-	states := make(map[string]*TransportState)
+	states := make(map[string]TransportState)
 	for k, v := range f.states {
-		states[k] = v
+		states[k] = *v
 	}
 	f.mu.RUnlock()
 

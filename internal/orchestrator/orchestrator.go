@@ -146,9 +146,10 @@ func (o *Orchestrator) addStep(name, status, detail string) {
 	}
 	o.mu.Lock()
 	o.steps = append(o.steps, step)
+	cb := o.onStepUpdate
 	o.mu.Unlock()
-	if o.onStepUpdate != nil {
-		o.onStepUpdate(step)
+	if cb != nil {
+		cb(step)
 	}
 }
 

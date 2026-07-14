@@ -153,23 +153,31 @@ func (h *Host) DetectOS() error {
 		if err2 != nil {
 			return fmt.Errorf("detect OS: %v / %v", err, err2)
 		}
+		h.mu.Lock()
 		h.osInfo = out2
 		h.arch = "unknown"
 		h.hostname = strings.Split(out2, " ")[1]
+		h.mu.Unlock()
 		return nil
 	}
 
 	for _, line := range strings.Split(out, "\n") {
 		if strings.HasPrefix(line, "PRETTY_NAME=") {
+			h.mu.Lock()
 			h.osInfo = strings.Trim(strings.SplitN(line, "=", 2)[1], "\"")
+			h.mu.Unlock()
 		}
 	}
 
 	out, _ = h.SSHCommand("uname -m")
+	h.mu.Lock()
 	h.arch = strings.TrimSpace(out)
+	h.mu.Unlock()
 
 	out, _ = h.SSHCommand("hostname")
+	h.mu.Lock()
 	h.hostname = strings.TrimSpace(out)
+	h.mu.Unlock()
 
 	log.Printf("[remote] detected: %s | %s | %s", h.hostname, h.osInfo, h.arch)
 	return nil

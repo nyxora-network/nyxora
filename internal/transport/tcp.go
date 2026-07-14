@@ -12,10 +12,10 @@ import (
 
 type TCP struct {
 	BaseTransport
+	connMu      sync.Mutex
 	localPort   int
 	listener    net.Listener
 	connections []net.Conn
-	mu          sync.Mutex
 }
 
 func NewTCP() *TCP {
@@ -48,19 +48,20 @@ func (t *TCP) Connect(remoteAddr string) error {
 		return err
 	}
 
-	remoteConn, err := net.DialTimeout("tcp", net.JoinHostPort(remoteAddr, fmt.Sprintf("%d", t.port)), 5*time.Second)
+	port := t.BasePort()
+	remoteConn, err := net.DialTimeout("tcp", net.JoinHostPort(remoteAddr, fmt.Sprintf("%d", port)), 5*time.Second)
 	if err != nil {
-		t.Logf("remote %d unreachable: %v, ping-only mode", t.port, err)
+		t.Logf("remote %d unreachable: %v, ping-only mode", port, err)
 		t.SetStatusActive()
 		return nil
 	}
 
-	t.mu.Lock()
+	t.connMu.Lock()
 	t.connections = append(t.connections, remoteConn)
-	t.mu.Unlock()
+	t.connMu.Unlock()
 
 	t.SetStatusActive()
-	t.Logf("connected to %s:%d", remoteAddr, t.port)
+	t.Logf("connected to %s:%d", remoteAddr, port)
 
 	go t.proxy(ctx, remoteConn)
 	return nil
@@ -93,11 +94,13 @@ func (t *TCP) proxy(ctx context.Context, remoteConn net.Conn) {
 func (t *TCP) Disconnect() error {
 	t.mu.Lock()
 	cancel := t.cancel
+	t.status = StatusInactive
+	t.connMu.Lock()
 	conns := t.connections
 	ln := t.listener
 	t.connections = nil
 	t.listener = nil
-	t.status = StatusInactive
+	t.connMu.Unlock()
 	t.mu.Unlock()
 	cancel()
 	for _, conn := range conns {
