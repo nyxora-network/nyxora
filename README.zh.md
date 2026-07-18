@@ -87,7 +87,21 @@
 - 支持 IPsec/strongSwan
 - Shadowsocks 加密代理
 - Hysteria 2（改进版 QUIC，抗审查）
+- TLS 封装与自签名证书生成
 - 自动生成密钥（密码、PSK、令牌）
+
+</td>
+<td width="50%">
+
+**📊 生产级可观测性**
+- Prometheus 指标端点 (/metrics)
+- 内置 DNS 解析器（带缓存）
+- 按传输的速率限制（令牌桶）
+- 热重载配置（文件监视器）
+
+</td>
+</tr>
+</table>
 
 </td>
 </tr>
@@ -327,6 +341,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 | 9 | **hysteria** | 8444 | UDP | 隧道 | 90 | 12 |
 | 10| **backhaul** | 3080 | TCP | 中继 | 82 | 10 |
 | 11| **tcp** | 9924 | TCP | 隧道 | 50 | 3 |
+| 12| **websocket** | 9925 | TCP | 隧道 | 70 | 8 |
 
 ### 多路径调度模式
 
@@ -418,6 +433,14 @@ nyxora/
 - 添加更多操作系统的支持
 - 编写测试和文档
 - 针对开放 Issue 提交 PR
+
+---
+
+## 🌟 贡献者
+
+<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="贡献者" />
+</a>
 
 ---
 

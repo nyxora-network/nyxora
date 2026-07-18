@@ -87,7 +87,21 @@
 - IPsec/strongSwan समर्थन
 - Shadowsocks एन्क्रिप्टेड प्रॉक्सी
 - Hysteria 2 (संशोधित QUIC सेंसरशिप-विरोधी के साथ)
+- TLS रैपर स्व-हस्ताक्षरित प्रमाणपत्र जनरेशन
 - स्वचालित गुप्त उत्पादन (पासवर्ड, PSK, टोकन)
+
+</td>
+<td width="50%">
+
+**📊 प्रोडक्शन-ग्रेड अवलोकन**
+- Prometheus मेट्रिक्स एंडपॉइंट (/metrics)
+- कैशिंग के साथ आंतरिक DNS रिज़ॉल्वर
+- प्रति ट्रांसपोर्ट रेट लिमिटिंग (Token Bucket)
+- हॉट-रीलोड कॉन्फ़िग (File Watcher)
+
+</td>
+</tr>
+</table>
 
 </td>
 </tr>
@@ -324,6 +338,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 | 9 | **hysteria** | 8444 | UDP | सुरंग | 90 | 12 |
 | 10| **backhaul** | 3080 | TCP | रिले | 82 | 10 |
 | 11| **tcp** | 9924 | TCP | सुरंग | 50 | 3 |
+| 12| **websocket** | 9925 | TCP | सुरंग | 70 | 8 |
 
 ---
 
@@ -367,6 +382,14 @@ make vet
 - अधिक OS लक्ष्यों के लिए समर्थन जोड़ें
 - परीक्षण और दस्तावेज़ लिखें
 - खुले Issues के लिए PR सबमिट करें
+
+---
+
+## 🌟 योगदानकर्ता
+
+<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="योगदानकर्ता" />
+</a>
 
 ---
 

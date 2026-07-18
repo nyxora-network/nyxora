@@ -90,7 +90,21 @@
 - پشتیبانی IPsec/strongSwan
 - پروکسی رمزنگاری‌شده Shadowsocks
 - Hysteria 2 (QUIC اصلاح‌شده با ضدسانسور)
+- پوشش TLS با تولید خودکار گواهی Self-Signed
 - تولید خودکار رمزهای عبور (Passwords, PSKs, Tokens)
+
+</td>
+<td width="50%">
+
+**📊 مانیتورینگ در سطح Production**
+- اندپوینت Prometheus metrics (/metrics)
+- رزولور DNS داخلی با کش
+- Rate Limiting به ازای هر ترنسپورت (Token Bucket)
+- Hot-Reload کانفیگ (File Watcher)
+
+</td>
+</tr>
+</table>
 
 </td>
 </tr>
@@ -331,6 +345,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 | 9 | **hysteria** | 8444 | UDP | تونل | 90 | 12 |
 | 10| **backhaul** | 3080 | TCP | رله | 82 | 10 |
 | 11| **tcp** | 9924 | TCP | تونل | 50 | 3 |
+| 12| **websocket** | 9925 | TCP | تونل | 70 | 8 |
 
 ### حالت‌های زمان‌بندی چندمسیره
 
@@ -650,6 +665,14 @@ test: add integration tests for failover engine
 - 📧 برای نگرانی‌های خصوصی به maintainers ایمیل بزنید
 
 > **به یاد داشته باشید:** سؤال احمقانه‌ای وجود ندارد! همه ما یک زمانی مبتدی بودیم. درخواست کمک را دریغ نکنید.
+
+---
+
+## 🌟 مشارکت‌کنندگان
+
+<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="مشارکت‌کنندگان" />
+</a>
 
 ---
 

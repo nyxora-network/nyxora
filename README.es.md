@@ -87,7 +87,21 @@
 - Soporte IPsec/strongSwan
 - Proxy cifrado Shadowsocks
 - Hysteria 2 (QUIC modificado con anticensura)
+- Envoltura TLS con generación de certificados autofirmados
 - Generación automática de secretos (contraseñas, PSK, tokens)
+
+</td>
+<td width="50%">
+
+**📊 Observabilidad de Nivel Production**
+- Endpoint de métricas Prometheus (/metrics)
+- Resolutor DNS interno con caché
+- Rate Limiting por transporte (Token Bucket)
+- Hot-reload de configuración (File Watcher)
+
+</td>
+</tr>
+</table>
 
 </td>
 </tr>
@@ -324,6 +338,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 | 9 | **hysteria** | 8444 | UDP | Túnel | 90 | 12 |
 | 10| **backhaul** | 3080 | TCP | Relay | 82 | 10 |
 | 11| **tcp** | 9924 | TCP | Túnel | 50 | 3 |
+| 12| **websocket** | 9925 | TCP | Túnel | 70 | 8 |
 
 ---
 
@@ -367,6 +382,14 @@ make vet
 - Agrega soporte para más sistemas operativos
 - Escribe pruebas y documentación
 - Envía PRs para issues abiertos
+
+---
+
+## 🌟 Contribuidores
+
+<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="Contribuidores" />
+</a>
 
 ---
 

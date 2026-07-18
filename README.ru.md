@@ -87,7 +87,21 @@
 - Поддержка IPsec/strongSwan
 - Зашифрованный прокси Shadowsocks
 - Hysteria 2 (модифицированный QUIC с анти-цензурой)
+- TLS обёртка с автогенерацией самоподписанных сертификатов
 - Автогенерация паролей (пароли, PSK, токены)
+
+</td>
+<td width="50%">
+
+**📊 Наблюдаемость-production уровня**
+- Prometheus метрики эндпоинт (/metrics)
+- Внутренний DNS резолвер с кэшированием
+- Ограничение скорости для каждого транспорта (Token Bucket)
+- Hot-reload конфигурации (File Watcher)
+
+</td>
+</tr>
+</table>
 
 </td>
 </tr>
@@ -341,6 +355,7 @@ graph TB
 | 9 | **hysteria** | 8444 | UDP | Туннель | 90 | 12 |
 | 10| **backhaul** | 3080 | TCP | Реле | 82 | 10 |
 | 11| **tcp** | 9924 | TCP | Туннель | 50 | 3 |
+| 12| **websocket** | 9925 | TCP | Туннель | 70 | 8 |
 
 ### Режимы мультипути
 
@@ -432,6 +447,14 @@ nyxora/
 - Добавляйте поддержку других ОС
 - Пишите тесты и документацию
 - Отправляйте PR для открытых Issues
+
+---
+
+## 🌟 Участники
+
+<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="Участники" />
+</a>
 
 ---
 
