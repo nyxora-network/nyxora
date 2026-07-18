@@ -288,6 +288,50 @@ nyxora connect 91.107.243.237 --user root --password ...
 
 ---
 
+## 📸 Web Dashboard 截图
+
+NYXORA 包含一个用于隧道管理的 **Web Dashboard**。访问地址：`http://YOUR_SERVER:8080/tunnel.html`
+
+### 隧道地图
+![隧道地图](screenshots/01-tunnel-map.png)
+*服务器之间连接的可视化地图，带有动画隧道线*
+
+### 新建连接
+![连接](screenshots/02-connect.png)
+*创建隧道连接的表单，支持SSH认证和传输选择*
+
+### 活跃隧道
+![隧道](screenshots/03-tunnels.png)
+*活跃隧道连接列表，显示状态、延迟和控制*
+
+### 自动检测最佳传输
+![自动检测](screenshots/04-auto-detect.png)
+*自动ping所有14种传输以选择最佳*
+
+### Xray配置生成器
+![Xray配置](screenshots/05-xray-config.png)
+*为VLESS、VMess、Trojan、Shadowsocks生成Xray配置*
+
+### 安装面板
+![面板](screenshots/06-panels.png)
+*一键安装Marzban、3X-UI、Xray Core*
+
+### 性能图表
+![图表](screenshots/07-charts.png)
+*实时延迟、带宽、丢包和评分图表*
+
+### 安全与审计
+![安全](screenshots/08-security.png)
+*SSL状态、服务器指纹、登录失败、QoS、运行时间*
+
+### 终端
+![终端](screenshots/09-terminal.png)
+*完整的终端界面，支持NYXORA命令*
+
+**[完整Web Dashboard文档 →](web/README.md)**
+
+---
+
 ## 📋 命令
 
 | 命令 | 说明 |

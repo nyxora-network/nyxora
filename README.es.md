@@ -289,6 +289,50 @@ nyxora connect 91.107.243.237 --user root --password ...
 
 ---
 
+## 📸 Capturas de Panel Web
+
+NYXORA incluye un **panel web** para gestión de túneles. Acceso: `http://YOUR_SERVER:8080/tunnel.html`
+
+### Mapa de Túneles
+![Mapa](screenshots/01-tunnel-map.png)
+*Mapa visual de conexiones entre servidores con líneas de túnel animadas*
+
+### Nueva Conexión
+![Conexión](screenshots/02-connect.png)
+*Formulario para crear conexiones de túnel con autenticación SSH*
+
+### Túneles Activos
+![Túneles](screenshots/03-tunnels.png)
+*Lista de conexiones de túnel activas con estado y controles*
+
+### Auto Detectar Mejor Transporte
+![Auto Detect](screenshots/04-auto-detect.png)
+*Ping automático de todos los 14 transportes*
+
+### Generador de Config Xray
+![Config Xray](screenshots/05-xray-config.png)
+*Generar configuraciones Xray para VLESS, VMess, Trojan, Shadowsocks*
+
+### Instalar Paneles
+![Paneles](screenshots/06-panels.png)
+*Instalación con un clic de Marzban, 3X-UI, Xray Core*
+
+### Gráficos de Rendimiento
+![Gráficos](screenshots/07-charts.png)
+*Gráficos en tiempo real de latencia, ancho de banda, pérdida de paquetes*
+
+### Seguridad y Auditoría
+![Seguridad](screenshots/08-security.png)
+*Estado SSL, huellas de servidor, intentos fallidos, QoS*
+
+### Terminal
+![Terminal](screenshots/09-terminal.png)
+*Interfaz de terminal completa con comandos NYXORA*
+
+**[Documentación completa del Panel Web →](web/README.md)**
+
+---
+
 ## 📋 Comandos
 
 | Comando | Descripción |
