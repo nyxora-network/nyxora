@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#020203">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws: wss:;">
+    <title>NYXORA VPN Panel — Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root,[data-theme="dark"]{
+  --bg:#020203;--bg2:#06070d;--surface:#0c0e16;--surface2:#111320;--surface3:#161829;--surface4:#1e2136;
+  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);--border-active:rgba(124,111,255,.35);
+  --text:#eef0ff;--sub:#a0a4c0;--muted:#5c6088;
+  --accent:#7c6fff;--accent2:#a78bfa;--accent-glow:rgba(124,111,255,.15);--accent-subtle:rgba(124,111,255,.08);
+  --ok:#34d399;--ok-glow:rgba(52,211,153,.12);--ok-subtle:rgba(52,211,153,.08);
+  --warn:#fbbf24;--warn-glow:rgba(251,191,36,.12);
+  --err:#f87171;--err-glow:rgba(248,113,113,.12);
+  --cyan:#22d3ee;--pink:#f472b6;--orange:#fb923c;
+  --glass:rgba(12,14,22,.85);--glass2:rgba(12,14,22,.6);
+  --r:14px;--r2:20px;--rs:8px;--rxs:6px;
+  --shadow:0 8px 32px rgba(0,0,0,.4);--shadow2:0 16px 64px rgba(0,0,0,.5);
+  --ease:cubic-bezier(.16,1,.3,1);
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+}
+[data-theme="light"]{
+  --bg:#f5f6fa;--bg2:#f0f2f7;--surface:#fff;--surface2:#f8f9fc;--surface3:#eef1f6;--surface4:#e4e7ef;
+  --border:rgba(0,0,0,.07);--border2:rgba(0,0,0,.1);--border-active:rgba(100,80,220,.3);
+  --text:#1a1d2e;--sub:#5a5e78;--muted:#9ca3af;
+  --accent:#6c5ce7;--accent2:#a29bfe;--accent-glow:rgba(108,92,231,.12);--accent-subtle:rgba(108,92,231,.06);
+  --ok:#10b981;--ok-glow:rgba(16,185,129,.1);--ok-subtle:rgba(16,185,129,.06);
+  --warn:#f59e0b;--warn-glow:rgba(245,158,11,.1);
+  --err:#ef4444;--err-glow:rgba(239,68,68,.1);
+  --cyan:#06b6d4;--pink:#ec4899;--orange:#f97316;
+  --glass:rgba(255,255,255,.88);--glass2:rgba(255,255,255,.7);
+  --shadow:0 8px 32px rgba(0,0,0,.08);--shadow2:0 16px 64px rgba(0,0,0,.1);
+}
+body{font-family:var(--font);background:var(--bg2);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 90% 70% at 10% 20%,rgba(124,111,255,.05) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 90% 15%,rgba(34,211,238,.03) 0%,transparent 50%);pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;display:flex;min-height:100vh}
+
+/* ═══ SIDEBAR ═══ */
+.sb{width:68px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px;position:fixed;top:0;left:0;height:100vh;z-index:100}
+.sb-logo{width:40px;height:40px;margin-bottom:16px;filter:drop-shadow(0 0 12px rgba(124,111,255,.3))}
+.sb-nav{display:flex;flex-direction:column;gap:3px;flex:1;width:100%;padding:0 8px}
+.sb-sec{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;padding:10px 0 3px;text-align:center}
+.nb{width:52px;height:38px;border-radius:var(--rs);border:none;background:transparent;color:var(--muted);font-size:16px;cursor:pointer;transition:all .2s var(--ease);display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto}
+.nb:hover{background:var(--accent-subtle);color:var(--text)}.nb.a{background:var(--accent-subtle);color:var(--accent)}
+.nb.a::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:18px;background:var(--accent);border-radius:0 3px 3px 0}
+.nb .tp{position:absolute;left:58px;background:var(--surface3);color:var(--text);padding:5px 10px;border-radius:var(--rxs);font-size:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid var(--border);z-index:200;font-weight:500}.nb:hover .tp{opacity:1}
+.nb .bd{position:absolute;top:2px;right:2px;width:14px;height:14px;background:var(--err);color:#fff;font-size:8px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+/* ═══ MAIN ═══ */
+.mn{flex:1;margin-left:68px;display:flex;flex-direction:column}
+.tb{height:52px;background:var(--glass);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:50}
+.tb-l{display:flex;align-items:center;gap:10px}.tb-t{font-size:13px;font-weight:600}.tb-b{font-size:10px;color:var(--muted)}
+.tb-r{display:flex;align-items:center;gap:8px}
+.ls{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rxs);color:var(--text);padding:4px 8px;font-size:11px;cursor:pointer;outline:none;font-family:var(--font)}.ls:focus{border-color:var(--accent)}
+.tt{width:34px;height:18px;background:var(--surface3);border-radius:9px;cursor:pointer;position:relative;border:1px solid var(--border);transition:all .3s}.tt::after{content:'🌙';position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:var(--accent);transition:all .3s var(--ease);display:flex;align-items:center;justify-content:center;font-size:8px}[data-theme="light"] .tt::after{content:'☀️';left:17px}
+.ab{padding:2px 7px;background:linear-gradient(135deg,var(--accent),var(--pink));border-radius:var(--rxs);font-size:9px;font-weight:700;color:#fff;letter-spacing:.5px}
+.sp{display:flex;align-items:center;gap:5px;padding:4px 8px;background:var(--surface2);border-radius:16px;font-size:10px;font-weight:500;border:1px solid var(--border)}.sp .d{width:5px;height:5px;border-radius:50%;background:var(--ok);box-shadow:0 0 6px var(--ok-glow);animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ═══ CONTENT ═══ */
+.ct{flex:1;padding:18px 20px;overflow-y:auto}
+.pg{display:none}.pg.a{display:block;animation:fi .3s var(--ease)}@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ STATS ═══ */
+.sg{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.sc{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--r);padding:16px;transition:all .3s var(--ease);cursor:pointer;overflow:hidden;position:relative}
+.sc:hover{border-color:var(--border-active);transform:translateY(-4px);box-shadow:var(--shadow)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}.sc:hover::before{opacity:1}
+.sc-i{font-size:20px;margin-bottom:6px}.sc-v{font-size:24px;font-weight:800;line-height:1}.sc-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:5px}.sc-c{font-size:10px;margin-top:5px;font-weight:500}.sc-c.up{color:var(--ok)}.sc-c.dn{color:var(--err)}
+
+/* ═══ SECTIONS ═══ */
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.st{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}.st::before{content:'';width:3px;height:16px;background:var(--accent);border-radius:2px}
+.sa{display:flex;gap:5px}
+
+/* ═══ TABLE ═══ */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.tbl th{text-align:left;padding:10px 14px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;background:var(--surface2);border-bottom:1px solid var(--border);font-weight:600}
+.tbl td{padding:10px 14px;font-size:12px;border-bottom:1px solid var(--border)}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:var(--surface2)}
+.tbl .act{display:flex;gap:4px}
+
+/* ═══ TRANSPORT CARDS ═══ */
+.tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:20px}
+.tc{background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--r);padding:14px;transition:all .3s var(--ease);cursor:pointer}
+.tc:hover{border-color:var(--border-active);transform:translateY(-3px);box-shadow:var(--shadow)}
+.tc-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.tc-n{display:flex;align-items:center;gap:8px}.tc-i{width:32px;height:32px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.tc h4{font-size:12px;font-weight:600}.tc .ct2{font-size:9px;color:var(--muted)}
+.tc-s{font-size:9px;font-weight:600;padding:2px 6px;border-radius:var(--rxs)}.tc-s.on{background:var(--ok-subtle);color:var(--ok)}.tc-s.off{background:rgba(92,96,136,.1);color:var(--muted)}.tc-s.test{background:rgba(251,191,36,.1);color:var(--warn)}
+.tc-m{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.tm{text-align:center;padding:5px 0;background:var(--surface2);border-radius:var(--rxs)}.tm-v{font-size:13px;font-weight:700}.tm-l{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.tc-bar{margin-top:8px;height:3px;background:var(--surface3);border-radius:2px;overflow:hidden}.tc-bar-f{height:100%;border-radius:2px;transition:width 1s var(--ease)}
+
+/* ═══ FORMS ═══ */
+.fg{margin-bottom:8px}.fl{font-size:10px;color:var(--muted);display:block;margin-bottom:4px;font-weight:500}
+.fi{width:100%;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rxs);color:var(--text);font-size:12px;outline:none;transition:border-color .2s;font-family:var(--font)}.fi:focus{border-color:var(--accent)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+select.fi{cursor:pointer}.fi::placeholder{color:var(--muted)}
+
+/* ═══ BUTTONS ═══ */
+.btn{padding:6px 12px;border-radius:var(--rxs);border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s var(--ease);font-family:var(--font)}.btn:active{transform:scale(.97)}
+.bp{background:var(--accent);color:#fff}.bp:hover{background:#6a5ce0;box-shadow:0 4px 12px var(--accent-glow)}
+.bg{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.bg:hover{border-color:var(--accent)}
+.bd{background:rgba(248,113,113,.1);color:var(--err);border:1px solid rgba(248,113,113,.2)}.bd:hover{background:rgba(248,113,113,.15)}
+.bs{background:var(--ok-subtle);color:var(--ok);border:1px solid rgba(52,211,153,.2)}.bs:hover{background:rgba(52,211,153,.12)}
+.bsm{padding:4px 8px;font-size:10px}
+
+/* ═══ BADGE ═══ */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--rxs)}
+.badge.ok{background:var(--ok-subtle);color:var(--ok)}.badge.warn{background:rgba(251,191,36,.1);color:var(--warn)}.badge.err{background:rgba(248,113,113,.1);color:var(--err)}.badge.info{background:var(--accent-subtle);color:var(--accent)}
+.kbd{display:inline-block;padding:1px 4px;background:var(--surface3);border:1px solid var(--border);border-radius:3px;font-family:var(--mono);font-size:8px;color:var(--muted)}
+
+/* ═══ PROGRESS ═══ */
+.prog{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}.prog-f{height:100%;border-radius:3px;transition:width .6s var(--ease)}
+
+/* ═══ MODAL ═══ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:center;justify-content:center}.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:20px;max-width:480px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow2)}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:14px}
+.modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer}
+
+/* ═══ TOAST ═══ */
+.tw{position:fixed;top:68px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:5px}
+.tst{padding:8px 12px;background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--rs);font-size:11px;display:flex;align-items:center;gap:6px;animation:ti .3s var(--ease);max-width:300px;box-shadow:var(--shadow)}
+.tst.ok{border-left:3px solid var(--ok)}.tst.err{border-left:3px solid var(--err)}.tst.warn{border-left:3px solid var(--warn)}.tst.info{border-left:3px solid var(--cyan)}
+@keyframes ti{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ═══ QR ═══ */
+.qr-wrap{display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border)}
+.qr-wrap canvas{border-radius:var(--rxs)}
+
+/* ═══ TERMINAL ═══ */
+.tw2{background:#080a10;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;height:calc(100vh - 120px);display:flex;flex-direction:column}
+.th{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.td{display:flex;gap:4px}.td span{width:10px;height:10px;border-radius:50%}.td .r{background:#ff5f57}.td .y{background:#febc2e}.td .g{background:#28c840}
+#terminal{flex:1}
+
+/* ═══ TOPBAR ═══ */
+.topo{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;min-height:350px;position:relative;overflow:hidden}
+.topo-n{position:absolute;padding:7px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);font-size:10px;font-weight:600;cursor:pointer;transition:all .3s var(--ease);z-index:2}
+.topo-n:hover{border-color:var(--accent);transform:scale(1.08);box-shadow:0 0 20px var(--accent-glow)}
+.topo-line{position:absolute;height:2px;background:linear-gradient(90deg,var(--accent),transparent);z-index:1;transform-origin:left center}
+@keyframes packet{0%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.5)}100%{opacity:1;transform:scale(1)}}
+
+/* ═══ HEATMAP ═══ */
+.hm{display:grid;grid-template-columns:repeat(24,1fr);gap:2px}.hc{aspect-ratio:1;border-radius:2px;cursor:pointer;transition:all .2s;position:relative}.hc:hover{transform:scale(1.15);z-index:1}
+.hc .ht{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:var(--surface3);color:var(--text);padding:2px 5px;border-radius:3px;font-size:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid var(--border)}.hc:hover .ht{opacity:1}
+
+/* ═══ CHARTS ═══ */
+.cg{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.cc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}.cc h3{font-size:12px;font-weight:600;margin-bottom:12px}
+.ca{height:160px}.bc{display:flex;align-items:flex-end;gap:4px;height:100%;padding-top:14px}
+.bar{flex:1;border-radius:3px 3px 0 0;transition:height .5s var(--ease);position:relative;cursor:pointer}.bar:hover{opacity:.85}
+.bar-l{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:7px;color:var(--muted);white-space:nowrap}
+
+/* ═══ EMPTY STATE ═══ */
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}.empty-i{font-size:48px;margin-bottom:12px}.empty-t{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}.empty-d{font-size:12px}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1100px){.sg{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.sb{width:52px}.mn{margin-left:52px}.sg{grid-template-columns:repeat(2,1fr)}.cg{grid-template-columns:1fr}.tg{grid-template-columns:1fr}}
+@media(max-width:600px){.sb{display:none}.mn{margin-left:0}.sg{grid-template-columns:1fr}.bn{display:block}.ct{padding-bottom:70px}}
+
+.bn{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--glass);backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:100;padding:5px 0;padding-bottom:env(safe-area-inset-bottom,5px)}
+.bni{display:flex;justify-content:space-around}
+.bnb{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--muted);font-size:8px;cursor:pointer;padding:3px 8px}.bnb .bi{font-size:16px}.bnb.a{color:var(--accent)}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(124,111,255,.15);border-radius:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- SIDEBAR -->
+<nav class="sb" role="navigation">
+  <img src="images/logo-small.png" alt="NYXORA" class="sb-logo">
+  <div class="sb-nav">
+    <div class="sb-sec">Overview</div>
+    <button class="nb a" onclick="go('dashboard')" data-p="dashboard" aria-label="Dashboard">📊<span class="tp">Dashboard</span></button>
+    <button class="nb" onclick="go('transports')" data-p="transports" aria-label="Transports">🚇<span class="tp">Transports</span><span class="bd">14</span></button>
+    <div class="sb-sec">Users</div>
+    <button class="nb" onclick="go('users')" data-p="users" aria-label="Users">👥<span class="tp">Users</span></button>
+    <button class="nb" onclick="go('subscriptions')" data-p="subscriptions" aria-label="Subscriptions">🔗<span class="tp">Subscriptions</span></button>
+    <div class="sb-sec">Monitor</div>
+    <button class="nb" onclick="go('nodes')" data-p="nodes" aria-label="Nodes">🖥️<span class="tp">Nodes</span></button>
+    <button class="nb" onclick="go('logs')" data-p="logs" aria-label="Logs">📋<span class="tp">Logs</span></button>
+    <button class="nb" onclick="go('metrics')" data-p="metrics" aria-label="Metrics">📈<span class="tp">Metrics</span></button>
+    <div class="sb-sec">Tools</div>
+    <button class="nb" onclick="go('terminal')" data-p="terminal" aria-label="Terminal">⌨️<span class="tp">Terminal</span></button>
+    <button class="nb" onclick="go('config')" data-p="config" aria-label="Config">⚙️<span class="tp">Config</span></button>
+    <button class="nb" onclick="go('security')" data-p="security" aria-label="Security">🔐<span class="tp">Security</span></button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="mn">
+  <header class="tb">
+    <div class="tb-l"><span class="tb-t" id="pgT">Dashboard</span><span class="tb-b">NYXORA / <span id="pgB">Overview</span></span></div>
+    <div class="tb-r">
+      <select class="ls" id="lng" onchange="setLng(this.value)" aria-label="Language">
+        <option value="en">🇬🇧 EN</option><option value="fa">🇮🇷 FA</option><option value="ru">🇷🇺 RU</option>
+        <option value="zh">🇨🇳 ZH</option><option value="ar">🇸🇦 AR</option><option value="hi">🇮🇳 HI</option><option value="es">🇪🇸 ES</option>
+      </select>
+      <div class="tt" onclick="toggleTheme()" role="button" tabindex="0" aria-label="Theme"></div>
+      <span class="ab">ADMIN</span>
+      <div class="sp"><span class="d"></span>Live</div>
+    </div>
+  </header>
+
+  <div class="ct" role="main">
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="pg a" id="pg-dashboard">
+      <div class="sg">
+        <div class="sc"><div class="sc-i">👥</div><div class="sc-v" style="color:var(--accent)">847</div><div class="sc-l">Active Users</div><div class="sc-c up">↑ 12%</div></div>
+        <div class="sc"><div class="sc-i">🚇</div><div class="sc-v" style="color:var(--ok)">14</div><div class="sc-l">Transports</div><div class="sc-c up">All Active</div></div>
+        <div class="sc"><div class="sc-i">📊</div><div class="sc-v" style="color:var(--cyan)">2.4TB</div><div class="sc-l">Total Traffic</div><div class="sc-c up">↑ 8%</div></div>
+        <div class="sc"><div class="sc-i">⚡</div><div class="sc-v" style="color:var(--ok)">95</div><div class="sc-l">Best Score</div><div class="sc-c up">↑ 3</div></div>
+        <div class="sc"><div class="sc-i">🛡️</div><div class="sc-v" style="color:var(--warn)">0</div><div class="sc-l">Failovers</div><div class="sc-c up">Stable</div></div>
+      </div>
+      <div class="sh"><div class="st">Transport Status</div><div class="sa"><button class="btn bg bsm" onclick="toast('Refreshing...','info')">↻ Refresh</button></div></div>
+      <div class="tg" id="tGrid"></div>
+      <div class="sh"><div class="st">Latency Heatmap (24h)</div></div>
+      <div class="hm" id="heatmap"></div>
+    </div>
+
+    <!-- ═══ TRANSPORTS ═══ -->
+    <div class="pg" id="pg-transports">
+      <div class="sh"><div class="st">All Transports</div><div class="sa"><button class="btn bp bsm" onclick="toast('Rescoring...','info')">🔄 Rescore</button></div></div>
+      <div id="tList"></div>
+    </div>
+
+    <!-- ═══ USERS ═══ -->
+    <div class="pg" id="pg-users">
+      <div class="sh"><div class="st">User Management</div><div class="sa">
+        <button class="btn bg bsm" onclick="exportUsers()">📥 Export</button>
+        <button class="btn bg bsm" onclick="openModal('importModal')">📤 Import</button>
+        <button class="btn bp bsm" onclick="openModal('addUserModal')">+ Add User</button>
+      </div></div>
+      <div style="display:flex;gap:8px;margin-bottom:14px">
+        <input class="fi" placeholder="Search users..." style="max-width:250px" id="userSearch" oninput="filterUsers()">
+        <select class="fi" style="max-width:120px" id="userFilter" onchange="filterUsers()"><option value="all">All</option><option value="active">Active</option><option value="expired">Expired</option><option value="limited">Limited</option></select>
+      </div>
+      <table class="tbl" id="userTable">
+        <thead><tr><th>Username</th><th>Protocol</th><th>Traffic</th><th>Expiry</th><th>IP Limit</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="userBody"></tbody>
+      </table>
+    </div>
+
+    <!-- ═══ SUBSCRIPTIONS ═══ -->
+    <div class="pg" id="pg-subscriptions">
+      <div class="sh"><div class="st">Subscription Management</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px" id="subList"></div>
+    </div>
+
+    <!-- ═══ NODES ═══ -->
+    <div class="pg" id="pg-nodes">
+      <div class="sh"><div class="st">Server Nodes</div><div class="sa"><button class="btn bp bsm" onclick="openModal('addNodeModal')">+ Add Node</button></div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px" id="nodeGrid"></div>
+      <div class="sh" style="margin-top:20px"><div class="st">Network Topology</div></div>
+      <div class="topo" id="topoBox"></div>
+    </div>
+
+    <!-- ═══ LOGS ═══ -->
+    <div class="pg" id="pg-logs">
+      <div class="sh"><div class="st">System Logs</div><div class="sa">
+        <button class="btn bg bsm" onclick="filterLogs('all')">All</button>
+        <button class="btn bg bsm" onclick="filterLogs('info')">Info</button>
+        <button class="btn bg bsm" onclick="filterLogs('warn')">Warn</button>
+        <button class="btn bg bsm" onclick="filterLogs('error')">Error</button>
+        <button class="btn bg bsm" onclick="exportLogs()">📥 Export</button>
+      </div></div>
+      <div id="logViewer" style="background:#080a10;border:1px solid var(--border);border-radius:var(--r);font-family:var(--mono);font-size:11px;line-height:1.9;padding:12px;height:calc(100vh - 140px);overflow-y:auto"></div>
+    </div>
+
+    <!-- ═══ METRICS ═══ -->
+    <div class="pg" id="pg-metrics">
+      <div class="cg">
+        <div class="cc"><h3>📊 Transport Scores</h3><div class="ca"><div class="bc" id="chScore"></div></div></div>
+        <div class="cc"><h3>📡 Latency</h3><div class="ca"><div class="bc" id="chLat"></div></div></div>
+        <div class="cc"><h3>📦 Traffic (GB)</h3><div class="ca"><div class="bc" id="chTraffic"></div></div></div>
+        <div class="cc"><h3>👥 Users Online</h3><div class="ca"><div class="bc" id="chOnline"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ═══ TERMINAL ═══ -->
+    <div class="pg" id="pg-terminal">
+      <div class="tw2">
+        <div class="th"><div class="td"><span class="r"></span><span class="y"></span><span class="g"></span></div><span style="font-size:11px;color:var(--muted);font-family:var(--mono)">nyxora@admin:~$</span><button class="btn bg bsm" onclick="clearTerm()">Clear</button></div>
+        <div id="terminal"></div>
+      </div>
+    </div>
+
+    <!-- ═══ CONFIG ═══ -->
+    <div class="pg" id="pg-config">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border)">
+          <h3 style="font-size:13px;font-weight:600">⚙️ Server Configuration</h3>
+          <div style="display:flex;gap:5px"><button class="btn bg bsm" onclick="toast('Loaded','ok')">Load</button><button class="btn bp bsm" onclick="toast('Saved','ok')">Save</button></div>
+        </div>
+        <textarea style="width:100%;min-height:400px;background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:11px;line-height:1.7;padding:12px;resize:vertical;outline:none" spellcheck="false">{ "server": { "host": "0.0.0.0", "port": 51820, "mode": "full", "ssl": true, "auto_update": true }, "transports": { "wireguard": { "enabled": true, "port": 51820, "weight": 30 }, "hysteria": { "enabled": true, "port": 8444, "weight": 12 }, "reality": { "enabled": true, "port": 443, "weight": 15 }, "vless": { "enabled": true, "port": 443, "weight": 12 }, "quic": { "enabled": true, "port": 9923, "weight": 15 }, "rathole": { "enabled": true, "port": 2333, "weight": 12 }, "openvpn": { "enabled": true, "port": 1194, "weight": 10 }, "frp": { "enabled": true, "port": 7000, "weight": 10 }, "backhaul": { "enabled": true, "port": 3080, "weight": 10 }, "websocket": { "enabled": true, "port": 9925, "weight": 8 }, "ssh": { "enabled": true, "port": 22, "weight": 5 }, "ipsec": { "enabled": true, "port": 500, "weight": 5 }, "shadowsocks": { "enabled": true, "port": 8388, "weight": 3 }, "tcp": { "enabled": true, "port": 9924, "weight": 3 } }, "users": { "max_traffic_gb": 100, "expiry_days": 30, "max_ip": 3, "auto_delete_expired": true, "notify_before_expiry": 3 }, "security": { "auto_secrets": true, "tls_wrapper": true, "rate_limit": 1000, "fail2ban": true, "max_login_attempts": 5 }, "backup": { "auto_backup": true, "backup_interval_hours": 24, "backup_to_telegram": true }, "telegram": { "enabled": false, "bot_token": "", "admin_id": "" } }</textarea>
+      </div>
+    </div>
+
+    <!-- ═══ SECURITY ═══ -->
+    <div class="pg" id="pg-security">
+      <div class="sh"><div class="st">Security Settings</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:10px">🔐 Authentication</h4>
+          <div class="fg"><label class="fl">Admin Password</label><input type="password" class="fi" value="••••••••"></div>
+          <div class="fg"><label class="fl">Session Timeout (min)</label><input type="number" class="fi" value="1440"></div>
+          <button class="btn bp bsm" style="margin-top:6px">Save</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:10px">🛡️ Fail2ban</h4>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge ok">● Active</span></div>
+          <div class="fg"><label class="fl">Max Login Attempts</label><input type="number" class="fi" value="5"></div>
+          <div class="fg"><label class="fl">Ban Duration (min)</label><input type="number" class="fi" value="30"></div>
+          <button class="btn bp bsm" style="margin-top:6px">Update</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:10px">📜 SSL Certificate</h4>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge ok">● Valid</span><span style="font-size:11px;color:var(--muted)">Expires: 2026-10-15</span></div>
+          <button class="btn bg bsm" onclick="toast('Renewing SSL...','info')">🔄 Renew</button>
+          <button class="btn bg bsm" onclick="toast('Generating new cert...','info')">✨ Generate New</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:10px">💾 Auto Backup</h4>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span class="badge ok">● Enabled</span></div>
+          <div class="fg"><label class="fl">Interval (hours)</label><input type="number" class="fi" value="24"></div>
+          <div class="fg"><label class="fl">Telegram Backup</label><select class="fi"><option>Enabled</option><option>Disabled</option></select></div>
+          <button class="btn bp bsm" style="margin-top:6px">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bn"><div class="bni">
+  <button class="bnb a" onclick="go('dashboard')"><span class="bi">📊</span>Home</button>
+  <button class="bnb" onclick="go('users')"><span class="bi">👥</span>Users</button>
+  <button class="bnb" onclick="go('terminal')"><span class="bi">⌨️</span>Shell</button>
+  <button class="bnb" onclick="go('logs')"><span class="bi">📋</span>Logs</button>
+  <button class="bnb" onclick="go('config')"><span class="bi">⚙️</span>More</button>
+</div></nav>
+
+<!-- TOAST -->
+<div class="tw" id="tw" aria-live="polite"></div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="addUserModal">
+  <div class="modal">
+    <h3>➕ Add New User</h3>
+    <div class="fg"><label class="fl">Username</label><input class="fi" id="newUser" placeholder="user1"></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Protocol</label><select class="fi"><option>VLESS</option><option>VMess</option><option>Trojan</option><option>Shadowsocks</option><option>WireGuard</option><option>Hysteria2</option></select></div>
+      <div class="fg"><label class="fl">Transport</label><select class="fi"><option>Reality</option><option>TLS</option><option>WebSocket</option><option>gRPC</option><option>TCP</option></select></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Traffic Limit (GB)</label><input class="fi" type="number" value="100"></div>
+      <div class="fg"><label class="fl">Expiry (days)</label><input class="fi" type="number" value="30"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">IP Limit</label><input class="fi" type="number" value="3"></div>
+      <div class="fg"><label class="fl">Server</label><select class="fi"><option>Local</option><option>Node 1</option><option>Node 2</option></select></div>
+    </div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:12px">
+      <button class="btn bg" onclick="closeModal('addUserModal')">Cancel</button>
+      <button class="btn bp" onclick="addUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="addNodeModal">
+  <div class="modal">
+    <h3>🖥️ Add Server Node</h3>
+    <div class="fg"><label class="fl">Node Name</label><input class="fi" placeholder="Node 1"></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Host</label><input class="fi" placeholder="1.2.3.4"></div>
+      <div class="fg"><label class="fl">Port</label><input class="fi" value="2087"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Protocol</label><select class="fi"><option>SSH</option><option>gRPC</option></select></div>
+      <div class="fg"><label class="fl">Location</label><input class="fi" placeholder="Germany"></div>
+    </div>
+    <div class="fg"><label class="fl">API Token</label><input class="fi" placeholder="Node API token"></div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:12px">
+      <button class="btn bg" onclick="closeModal('addNodeModal')">Cancel</button>
+      <button class="btn bp" onclick="addNode()">Add Node</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="importModal">
+  <div class="modal">
+    <h3>📤 Import Users</h3>
+    <div class="fg"><label class="fl">CSV File</label><input class="fi" type="file" accept=".csv"></div>
+    <div class="fg"><label class="fl">Or paste CSV data</label><textarea class="fi" rows="4" placeholder="username,protocol,traffic_gb,expiry_days"></textarea></div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:12px">
+      <button class="btn bg" onclick="closeModal('importModal')">Cancel</button>
+      <button class="btn bp" onclick="importUsers()">Import</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="qrModal">
+  <div class="modal">
+    <h3>📱 Connection QR Code</h3>
+    <div class="qr-wrap"><canvas id="qrCanvas"></canvas><div><div style="font-size:13px;font-weight:600" id="qrUser">user1</div><div style="font-size:11px;color:var(--muted)" id="qrProto">VLESS + Reality</div><button class="btn bg bsm" style="margin-top:8px" onclick="copySub()">📋 Copy Link</button></div></div>
+    <div style="margin-top:12px"><label class="fl">Subscription Link</label><input class="fi" id="subLink" readonly style="font-size:10px;font-family:var(--mono)"></div>
+    <div style="display:flex;gap:6px;justify-content:flex-end;margin-top:12px"><button class="btn bg" onclick="closeModal('qrModal')">Close</button></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script>
+// ═══ DATA ═══
+const TR=[{n:'WireGuard',p:51820,s:95,l:12,ls:.1,st:'active',c:'VPN',cl:'#89b4fa'},{n:'Hysteria',p:8444,s:91,l:16,ls:.2,st:'active',c:'Tunnel',cl:'#7c6fff'},{n:'Reality',p:443,s:89,l:19,ls:.1,st:'active',c:'Tunnel',cl:'#a78bfa'},{n:'VLESS',p:443,s:87,l:21,ls:.15,st:'active',c:'Tunnel',cl:'#c084fc'},{n:'Rathole',p:2333,s:85,l:22,ls:.3,st:'active',c:'Relay',cl:'#f9e2af'},{n:'QUIC',p:9923,s:82,l:26,ls:.4,st:'active',c:'Tunnel',cl:'#6ee7ff'},{n:'Backhaul',p:3080,s:80,l:28,ls:.5,st:'active',c:'Relay',cl:'#fbbf24'},{n:'OpenVPN',p:1194,s:75,l:35,ls:.8,st:'active',c:'VPN',cl:'#7dd3fc'},{n:'WebSocket',p:9925,s:72,l:38,ls:1,st:'active',c:'Tunnel',cl:'#86efac'},{n:'FRP',p:7000,s:68,l:42,ls:1.2,st:'testing',c:'Relay',cl:'#fca5a5'},{n:'IPsec',p:500,s:65,l:48,ls:1.5,st:'active',c:'VPN',cl:'#93c5fd'},{n:'SSH',p:22,s:55,l:55,ls:2,st:'inactive',c:'Tunnel',cl:'#d1d5db'},{n:'Shadowsocks',p:8388,s:60,l:45,ls:1.8,st:'active',c:'Proxy',cl:'#fca5a5'},{n:'TCP',p:9924,s:50,l:60,ls:2.5,st:'inactive',c:'Tunnel',cl:'#9ca3af'}];
+
+const USERS=[
+  {u:'user1',proto:'VLESS + Reality',traffic:'45.2 GB / 100 GB',expiry:'2026-08-15',ip:'2/3',status:'active',sub:'nyxora://sub/user1/token1'},
+  {u:'user2',proto:'VMess + WebSocket',traffic:'82.1 GB / 100 GB',expiry:'2026-07-28',ip:'1/3',status:'active',sub:'nyxora://sub/user2/token2'},
+  {u:'user3',proto:'Trojan + TLS',traffic:'100 GB / 100 GB',expiry:'2026-08-01',ip:'3/3',status:'limited',sub:'nyxora://sub/user3/token3'},
+  {u:'user4',proto:'WireGuard',traffic:'23.5 GB / 50 GB',expiry:'2026-09-10',ip:'1/2',status:'active',sub:'nyxora://sub/user4/token4'},
+  {u:'user5',proto:'Hysteria2',traffic:'12.8 GB / 200 GB',expiry:'2026-07-20',ip:'0/5',status:'expired',sub:'nyxora://sub/user5/token5'},
+  {u:'user6',proto:'Shadowsocks',traffic:'5.1 GB / 50 GB',expiry:'2026-12-01',ip:'2/3',status:'active',sub:'nyxora://sub/user6/token6'},
+];
+
+const NODES=[
+  {n:'Local Server',h:'91.107.243.237',loc:'Iran',status:'active',users:847,load:'23%',uptime:'48h'},
+  {n:'Node 1 — Germany',h:'45.33.32.156',loc:'Frankfurt',status:'active',users:234,load:'18%',uptime:'72h'},
+  {n:'Node 2 — Netherlands',h:'185.199.108.153',loc:'Amsterdam',status:'active',users:189,load:'31%',uptime:'24h'},
+  {n:'Node 3 — Singapore',h:'139.99.124.178',loc:'Singapore',status:'testing',users:0,load:'5%',uptime:'2h'},
+];
+
+const LOGS=[
+  {t:'01:05:23',l:'info',m:'User user1 connected via VLESS'},{t:'01:05:24',l:'info',m:'Hysteria QUIC connected'},
+  {t:'01:05:25',l:'info',m:'Reality handshake completed'},{t:'01:05:26',l:'warn',m:'FRP latency degraded'},
+  {t:'01:05:27',l:'info',m:'VLESS XTLS active'},{t:'01:05:28',l:'info',m:'Backup completed to Telegram'},
+  {t:'01:05:30',l:'debug',m:'Scoring engine: weighted mode'},{t:'01:06:00',l:'info',m:'Health check passed'},
+  {t:'01:06:10',l:'error',m:'Connection timeout to Node 3'},{t:'01:06:15',l:'info',m:'Admin logged in from 91.107.x.x'},
+  {t:'01:06:20',l:'info',m:'User user3 reached traffic limit'},{t:'01:06:25',l:'warn',m:'SSL certificate expires in 90 days'},
+];
+
+const LNG={en:{dashboard:'Dashboard',transports:'Transports',users:'Users',subscriptions:'Subscriptions',nodes:'Nodes',logs:'Logs',metrics:'Metrics',terminal:'Terminal',config:'Config',security:'Security',overview:'Overview'},fa:{dashboard:'داشبورد',transports:'ترنسلات',users:'کاربران',subscriptions:'اشتراک‌ها',nodes:'سرورها',logs:'لاگ‌ها',metrics:'متريكس',terminal:'ترمینال',config:'تنظیمات',security:'امنیت',overview:'نمای کلی'},ru:{dashboard:'Панель',transports:'Транспорты',users:'Пользователи',subscriptions:'Подписки',nodes:'Серверы',logs:'Логи',metrics:'Метрики',terminal:'Терминал',config:'Настройки',security:'Безопасность',overview:'Обзор'},zh:{dashboard:'仪表板',transports:'传输',users:'用户',subscriptions:'订阅',nodes:'节点',logs:'日志',metrics:'指标',terminal:'终端',config:'配置',security:'安全',overview:'概览'},ar:{dashboard:'لوحة التحكم',transports:'الناقلات',users:'المستخدمون',subscriptions:'الاشتراكات',nodes:'الخوادم',logs:'السجلات',metrics:'المقاييس',terminal:'محطة',config:'الإعدادات',security:'الأمان',overview:'نظرة عامة'},hi:{dashboard:'डैशबोर्ड',transports:'ट्रांसपोर्ट',users:'उपयोगकर्ता',subscriptions:'सदस्यता',nodes:'सर्वर',logs:'लॉग',metrics:'मेट्रिक्स',terminal:'टर्मिनल',config:'कॉन्फ़िग',security:'सुरक्षा',overview:'अवलोकन'},es:{dashboard:'Panel',transports:'Transportes',users:'Usuarios',subscriptions:'Suscripciones',nodes:'Nodos',logs:'Registros',metrics:'Métricas',terminal:'Terminal',config:'Config',security:'Seguridad',overview:'Resumen'}};
+
+let cLng=localStorage.getItem('nx-l')||'en',cPg='dashboard',term=null;
+const PGS=['dashboard','transports','users','subscriptions','nodes','logs','metrics','terminal','config','security'];
+
+// ═══ THEME ═══
+function toggleTheme(){const h=document.documentElement,c=h.getAttribute('data-theme'),n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);localStorage.setItem('nx-t',n);toast(n==='dark'?'🌙 Dark':'☀️ Light','info')}
+(function(){const s=localStorage.getItem('nx-t');if(s)document.documentElement.setAttribute('data-theme',s)})();
+
+// ═══ TOAST ═══
+function toast(m,t='info'){const w=document.getElementById('tw'),d=document.createElement('div');d.className='tst '+t;d.textContent=m;w.appendChild(d);setTimeout(()=>d.remove(),3000)}
+
+// ═══ NAV ═══
+function go(p){cPg=p;document.querySelectorAll('.pg').forEach(x=>x.classList.remove('a'));document.getElementById('pg-'+p)?.classList.add('a');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('a'));document.querySelector(`[data-p="${p}"]`)?.classList.add('a');const t=LNG[cLng];document.getElementById('pgT').textContent=t[p]||p;document.getElementById('pgB').textContent=t.overview;if(p==='terminal'&&!term)initTerm();if(p==='nodes')renderTopo();document.querySelectorAll('.bnb').forEach(b=>b.classList.remove('a'));const mi=PGS.indexOf(p);if(mi<5)document.querySelectorAll('.bnb')[mi]?.classList.add('a')}
+
+// ═══ LANGUAGE ═══
+function setLng(l){cLng=l;localStorage.setItem('nx-l',l);const t=LNG[l];document.getElementById('pgT').textContent=t[cPg]||cPg;toast(`Language: ${l.toUpperCase()}`,'info')}
+
+// ═══ TRANSPORTS ═══
+function renderTransports(){document.getElementById('tGrid').innerHTML=TR.map(t=>{const bc=t.s>=80?'var(--ok)':t.s>=60?'var(--warn)':'var(--err)';return`<div class="tc" onclick="toast('${t.n}: ${t.s}/100','info')"><div class="tc-h"><div class="tc-n"><div class="tc-i" style="background:${t.cl}18;color:${t.cl}">${t.c[0]}</div><div><h4>${t.n}</h4><span class="ct2">${t.c} · :${t.p}</span></div></div><span class="tc-s ${t.st==='active'?'on':t.st==='testing'?'test':'off'}">${t.st}</span></div><div class="tc-m"><div class="tm"><div class="tm-v" style="color:var(--cyan)">${t.l}ms</div><div class="tm-l">Latency</div></div><div class="tm"><div class="tm-v" style="color:var(--warn)">${t.ls}%</div><div class="tm-l">Loss</div></div><div class="tm"><div class="tm-v" style="color:${bc}">${t.s}</div><div class="tm-l">Score</div></div></div><div class="tc-bar"><div class="tc-bar-f" style="width:${t.s}%;background:${bc}"></div></div></div>`}).join('');
+  document.getElementById('tList').innerHTML=TR.map(t=>{const bc=t.s>=80?'var(--ok)':t.s>=60?'var(--warn)':'var(--err)';return`<div style="display:grid;grid-template-columns:130px 70px 70px 60px 50px 90px 120px;align-items:center;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:5px;font-size:12px"><div style="font-weight:600">${t.n}</div><div style="color:var(--muted)">:${t.p}</div><span class="badge ${t.st==='active'?'ok':t.st==='testing'?'warn':'err'}" style="width:fit-content">${t.st}</span><div style="color:var(--cyan)">${t.l}ms</div><div style="color:var(--warn)">${t.ls}%</div><div style="font-weight:700;color:${bc}">${t.s}</div><div style="display:flex;gap:3px"><button class="btn bg bsm" onclick="toast('Scoring ${t.n}...','info')">Score</button><button class="btn bg bsm" onclick="toast('Restarting ${t.n}...','warn')">Restart</button><button class="btn bd bsm" onclick="toast('Stopping ${t.n}...','err')">Stop</button></div></div>`}).join('')}
+
+// ═══ USERS ═══
+function renderUsers(){document.getElementById('userBody').innerHTML=USERS.map(u=>`<tr><td style="font-weight:600">${u.u}</td><td><span class="badge info">${u.proto}</span></td><td><div style="font-size:11px">${u.traffic}</div><div class="prog" style="margin-top:3px"><div class="prog-f" style="width:${parseInt(u.traffic)}%;background:${parseInt(u.traffic)>90?'var(--err)':parseInt(u.traffic)>70?'var(--warn)':'var(--ok)'}"></div></div></td><td style="font-size:11px;color:${new Date(u.expiry)<new Date()?'var(--err)':'var(--sub)'}">${u.expiry}</td><td>${u.ip}</td><td><span class="badge ${u.status==='active'?'ok':u.status==='limited'?'warn':'err'}">${u.status}</span></td><td class="act"><button class="btn bg bsm" onclick="showQR('${u.u}','${u.proto}','${u.sub}')">📱</button><button class="btn bg bsm" onclick="toast('Editing ${u.u}','info')">✏️</button><button class="btn bg bsm" onclick="toast('Reset traffic','warn')">🔄</button><button class="btn bd bsm" onclick="toast('Deleted ${u.u}','err')">🗑️</button></td></tr>`).join('')}
+function filterUsers(){const q=document.getElementById('userSearch').value.toLowerCase();const f=document.getElementById('userFilter').value;document.querySelectorAll('#userBody tr').forEach(r=>{const u=r.children[0].textContent.toLowerCase();const s=r.children[5].textContent;const show=u.includes(q)&&(f==='all'||s.includes(f));r.style.display=show?'':'none'})}
+function addUser(){const u=document.getElementById('newUser').value||'new_user';toast(`User ${u} created`,'ok');closeModal('addUserModal')}
+function exportUsers(){const csv='username,protocol,traffic,expiry,ip_limit,status\n'+USERS.map(u=>`${u.u},${u.proto},"${u.traffic}",${u.expiry},${u.ip},${u.status}`).join('\n');const b=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='users.csv';a.click();toast('Users exported','ok')}
+function importUsers(){toast('Users imported','ok');closeModal('importModal')}
+
+// ═══ SUBSCRIPTIONS ═══
+function renderSubs(){document.getElementById('subList').innerHTML=USERS.map(u=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-weight:600">${u.u}</div><span class="badge ${u.status==='active'?'ok':u.status==='limited'?'warn':'err'}">${u.status}</span></div><div style="font-size:11px;color:var(--muted);margin-bottom:8px">${u.proto} · ${u.traffic}</div><div style="display:flex;gap:4px"><button class="btn bg bsm" onclick="showQR('${u.u}','${u.proto}','${u.sub}')">📱 QR</button><button class="btn bg bsm" onclick="navigator.clipboard.writeText('${u.sub}');toast('Copied!','ok')">📋 Copy</button><button class="btn bg bsm" onclick="toast('Refreshing sub...','info')">🔄</button></div></div>`).join('')}
+
+// ═══ NODES ═══
+function renderNodes(){document.getElementById('nodeGrid').innerHTML=NODES.map(n=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-weight:600">${n.n}</div><span class="badge ${n.status==='active'?'ok':'warn'}">${n.status}</span></div><div style="font-size:11px;color:var(--muted);margin-bottom:10px">${n.h} · ${n.loc}</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px"><div style="text-align:center;padding:6px;background:var(--surface2);border-radius:var(--rxs)"><div style="font-size:14px;font-weight:700;color:var(--accent)">${n.users}</div><div style="font-size:8px;color:var(--muted)">USERS</div></div><div style="text-align:center;padding:6px;background:var(--surface2);border-radius:var(--rxs)"><div style="font-size:14px;font-weight:700;color:var(--cyan)">${n.load}</div><div style="font-size:8px;color:var(--muted)">LOAD</div></div><div style="text-align:center;padding:6px;background:var(--surface2);border-radius:var(--rxs)"><div style="font-size:14px;font-weight:700;color:var(--ok)">${n.uptime}</div><div style="font-size:8px;color:var(--muted)">UPTIME</div></div></div><div style="display:flex;gap:4px"><button class="btn bg bsm" onclick="toast('Syncing ${n.n}...','info')">🔄 Sync</button><button class="btn bg bsm" onclick="toast('Scaling ${n.n}...','info')">📈 Scale</button><button class="btn bd bsm" onclick="toast('Removing ${n.n}...','err')">🗑️</button></div></div>`).join('')}
+function addNode(){toast('Node added','ok');closeModal('addNodeModal')}
+function renderTopo(){
+  const nodes=[{n:'Local Server',x:50,y:8,c:'var(--accent)',icon:'🖥️'},{n:'Node 1 — DE',x:10,y:42,c:'var(--ok)',icon:'🇩🇪'},{n:'Node 2 — NL',x:35,y:42,c:'var(--cyan)',icon:'🇳🇱'},{n:'Node 3 — SG',x:65,y:42,c:'var(--warn)',icon:'🇸🇬'},{n:'Node 4 — US',x:90,y:42,c:'var(--pink)',icon:'🇺🇸'},{n:'Users',x:50,y:88,c:'var(--accent2)',icon:'👥'}];
+  const lines=[[0,1],[0,2],[0,3],[0,4],[1,5],[2,5],[3,5],[4,5]];
+  const box=document.getElementById('topoBox');
+  let html='';
+  // Draw connection lines
+  lines.forEach(([a,b])=>{
+    const x1=nodes[a].x,y1=nodes[a].y+4,x2=nodes[b].x,y2=nodes[b].y;
+    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+    const angle=Math.atan2(dy,dx)*180/Math.PI;
+    const isActive=nodes[a].status!=='offline'&&nodes[b].status!=='offline';
+    html+=`<div style="position:absolute;left:${x1}%;top:${y1}%;width:${len}%;height:2px;background:linear-gradient(90deg,${nodes[a].c},${nodes[b].c});transform:rotate(${angle}deg);transform-origin:left center;z-index:1;opacity:0.6"></div>`;
+    // Animated packet dot
+    html+=`<div style="position:absolute;left:${(x1+x2)/2}%;top:${(y1+y2)/2}%;width:4px;height:4px;background:${nodes[a].c};border-radius:50%;z-index:2;animation:packet ${2+Math.random()*2}s linear infinite;box-shadow:0 0 6px ${nodes[a].c}"></div>`;
+  });
+  // Draw nodes
+  nodes.forEach(n=>{
+    html+=`<div class="topo-n" style="left:${n.x}%;top:${n.y}%;border-color:${n.c};text-align:center" onclick="toast('${n.n}: Active','info')"><div style="font-size:16px;margin-bottom:2px">${n.icon}</div><div style="font-size:10px;font-weight:600">${n.n}</div></div>`;
+  });
+  // Add legend
+  html+=`<div style="position:absolute;bottom:8px;left:8px;display:flex;gap:8px;font-size:9px;color:var(--muted)"><span>● <span style="color:var(--ok)">Active</span></span><span>● <span style="color:var(--warn)">Testing</span></span><span>● <span style="color:var(--err)">Offline</span></span></div>`;
+  box.innerHTML=html;
+}
+
+// ═══ QR ═══
+function showQR(user,proto,sub){document.getElementById('qrUser').textContent=user;document.getElementById('qrProto').textContent=proto;document.getElementById('subLink').value=sub;QRCode.toCanvas(document.getElementById('qrCanvas'),sub,{width:120,margin:1,color:{dark:'#eef0ff',light:'#0000'}});openModal('qrModal')}
+function copySub(){navigator.clipboard.writeText(document.getElementById('subLink').value);toast('Subscription copied!','ok')}
+
+// ═══ LOGS ═══
+function renderLogs(f='all'){const logs=f==='all'?LOGS:LOGS.filter(x=>x.l===f);document.getElementById('logViewer').innerHTML=logs.map(x=>`<div style="display:flex;gap:8px;padding:1px 4px;border-radius:3px"><span style="color:var(--muted);min-width:65px">${x.t}</span><span style="min-width:40px;font-weight:600;color:${x.l==='info'?'var(--cyan)':x.l==='warn'?'var(--warn)':x.l==='error'?'var(--err)':'var(--muted)'}">[${x.l.toUpperCase()}]</span><span>${x.m}</span></div>`).join('')}
+function filterLogs(l){renderLogs(l)}
+function exportLogs(){const t=LOGS.map(x=>`${x.t} [${x.l.toUpperCase()}] ${x.m}`).join('\n');const b=new Blob([t],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='nyxora-logs.txt';a.click();toast('Exported','ok')}
+
+// ═══ CHARTS ═══
+function renderCharts(){const mk=(el,data,cf)=>{el.innerHTML=data.map(d=>`<div class="bar" style="height:${d.h}%;background:${cf(d)}"><span class="bar-l">${d.l}</span></div>`).join('')};mk(document.getElementById('chScore'),TR.map(t=>({h:t.s,l:t.n.slice(0,4)})),d=>d.h>=80?'var(--ok)':d.h>=60?'var(--warn)':'var(--err)');const mx=Math.max(...TR.map(t=>t.l));mk(document.getElementById('chLat'),TR.map(t=>({h:(t.l/mx)*100,l:t.n.slice(0,4)})),d=>d.h<40?'var(--ok)':d.h<70?'var(--warn)':'var(--err)');mk(document.getElementById('chTraffic'),TR.map((_,i)=>({h:Math.random()*80+20,l:TR[i]?.n.slice(0,4)||''})),()=>'var(--accent)');mk(document.getElementById('chOnline'),TR.map((_,i)=>({h:Math.random()*60+10,l:TR[i]?.n.slice(0,4)||''})),()=>'var(--cyan)')}
+
+// ═══ HEATMAP ═══
+function renderHeatmap(){document.getElementById('heatmap').innerHTML=Array.from({length:288},()=>{const l=10+Math.random()*50,i=Math.min(l/60,1),r=Math.round(52+i*196),g=Math.round(211-i*98),b=Math.round(153-i*40);return`<div class="hc" style="background:rgba(${r},${g},${b},.5)"><div class="ht">${Math.round(l)}ms</div></div>`}).join('')}
+
+// ═══ MODALS ═══
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.modal-bg').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')})});
+
+// ═══ TERMINAL ═══
+function initTerm(){term=new Terminal({theme:{background:'#080a10',foreground:'#eef0ff',cursor:'#7c6fff',cursorAccent:'#080a10',selectionBackground:'rgba(124,111,255,.3)'},fontFamily:"'JetBrains Mono',monospace",fontSize:12,cursorBlink:true,cursorStyle:'bar'});term.open(document.getElementById('terminal'));term.writeln('\x1b[1;36m  NYXORA VPN Panel v0.2.0\x1b[0m\n\x1b[90m  ──────────────────────────────────────\x1b[0m\n');term.write('nyxora@admin:~$ ');let inp='',hist=[],hi=-1;const cmds=['help','version','status','users','add-user','del-user','transports','score','nodes','logs','config','backup','restore','clear','ping','top','whoami','uptime','ban','unban','ssh','deploy'];term.onKey(({key,domEvent:e})=>{const pr=!e.altKey&&!e.ctrlKey&&!e.metaKey;if(e.keyCode===13){term.writeln('');if(inp.trim()){hist.push(inp.trim());hi=hist.length;execCmd(inp.trim())}inp='';term.write('nyxora@admin:~$ ')}else if(e.keyCode===8){if(inp.length>0){inp=inp.slice(0,-1);term.write('\b \b')}}else if(e.keyCode===38){if(hi>0){hi--;inp=hist[hi];term.write('\r\x1b[Knyxora@admin:~$ '+inp)}}else if(e.keyCode===40){if(hi<hist.length-1){hi++;inp=hist[hi];term.write('\r\x1b[Knyxora@admin:~$ '+inp)}else{hi=hist.length;inp='';term.write('\r\x1b[Knyxora@admin:~$ ')}}else if(e.keyCode===9){e.preventDefault();const m=cmds.filter(c=>c.startsWith(inp.toLowerCase()));if(m.length===1){inp=m[0];term.write('\r\x1b[Knyxora@admin:~$ '+inp)}else if(m.length>1){term.writeln('');term.write(m.join('  '));term.writeln('');term.write('nyxora@admin:~$ '+inp)}}else if(e.ctrlKey&&key==='c'){term.writeln('^C');inp='';term.write('nyxora@admin:~$ ')}else if(pr){inp+=key;term.write(key)}})}
+function execCmd(c){const C={help:'\x1b[1;36mAdmin commands:\x1b[0m\n  users, add-user, del-user, ban, unban\n  transports, score, nodes, logs\n  config, backup, restore, ssh, deploy\n  ping, top, whoami, uptime, clear',version:'NYXORA v0.2.0 (Go 1.24.4)',status:'\x1b[1;32m● Connected\x1b[0m\nUsers: 847 active\nTransports: 14 (12 active)\nNodes: 4',users:USERS.map(u=>`  ${u.status==='active'?'🟢':u.status==='limited'?'🟡':'🔴'} ${u.u.padEnd(10)} ${u.proto.padEnd(20)} ${u.traffic}`).join('\n'),transports:TR.map(t=>`  ${t.st==='active'?'\x1b[1;32m●':'\x1b[90m○'}\x1b[0m ${t.n.padEnd(14)} :${t.p}  s:${t.s}  ${t.l}ms`).join('\n'),score:TR.sort((a,b)=>b.s-a.s).map(t=>`  ${String(t.s).padStart(3)}  ${t.n}`).join('\n'),nodes:NODES.map(n=>`  ${n.status==='active'?'🟢':'🟡'} ${n.n.padEnd(25)} ${n.users} users  ${n.load}`).join('\n'),logs:'[01:05] \x1b[1;32m[INFO]\x1b[0m All transports active\n[01:06] \x1b[1;33m[WARN]\x1b[0m FRP latency high\n[01:07] \x1b[1;32m[INFO]\x1b[0m Backup completed',backup:'Backing up database...\n\x1b[1;32m✓ Backup sent to Telegram\x1b[0m',restore:'Restore from backup?\n\x1b[1;32m✓ Restored\x1b[0m',ping:'\x1b[1;36mPING\x1b[0m 91.107.243.237: 12ms, 0.1% loss',top:'PID USER  %CPU %MEM\n  1 root   2.3  1.1  nyxora\n 42 root   1.1  0.6  xray',whoami:'admin (root)',uptime:' 01:14:27 up 48:23, 847 users',deploy:'Deploying v0.3.0...\n\x1b[1;32m✓ Deploy complete\x1b[0m',ssh:'Usage: ssh <user>@<host>'};if(c==='clear'){term.clear();return}const o=C[c]||`\x1b[1;31mUnknown:\x1b[0m ${c}\nType \x1b[1;36mhelp\x1b[0m`;term.writeln(o)}
+function clearTerm(){if(term)term.clear()}
+
+// ═══ SHORTCUTS ═══
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open'))});
+
+// ═══ INIT ═══
+document.getElementById('lng').value=cLng;setLng(cLng);renderTransports();renderUsers();renderSubs();renderNodes();renderTopo();renderLogs();renderCharts();renderHeatmap();setInterval(()=>{TR.forEach(t=>{t.l=Math.max(5,t.l+Math.floor(Math.random()*5-2));t.s=Math.max(30,Math.min(100,t.s+Math.floor(Math.random()*3-1)))});if(cPg==='dashboard')renderTransports();if(cPg==='metrics')renderCharts()},5000);
+</script>
+</body>
+</html>

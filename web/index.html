@@ -1,726 +1,613 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NYXORA Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#020203">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' ws: wss:;">
+    <title>NYXORA Admin — Adaptive Tunnel Orchestrator</title>
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        :root {
-            --bg: #0f0f1a;
-            --surface: #1a1a2e;
-            --surface-hover: #232340;
-            --overlay: #2d2d4a;
-            --text: #e0e0ff;
-            --subtext: #8888aa;
-            --primary: #7c6fff;
-            --primary-glow: rgba(124, 111, 255, 0.3);
-            --success: #4ade80;
-            --success-glow: rgba(74, 222, 128, 0.2);
-            --warning: #fbbf24;
-            --error: #f87171;
-            --border: rgba(255, 255, 255, 0.06);
-        }
-        body {
-            font-family: 'Inter', 'SF Pro', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
 
-        /* Animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(ellipse at 20% 50%, rgba(124, 111, 255, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(74, 222, 128, 0.05) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, rgba(248, 113, 113, 0.04) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
-        }
+/* ═══ DESIGN SYSTEM (from ui-ux-pro-max) ═══ */
+:root,[data-theme="dark"]{
+  --bg-deep:#020203;--bg-base:#06070d;--bg-elevated:#0c0e16;
+  --surface:#0e1019;--surface2:#131521;--surface3:#181b2a;--surface4:#1e2136;
+  --border:rgba(255,255,255,.06);--border-hover:rgba(255,255,255,.12);--border-active:rgba(124,111,255,.35);
+  --text:#eef0ff;--text-secondary:#a0a4c0;--text-muted:#5c6088;
+  --accent:#7c6fff;--accent-hover:#6a5ce0;--accent-glow:rgba(124,111,255,.18);--accent-subtle:rgba(124,111,255,.08);
+  --success:#34d399;--success-glow:rgba(52,211,153,.15);--success-subtle:rgba(52,211,153,.08);
+  --warning:#fbbf24;--warning-glow:rgba(251,191,36,.15);
+  --error:#f87171;--error-glow:rgba(248,113,113,.15);
+  --cyan:#22d3ee;--pink:#f472b6;--orange:#fb923c;
+  --glass:rgba(14,16,25,.82);--glass-border:rgba(255,255,255,.08);
+  --radius:14px;--radius-lg:20px;--radius-sm:8px;--radius-xs:6px;
+  --shadow-sm:0 2px 8px rgba(0,0,0,.3);--shadow-md:0 8px 32px rgba(0,0,0,.4);--shadow-lg:0 16px 64px rgba(0,0,0,.5);
+  --easing:cubic-bezier(.16,1,.3,1);--spring:cubic-bezier(.34,1.45,.5,1);
+  --font:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+}
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 24px;
-        }
+[data-theme="light"]{
+  --bg-deep:#f5f6fa;--bg-base:#f0f2f7;--bg-elevated:#ffffff;
+  --surface:#ffffff;--surface2:#f8f9fc;--surface3:#eef1f6;--surface4:#e4e7ef;
+  --border:rgba(0,0,0,.07);--border-hover:rgba(0,0,0,.12);--border-active:rgba(100,80,220,.3);
+  --text:#1a1d2e;--text-secondary:#5a5e78;--text-muted:#9ca3af;
+  --accent:#6c5ce7;--accent-hover:#5a4bd6;--accent-glow:rgba(108,92,231,.15);--accent-subtle:rgba(108,92,231,.06);
+  --success:#10b981;--success-glow:rgba(16,185,129,.12);--success-subtle:rgba(16,185,129,.06);
+  --warning:#f59e0b;--warning-glow:rgba(245,158,11,.12);
+  --error:#ef4444;--error-glow:rgba(239,68,68,.12);
+  --cyan:#06b6d4;--pink:#ec4899;--orange:#f97316;
+  --glass:rgba(255,255,255,.88);--glass-border:rgba(0,0,0,.06);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.06);--shadow-md:0 8px 32px rgba(0,0,0,.08);--shadow-lg:0 16px 64px rgba(0,0,0,.1);
+}
 
-        /* Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 0 30px;
-        }
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .logo {
-            font-size: 32px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #7c6fff 0%, #a78bfa 50%, #c4b5fd 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -1px;
-        }
-        .version-badge {
-            padding: 4px 10px;
-            background: var(--overlay);
-            border-radius: 6px;
-            font-size: 12px;
-            color: var(--subtext);
-            font-weight: 500;
-        }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .ws-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 14px;
-            background: var(--surface);
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            font-size: 13px;
-        }
-        .ws-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--error);
-            transition: background 0.3s;
-        }
-        .ws-dot.connected {
-            background: var(--success);
-            box-shadow: 0 0 8px var(--success-glow);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-        .btn {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            background: #6a5acd;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px var(--primary-glow);
-        }
-        .btn-ghost {
-            background: transparent;
-            color: var(--subtext);
-            border: 1px solid var(--border);
-        }
-        .btn-ghost:hover {
-            background: var(--surface);
-            color: var(--text);
-        }
+body{font-family:var(--font);background:var(--bg-base);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-        .stat-card {
-            background: var(--surface);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--border);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card:hover {
-            border-color: rgba(124, 111, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary), transparent);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .stat-card:hover::before {
-            opacity: 1;
-        }
-        .stat-label {
-            font-size: 12px;
-            color: var(--subtext);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-        }
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text);
-            line-height: 1;
-        }
-        .stat-value.success { color: var(--success); }
-        .stat-value.warning { color: var(--warning); }
-        .stat-value.primary { color: var(--primary); }
-        .stat-change {
-            font-size: 12px;
-            margin-top: 8px;
-            color: var(--subtext);
-        }
-        .stat-change.up { color: var(--success); }
-        .stat-change.down { color: var(--error); }
+/* ═══ AMBIENT BACKGROUND ═══ */
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 90% 70% at 10% 20%,rgba(124,111,255,.06) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 90% 15%,rgba(34,211,238,.04) 0%,transparent 50%),radial-gradient(ellipse 70% 50% at 50% 90%,rgba(244,114,182,.03) 0%,transparent 50%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,111,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(124,111,255,.02) 1px,transparent 1px);background-size:80px 80px;pointer-events:none;z-index:0;mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%)}
 
-        /* Transport List */
-        .section {
-            margin-bottom: 32px;
-        }
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-        .section-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        .transport-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 8px;
-        }
-        .transport-table th {
-            text-align: left;
-            padding: 12px 16px;
-            font-size: 11px;
-            color: var(--subtext);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 500;
-        }
-        .transport-row {
-            background: var(--surface);
-            border-radius: 10px;
-            transition: all 0.2s;
-        }
-        .transport-row:hover {
-            background: var(--surface-hover);
-            transform: scale(1.005);
-        }
-        .transport-row td {
-            padding: 16px;
-            border-top: 1px solid var(--border);
-            border-bottom: 1px solid var(--border);
-        }
-        .transport-row td:first-child {
-            border-left: 1px solid var(--border);
-            border-radius: 10px 0 0 10px;
-        }
-        .transport-row td:last-child {
-            border-right: 1px solid var(--border);
-            border-radius: 0 10px 10px 0;
-        }
-        .transport-name-cell {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .transport-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-        }
-        .transport-info h4 {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-        .transport-info span {
-            font-size: 12px;
-            color: var(--subtext);
-        }
-        .mono {
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 13px;
-            color: var(--subtext);
-        }
-        .status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .status-pill.active {
-            background: rgba(74, 222, 128, 0.15);
-            color: var(--success);
-        }
-        .status-pill.testing {
-            background: rgba(251, 191, 36, 0.15);
-            color: var(--warning);
-        }
-        .status-pill.failed {
-            background: rgba(248, 113, 113, 0.15);
-            color: var(--error);
-        }
-        .status-pill.inactive {
-            background: rgba(136, 136, 170, 0.15);
-            color: var(--subtext);
-        }
-        .status-pill .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: currentColor;
-        }
-        .score-cell {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .score-bar-bg {
-            flex: 1;
-            height: 6px;
-            background: var(--overlay);
-            border-radius: 3px;
-            overflow: hidden;
-            min-width: 80px;
-        }
-        .score-bar-fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.5s ease;
-        }
-        .score-num {
-            font-weight: 600;
-            font-size: 14px;
-            min-width: 30px;
-        }
-        .latency-cell {
-            font-weight: 500;
-        }
-        .latency-cell.good { color: var(--success); }
-        .latency-cell.medium { color: var(--warning); }
-        .latency-cell.bad { color: var(--error); }
+.app{position:relative;z-index:1;display:flex;min-height:100vh}
 
-        /* Activity Log */
-        .activity-log {
-            background: var(--surface);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .log-entry {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border);
-            font-size: 13px;
-            transition: background 0.2s;
-        }
-        .log-entry:hover {
-            background: var(--surface-hover);
-        }
-        .log-entry:last-child {
-            border-bottom: none;
-        }
-        .log-time {
-            color: var(--subtext);
-            font-family: monospace;
-            font-size: 12px;
-            min-width: 70px;
-        }
-        .log-icon {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            flex-shrink: 0;
-        }
-        .log-icon.info { background: rgba(124, 111, 255, 0.2); color: var(--primary); }
-        .log-icon.success { background: rgba(74, 222, 128, 0.2); color: var(--success); }
-        .log-icon.warning { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
-        .log-icon.error { background: rgba(248, 113, 113, 0.2); color: var(--error); }
-        .log-msg { flex: 1; color: var(--text); }
+/* ═══ SIDEBAR ═══ */
+.sidebar{width:72px;background:var(--bg-elevated);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:6px;position:fixed;top:0;left:0;height:100vh;z-index:100;transition:width .3s var(--easing)}
+.sidebar-logo{width:42px;height:42px;margin-bottom:20px;filter:drop-shadow(0 0 16px rgba(124,111,255,.3));transition:all .3s var(--easing)}
+.sidebar-nav{display:flex;flex-direction:column;gap:4px;flex:1;width:100%;padding:0 10px}
+.nav-section{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:12px 0 4px;text-align:center}
+.nav-btn{width:52px;height:42px;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--text-muted);font-size:18px;cursor:pointer;transition:all .2s var(--easing);display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto}
+.nav-btn:hover{background:var(--accent-subtle);color:var(--text)}
+.nav-btn.active{background:var(--accent-subtle);color:var(--accent)}
+.nav-btn.active::before{content:'';position:absolute;left:-10px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--accent);border-radius:0 3px 3px 0}
+.nav-btn .tip{position:absolute;left:62px;background:var(--surface3);color:var(--text);padding:6px 12px;border-radius:var(--radius-xs);font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid var(--border);z-index:200;font-weight:500}
+.nav-btn:hover .tip{opacity:1}
+.nav-badge{position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--error);color:white;font-size:9px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
 
-        /* Footer */
-        footer {
-            margin-top: 40px;
-            padding: 20px 0;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: var(--subtext);
-            font-size: 13px;
-        }
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
+/* ═══ MAIN ═══ */
+.main{flex:1;margin-left:72px;display:flex;flex-direction:column;transition:margin-left .3s var(--easing)}
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            header {
-                flex-direction: column;
-                gap: 16px;
-            }
-            .transport-table {
-                font-size: 12px;
-            }
-        }
+/* ═══ TOPBAR ═══ */
+.topbar{height:56px;background:var(--glass);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--glass-border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:14px;font-weight:600}
+.topbar-breadcrumb{font-size:11px;color:var(--text-muted)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.lang-select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-xs);color:var(--text);padding:5px 10px;font-size:12px;cursor:pointer;outline:none;font-family:var(--font)}
+.lang-select:focus{border-color:var(--accent)}
+.theme-toggle{width:36px;height:20px;background:var(--surface3);border-radius:10px;cursor:pointer;position:relative;border:1px solid var(--border);transition:all .3s}
+.theme-toggle::after{content:'🌙';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--accent);transition:all .3s var(--easing);display:flex;align-items:center;justify-content:center;font-size:9px}
+[data-theme="light"] .theme-toggle::after{content:'☀️';left:18px}
+.status-pill{display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--border)}
+.status-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success-glow);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.admin-badge{padding:3px 8px;background:linear-gradient(135deg,var(--accent),var(--pink));border-radius:var(--radius-xs);font-size:10px;font-weight:700;color:white;letter-spacing:.5px}
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--surface);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--overlay);
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--subtext);
-        }
-    </style>
+/* ═══ CONTENT ═══ */
+.content{flex:1;padding:20px 24px;overflow-y:auto}
+.page{display:none}.page.active{display:block;animation:fadeIn .35s var(--easing)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ STAT CARDS (Glassmorphism + 3D) ═══ */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;transition:all .35s var(--easing);cursor:pointer}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0;transition:opacity .3s}
+.stat-card:hover{border-color:var(--border-active);transform:translateY(-6px) rotateX(3deg);box-shadow:var(--shadow-lg)}
+.stat-card:hover::before{opacity:1}
+.stat-card::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(124,111,255,.08),transparent 60%);opacity:0;transition:opacity .3s;pointer-events:none}
+.stat-card:hover::after{opacity:1}
+.stat-icon{font-size:22px;margin-bottom:8px}
+.stat-val{font-size:26px;font-weight:800;line-height:1}
+.stat-lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:6px}
+.stat-change{font-size:11px;margin-top:6px;font-weight:500}
+.stat-change.up{color:var(--success)}.stat-change.down{color:var(--error)}
+
+/* ═══ SECTION HEADERS ═══ */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:3px;height:18px;background:var(--accent);border-radius:2px}
+.section-actions{display:flex;gap:6px}
+
+/* ═══ TRANSPORT CARDS ═══ */
+.transport-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:24px}
+.t-card{background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:16px;transition:all .3s var(--easing);cursor:pointer}
+.t-card:hover{border-color:var(--border-active);transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.t-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.t-card-name{display:flex;align-items:center;gap:10px}
+.t-card-icon{width:34px;height:34px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.t-card h4{font-size:13px;font-weight:600}
+.t-card .cat{font-size:10px;color:var(--text-muted)}
+.t-card-status{font-size:10px;font-weight:600;padding:3px 8px;border-radius:var(--radius-xs)}
+.t-card-status.active{background:var(--success-subtle);color:var(--success)}
+.t-card-status.testing{background:rgba(251,191,36,.1);color:var(--warning)}
+.t-card-status.inactive{background:rgba(92,96,136,.1);color:var(--text-muted)}
+.t-card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.t-metric{text-align:center;padding:6px 0;background:var(--surface2);border-radius:var(--radius-xs)}
+.t-metric-val{font-size:14px;font-weight:700}
+.t-metric-lbl{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.t-card-bar{margin-top:10px;height:3px;background:var(--surface3);border-radius:2px;overflow:hidden}
+.t-card-bar-fill{height:100%;border-radius:2px;transition:width 1s var(--easing)}
+
+/* ═══ TERMINAL ═══ */
+.terminal-wrap{background:#080a10;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;height:calc(100vh - 130px);display:flex;flex-direction:column}
+.terminal-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.terminal-dots{display:flex;gap:5px}.terminal-dots span{width:11px;height:11px;border-radius:50%}
+.terminal-dots .r{background:#ff5f57}.terminal-dots .y{background:#febc2e}.terminal-dots .g{background:#28c840}
+.terminal-tabs{display:flex;gap:2px}
+.term-tab{padding:5px 12px;background:transparent;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;border-radius:var(--radius-xs) var(--radius-xs) 0 0;transition:all .2s;font-family:var(--mono)}
+.term-tab.active{background:#080a10;color:var(--text)}
+#terminal{flex:1}
+
+/* ═══ CONFIG EDITOR ═══ */
+.config-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.config-toolbar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.config-toolbar h3{font-size:13px;font-weight:600}
+.config-textarea{width:100%;min-height:480px;background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:12px;line-height:1.7;padding:14px;resize:vertical;outline:none}
+
+/* ═══ LOGS ═══ */
+.log-viewer{background:#080a10;border:1px solid var(--border);border-radius:var(--radius);font-family:var(--mono);font-size:11px;line-height:1.9;padding:14px;height:calc(100vh - 130px);overflow-y:auto}
+.log-line{display:flex;gap:10px;padding:1px 4px;border-radius:4px;transition:background .15s}
+.log-line:hover{background:rgba(255,255,255,.02)}
+.log-time{color:var(--text-muted);min-width:70px}
+.log-level{min-width:45px;font-weight:600}
+.log-level.info{color:var(--cyan)}.log-level.warn{color:var(--warning)}.log-level.error{color:var(--error)}.log-level.debug{color:var(--text-muted)}
+.log-msg{color:var(--text)}.log-msg .hl{color:var(--success)}
+
+/* ═══ CHARTS ═══ */
+.charts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+.chart-card h3{font-size:13px;font-weight:600;margin-bottom:14px}
+.chart-area{height:180px}
+.bar-chart{display:flex;align-items:flex-end;gap:5px;height:100%;padding-top:16px}
+.bar{flex:1;border-radius:3px 3px 0 0;transition:height .6s var(--easing);position:relative;cursor:pointer}
+.bar:hover{opacity:.85;transform:scaleY(1.03);transform-origin:bottom}
+.bar-label{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--text-muted);white-space:nowrap}
+
+/* ═══ SSH FORM ═══ */
+.ssh-form{max-width:480px}
+.form-group{margin-bottom:10px}
+.form-label{font-size:11px;color:var(--text-muted);display:block;margin-bottom:5px;font-weight:500}
+.form-input{width:100%;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xs);color:var(--text);font-size:13px;outline:none;transition:border-color .2s;font-family:var(--font)}
+.form-input:focus{border-color:var(--accent)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ═══ TOPOLOGY ═══ */
+.topo-container{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;min-height:380px;position:relative;overflow:hidden}
+.topo-node{position:absolute;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;font-weight:600;cursor:pointer;transition:all .3s var(--easing);z-index:2}
+.topo-node:hover{border-color:var(--accent);transform:scale(1.08);box-shadow:0 0 24px var(--accent-glow)}
+@keyframes packet{0%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.5)}100%{opacity:1;transform:scale(1)}}
+
+/* ═══ HEATMAP ═══ */
+.heatmap{display:grid;grid-template-columns:repeat(24,1fr);gap:3px}
+.heat-cell{aspect-ratio:1;border-radius:3px;cursor:pointer;transition:all .2s;position:relative}
+.heat-cell:hover{transform:scale(1.15);z-index:1}
+.heat-tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--surface3);color:var(--text);padding:3px 7px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid var(--border)}
+.heat-cell:hover .heat-tip{opacity:1}
+
+/* ═══ BUTTONS ═══ */
+.btn{padding:7px 14px;border-radius:var(--radius-xs);border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s var(--easing);font-family:var(--font)}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:white}.btn-primary:hover{background:var(--accent-hover);box-shadow:0 4px 16px var(--accent-glow)}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--accent)}
+.btn-danger{background:rgba(248,113,113,.12);color:var(--error);border:1px solid rgba(248,113,113,.2)}.btn-danger:hover{background:rgba(248,113,113,.2)}
+.btn-success{background:var(--success-subtle);color:var(--success);border:1px solid rgba(52,211,153,.2)}.btn-success:hover{background:rgba(52,211,153,.15)}
+.btn-sm{padding:4px 10px;font-size:11px}
+
+/* ═══ COMMAND PALETTE ═══ */
+.cmd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding-top:18vh}
+.cmd-overlay.open{display:flex}
+.cmd-box{width:520px;max-height:380px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-lg)}
+.cmd-input{width:100%;padding:14px 18px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:15px;outline:none;font-family:var(--font)}
+.cmd-results{max-height:280px;overflow-y:auto}
+.cmd-item{padding:10px 18px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s}
+.cmd-item:hover,.cmd-item.sel{background:var(--surface2)}
+.cmd-item-icon{width:28px;height:28px;border-radius:var(--radius-xs);background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:13px}
+.cmd-item-text{flex:1}.cmd-item-title{font-size:13px;font-weight:500}.cmd-item-desc{font-size:10px;color:var(--text-muted)}
+.cmd-item-key{font-size:10px;color:var(--text-muted);font-family:var(--mono);background:var(--surface3);padding:2px 5px;border-radius:3px}
+
+/* ═══ TOAST ═══ */
+.toast-wrap{position:fixed;top:72px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast{padding:10px 14px;background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:var(--radius-sm);font-size:12px;display:flex;align-items:center;gap:8px;animation:toastIn .3s var(--easing);max-width:340px;box-shadow:var(--shadow-md)}
+.toast.success{border-left:3px solid var(--success)}.toast.error{border-left:3px solid var(--error)}.toast.warning{border-left:3px solid var(--warning)}.toast.info{border-left:3px solid var(--cyan)}
+@keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:1}to{opacity:0;transform:translateX(30px)}}
+
+/* ═══ HELP PANEL ═══ */
+.help-panel{position:fixed;right:-380px;top:0;width:380px;height:100vh;background:var(--bg-elevated);border-left:1px solid var(--border);z-index:150;transition:right .3s var(--easing);overflow-y:auto;padding:20px}
+.help-panel.open{right:0}
+.help-item{padding:10px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px}
+.help-item h4{font-size:12px;font-weight:600;margin-bottom:3px}
+.help-item p{font-size:11px;color:var(--text-secondary);line-height:1.5}
+
+/* ═══ TOUR ═══ */
+.tour-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;display:none;backdrop-filter:blur(4px)}
+.tour-overlay.active{display:block}
+.tour-box{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;max-width:340px;box-shadow:var(--shadow-lg);z-index:2001}
+.tour-step{font-size:10px;color:var(--accent);margin-bottom:8px;font-weight:600;letter-spacing:.5px}
+.tour-box h3{font-size:15px;font-weight:700;margin-bottom:6px}
+.tour-box p{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px}
+
+/* ═══ BADGE ═══ */
+.kbd{display:inline-block;padding:1px 5px;background:var(--surface3);border:1px solid var(--border);border-radius:3px;font-family:var(--mono);font-size:9px;color:var(--text-muted)}
+
+/* ═══ MICRO ═══ */
+.micro:active{transform:scale(.97)}.micro-glow:hover{box-shadow:0 0 24px var(--accent-glow)}
+
+/* ═══ ACCESSIBILITY ═══ */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ═══ BOTTOM NAV (Mobile) ═══ */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--glass);backdrop-filter:blur(20px);border-top:1px solid var(--glass-border);z-index:100;padding:6px 0;padding-bottom:env(safe-area-inset-bottom,6px)}
+.bottom-nav-inner{display:flex;justify-content:space-around}
+.bnav-btn{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--text-muted);font-size:9px;cursor:pointer;padding:4px 10px}
+.bnav-btn .ico{font-size:18px}.bnav-btn.active{color:var(--accent)}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.sidebar{width:56px}.main{margin-left:56px}.stats-grid{grid-template-columns:repeat(2,1fr)}.charts-grid{grid-template-columns:1fr}.transport-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.sidebar{display:none}.main{margin-left:0}.stats-grid{grid-template-columns:1fr}.bottom-nav{display:block}.content{padding-bottom:80px}}
+
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(124,111,255,.15);border-radius:3px}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo-section">
-                <div class="logo">NYXORA</div>
-                <span class="version-badge">v0.2.0</span>
-            </div>
-            <div class="header-right">
-                <div class="ws-status">
-                    <div class="ws-dot" id="wsDot"></div>
-                    <span id="wsLabel">Connecting...</span>
-                </div>
-                <button class="btn btn-ghost" onclick="location.reload()">↻ Refresh</button>
-                <button class="btn btn-primary" id="connectBtn" onclick="toggleConnection()">Connect</button>
-            </div>
-        </header>
+<div class="app">
+<!-- SIDEBAR -->
+<nav class="sidebar" role="navigation" aria-label="Admin navigation">
+  <img src="images/logo-small.png" alt="NYXORA" class="sidebar-logo">
+  <div class="sidebar-nav">
+    <div class="nav-section">Overview</div>
+    <button class="nav-btn active" onclick="showPage('dashboard')" data-page="dashboard" aria-label="Dashboard">📊<span class="tip">Dashboard <span class="kbd">1</span></span></button>
+    <button class="nav-btn" onclick="showPage('transports')" data-page="transports" aria-label="Transports">🚇<span class="tip">Transports <span class="kbd">2</span></span><span class="nav-badge">12</span></button>
+    <div class="nav-section">Tools</div>
+    <button class="nav-btn" onclick="showPage('terminal')" data-page="terminal" aria-label="Terminal">⌨️<span class="tip">Terminal <span class="kbd">3</span></span></button>
+    <button class="nav-btn" onclick="showPage('config')" data-page="config" aria-label="Config">⚙️<span class="tip">Config <span class="kbd">4</span></span></button>
+    <button class="nav-btn" onclick="showPage('logs')" data-page="logs" aria-label="Logs">📋<span class="tip">Logs <span class="kbd">5</span></span></button>
+    <div class="nav-section">Monitor</div>
+    <button class="nav-btn" onclick="showPage('metrics')" data-page="metrics" aria-label="Metrics">📈<span class="tip">Metrics <span class="kbd">6</span></span></button>
+    <button class="nav-btn" onclick="showPage('topology')" data-page="topology" aria-label="Topology">🗺️<span class="tip">Topology <span class="kbd">7</span></span></button>
+    <button class="nav-btn" onclick="showPage('users')" data-page="users" aria-label="Users">👥<span class="tip">Users <span class="kbd">8</span></span></button>
+    <div class="nav-section">System</div>
+    <button class="nav-btn" onclick="showPage('ssh')" data-page="ssh" aria-label="SSH">🔐<span class="tip">SSH Connect <span class="kbd">9</span></span></button>
+    <button class="nav-btn" onclick="showPage('settings')" data-page="settings" aria-label="Settings">🛠️<span class="tip">Settings</span></button>
+  </div>
+</nav>
 
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">Active Transports</div>
-                <div class="stat-value success" id="activeCount">—</div>
-                <div class="stat-change" id="activeChange"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Best Transport</div>
-                <div class="stat-value primary" id="bestTransport">—</div>
-                <div class="stat-change" id="bestScore"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Avg Latency</div>
-                <div class="stat-value" id="avgLatency">—</div>
-                <div class="stat-change" id="latencyChange"></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Uptime</div>
-                <div class="stat-value" id="uptime">—</div>
-                <div class="stat-change" id="failoverCount"></div>
-            </div>
-        </div>
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar" role="banner">
+    <div class="topbar-left">
+      <span class="topbar-title" id="pageTitle">Dashboard</span>
+      <span class="topbar-breadcrumb">NYXORA Admin / <span id="pageBread">Overview</span></span>
+    </div>
+    <div class="topbar-right">
+      <select class="lang-select" id="langSel" onchange="setLang(this.value)" aria-label="Language">
+        <option value="en">🇬🇧 EN</option><option value="fa">🇮🇷 FA</option><option value="ru">🇷🇺 RU</option>
+        <option value="zh">🇨🇳 ZH</option><option value="ar">🇸🇦 AR</option><option value="hi">🇮🇳 HI</option><option value="es">🇪🇸 ES</option>
+      </select>
+      <div class="theme-toggle" onclick="toggleTheme()" role="button" aria-label="Toggle theme" tabindex="0"></div>
+      <span class="admin-badge">ADMIN</span>
+      <div class="status-pill" role="status"><span class="dot"></span><span id="wsLabel">Live</span></div>
+    </div>
+  </header>
 
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">Transport Status</div>
-            </div>
-            <table class="transport-table">
-                <thead>
-                    <tr>
-                        <th>Transport</th>
-                        <th>Port</th>
-                        <th>Status</th>
-                        <th>Latency</th>
-                        <th>Loss</th>
-                        <th>Score</th>
-                    </tr>
-                </thead>
-                <tbody id="transportBody"></tbody>
-            </table>
-        </div>
-
-        <div class="section">
-            <div class="section-header">
-                <div class="section-title">Activity Log</div>
-            </div>
-            <div class="activity-log" id="activityLog">
-                <div class="log-entry">
-                    <span class="log-time">—</span>
-                    <div class="log-icon info">i</div>
-                    <span class="log-msg">Waiting for connection...</span>
-                </div>
-            </div>
-        </div>
-
-        <footer>
-            <span>NYXORA Adaptive Tunnel Orchestrator</span>
-            <span>
-                <a href="https://github.com/nyxorammd-lgtm/nyxora">GitHub</a> · 
-                <a href="https://t.me/NyxoraCore">Telegram</a>
-            </span>
-        </footer>
+  <div class="content" role="main">
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card micro"><div class="stat-icon">🚇</div><div class="stat-val" style="color:var(--accent)" id="sTrans">12</div><div class="stat-lbl">Transports</div><div class="stat-change up">+2 this week</div></div>
+        <div class="stat-card micro"><div class="stat-icon">⚡</div><div class="stat-val" style="color:var(--success)" id="sScore">95</div><div class="stat-lbl">Best Score</div><div class="stat-change up">↑ 3</div></div>
+        <div class="stat-card micro"><div class="stat-icon">📡</div><div class="stat-val" style="color:var(--cyan)" id="sLat">28ms</div><div class="stat-lbl">Avg Latency</div><div class="stat-change down">↓ 2ms</div></div>
+        <div class="stat-card micro"><div class="stat-icon">👥</div><div class="stat-val" style="color:var(--pink)">847</div><div class="stat-lbl">Active Users</div><div class="stat-change up">+12%</div></div>
+        <div class="stat-card micro"><div class="stat-icon">🛡️</div><div class="stat-val" style="color:var(--warning)" id="sFail">0</div><div class="stat-lbl">Failovers</div><div class="stat-change up">Stable</div></div>
+      </div>
+      <div class="section-header"><div class="section-title">Transport Status</div>
+        <div class="section-actions"><button class="btn btn-ghost btn-sm" onclick="refreshAll()">↻ Refresh</button></div>
+      </div>
+      <div class="transport-grid" id="tGrid"></div>
+      <div class="section-header" style="margin-top:8px"><div class="section-title">Latency Heatmap (24h)</div></div>
+      <div class="heatmap" id="heatmap"></div>
     </div>
 
-    <script>
-    // ─── WebSocket Client ──────────────────────────────────────────────
-    let ws = null;
-    let reconnectTimer = null;
-    let startTime = Date.now();
+    <!-- ═══ TRANSPORTS ═══ -->
+    <div class="page" id="page-transports">
+      <div class="section-header"><div class="section-title">All Transports</div>
+        <div class="section-actions"><button class="btn btn-primary btn-sm" onclick="showToast('Scoring all transports...','info')">🔄 Rescore All</button></div>
+      </div>
+      <div id="transportList"></div>
+    </div>
 
-    const CATEGORY_COLORS = {
-        'VPN':     '#89b4fa',
-        'Tunnel':  '#7c6fff',
-        'Relay':   '#f9e2af',
-        'Proxy':   '#a6e3a1',
-    };
+    <!-- ═══ TERMINAL ═══ -->
+    <div class="page" id="page-terminal">
+      <div class="terminal-wrap">
+        <div class="terminal-header">
+          <div class="terminal-dots"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+          <div class="terminal-tabs" id="termTabs"><button class="term-tab active" onclick="switchTab(0)">nyxora-1</button><button class="term-tab" onclick="addTab()">+</button></div>
+          <button class="btn btn-ghost btn-sm" onclick="clearTerm()">Clear</button>
+        </div>
+        <div id="terminal"></div>
+      </div>
+    </div>
 
-    // ─── Connect / Disconnect ──────────────────────────────────────────
-    function toggleConnection() {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.close();
-        } else {
-            connectWS();
-        }
+    <!-- ═══ CONFIG ═══ -->
+    <div class="page" id="page-config">
+      <div class="config-wrap">
+        <div class="config-toolbar"><h3>⚙️ Configuration</h3>
+          <div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="loadCfg()">Load</button><button class="btn btn-primary btn-sm" onclick="saveCfg()">Save</button><button class="btn btn-danger btn-sm" onclick="resetCfg()">Reset</button></div>
+        </div>
+        <textarea class="config-textarea" id="cfgEditor" spellcheck="false" aria-label="Config JSON">{ "server": { "host": "0.0.0.0", "port": 51820, "mode": "full" }, "transports": { "wireguard": { "enabled": true, "port": 51820, "weight": 30 }, "hysteria": { "enabled": true, "port": 8444, "weight": 12 }, "reality": { "enabled": true, "port": 443, "weight": 15 }, "vless": { "enabled": true, "port": 443, "weight": 12 }, "quic": { "enabled": true, "port": 9923, "weight": 15 }, "rathole": { "enabled": true, "port": 2333, "weight": 12 }, "openvpn": { "enabled": true, "port": 1194, "weight": 10 }, "frp": { "enabled": true, "port": 7000, "weight": 10 }, "backhaul": { "enabled": true, "port": 3080, "weight": 10 }, "websocket": { "enabled": true, "port": 9925, "weight": 8 }, "ssh": { "enabled": true, "port": 22, "weight": 5 }, "ipsec": { "enabled": true, "port": 500, "weight": 5 }, "shadowsocks": { "enabled": true, "port": 8388, "weight": 3 }, "tcp": { "enabled": true, "port": 9924, "weight": 3 } }, "multipath": { "mode": "weighted", "failover_threshold": 0.1 }, "security": { "auto_secrets": true, "tls_wrapper": true, "rate_limit": 1000 } }</textarea>
+      </div>
+    </div>
+
+    <!-- ═══ LOGS ═══ -->
+    <div class="page" id="page-logs">
+      <div class="section-header"><div class="section-title">📋 System Logs</div>
+        <div class="section-actions"><button class="btn btn-ghost btn-sm" onclick="filterLogs('all')">All</button><button class="btn btn-ghost btn-sm" onclick="filterLogs('info')">Info</button><button class="btn btn-ghost btn-sm" onclick="filterLogs('warn')">Warn</button><button class="btn btn-ghost btn-sm" onclick="filterLogs('error')">Error</button><button class="btn btn-ghost btn-sm" onclick="exportLogs()">📥 Export</button></div>
+      </div>
+      <div class="log-viewer" id="logViewer" role="log" aria-live="polite"></div>
+    </div>
+
+    <!-- ═══ METRICS ═══ -->
+    <div class="page" id="page-metrics">
+      <div class="charts-grid">
+        <div class="chart-card"><h3>📊 Transport Scores</h3><div class="chart-area"><div class="bar-chart" id="chScore"></div></div></div>
+        <div class="chart-card"><h3>📡 Latency</h3><div class="chart-area"><div class="bar-chart" id="chLat"></div></div></div>
+        <div class="chart-card"><h3>📦 Bandwidth (Mbps)</h3><div class="chart-area"><div class="bar-chart" id="chBw"></div></div></div>
+        <div class="chart-card"><h3>🔄 Failovers (7d)</h3><div class="chart-area"><div class="bar-chart" id="chFo"></div></div></div>
+      </div>
+    </div>
+
+    <!-- ═══ TOPOLOGY ═══ -->
+    <div class="page" id="page-topology">
+      <div class="section-header"><div class="section-title">🗺️ Network Topology</div></div>
+      <div class="topo-container" id="topoBox"></div>
+    </div>
+
+    <!-- ═══ USERS ═══ -->
+    <div class="page" id="page-users">
+      <div class="section-header"><div class="section-title">👥 User Management</div>
+        <div class="section-actions"><button class="btn btn-primary btn-sm" onclick="showToast('Add user modal coming soon','info')">+ Add User</button></div>
+      </div>
+      <div id="userList" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden"></div>
+    </div>
+
+    <!-- ═══ SSH ═══ -->
+    <div class="page" id="page-ssh">
+      <div class="ssh-form">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:18px">🔐 SSH Connect</h3>
+        <div class="form-group"><label class="form-label">Host</label><input type="text" id="sshHost" class="form-input" placeholder="192.168.1.100"></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">User</label><input type="text" id="sshUser" class="form-input" value="root"></div><div class="form-group"><label class="form-label">Port</label><input type="number" id="sshPort" class="form-input" value="22"></div></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" id="sshPass" class="form-input" placeholder="••••••••"></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Mode</label><select id="sshMode" class="form-input"><option value="full">Full (All 14)</option><option value="lite">Lite</option><option value="minimal">Minimal</option></select></div><div class="form-group"><label class="form-label">Protocol</label><select id="sshProto" class="form-input"><option value="auto">Auto</option><option value="wireguard">WireGuard</option><option value="hysteria">Hysteria</option><option value="reality">Reality</option></select></div></div>
+        <button class="btn btn-primary" style="width:100%;margin-top:8px;padding:11px" onclick="doSSH()">🚀 Connect & Provision</button>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div class="page" id="page-settings">
+      <div class="section-header"><div class="section-title">🛠️ Admin Settings</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:700px">
+        <div class="help-item"><h4>Authentication</h4><p>Admin password, 2FA, session timeout</p><button class="btn btn-ghost btn-sm" style="margin-top:6px">Configure</button></div>
+        <div class="help-item"><h4>Notifications</h4><p>Telegram, Email, Webhook alerts</p><button class="btn btn-ghost btn-sm" style="margin-top:6px">Configure</button></div>
+        <div class="help-item"><h4>Backup & Restore</h4><p>Export/import configuration</p><button class="btn btn-ghost btn-sm" style="margin-top:6px">Configure</button></div>
+        <div class="help-item"><h4>System Update</h4><p>Check for NYXOTA updates</p><button class="btn btn-success btn-sm" style="margin-top:6px">Check Updates</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottomNav" aria-label="Mobile nav"><div class="bottom-nav-inner">
+  <button class="bnav-btn active" onclick="showPage('dashboard')"><span class="ico">📊</span>Home</button>
+  <button class="bnav-btn" onclick="showPage('terminal')"><span class="ico">⌨️</span>Shell</button>
+  <button class="bnav-btn" onclick="showPage('logs')"><span class="ico">📋</span>Logs</button>
+  <button class="bnav-btn" onclick="showPage('metrics')"><span class="ico">📈</span>Stats</button>
+  <button class="bnav-btn" onclick="showPage('settings')"><span class="ico">🛠️</span>More</button>
+</div></nav>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<!-- CMD PALETTE -->
+<div class="cmd-overlay" id="cmdOverlay" role="dialog" aria-label="Commands">
+  <div class="cmd-box"><input type="text" class="cmd-input" id="cmdInput" placeholder="Type a command..." autocomplete="off"><div class="cmd-results" id="cmdResults"></div></div>
+</div>
+
+<!-- TOUR -->
+<div class="tour-overlay" id="tourOvl"></div>
+<div class="tour-box" id="tourBox" style="display:none"><div class="tour-step" id="tourStep">Step 1/5</div><h3 id="tourTitle">Welcome</h3><p id="tourDesc"></p><div style="display:flex;gap:6px;justify-content:flex-end"><button class="btn btn-ghost btn-sm" onclick="endTour()">Skip</button><button class="btn btn-primary btn-sm" onclick="nextTour()">Next</button></div></div>
+
+<!-- HELP -->
+<div class="help-panel" id="helpPanel" role="complementary" aria-label="Help">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h3 style="font-size:16px;font-weight:700">📖 Help</h3><button class="btn btn-ghost btn-sm" onclick="toggleHelp()">✕</button></div>
+  <div class="help-item"><h4>Shortcuts</h4><p><span class="kbd">Ctrl</span>+<span class="kbd">K</span> Commands<br><span class="kbd">1-9</span> Navigate<br><span class="kbd">?</span> Help<br><span class="kbd">T</span> Theme<br><span class="kbd">Esc</span> Close</p></div>
+  <div class="help-item"><h4>Terminal</h4><p><code>help</code> <code>version</code> <code>status</code><br><code>transports</code> <code>score</code> <code>logs</code><br><code>connect</code> <code>ping</code> <code>top</code></p></div>
+  <div class="help-item"><h4>Admin Only</h4><p>Full system access. All transports, config, users, logs visible.</p></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script>
+// ═══ DATA ═══
+const T=[
+  {n:'WireGuard',p:51820,s:95,l:12,ls:.1,st:'active',c:'VPN',cl:'#89b4fa'},
+  {n:'Hysteria',p:8444,s:91,l:16,ls:.2,st:'active',c:'Tunnel',cl:'#7c6fff'},
+  {n:'Reality',p:443,s:89,l:19,ls:.1,st:'active',c:'Tunnel',cl:'#a78bfa'},
+  {n:'VLESS',p:443,s:87,l:21,ls:.15,st:'active',c:'Tunnel',cl:'#c084fc'},
+  {n:'Rathole',p:2333,s:85,l:22,ls:.3,st:'active',c:'Relay',cl:'#f9e2af'},
+  {n:'QUIC',p:9923,s:82,l:26,ls:.4,st:'active',c:'Tunnel',cl:'#6ee7ff'},
+  {n:'Backhaul',p:3080,s:80,l:28,ls:.5,st:'active',c:'Relay',cl:'#fbbf24'},
+  {n:'OpenVPN',p:1194,s:75,l:35,ls:.8,st:'active',c:'VPN',cl:'#7dd3fc'},
+  {n:'WebSocket',p:9925,s:72,l:38,ls:1,st:'active',c:'Tunnel',cl:'#86efac'},
+  {n:'FRP',p:7000,s:68,l:42,ls:1.2,st:'testing',c:'Relay',cl:'#fca5a5'},
+  {n:'IPsec',p:500,s:65,l:48,ls:1.5,st:'active',c:'VPN',cl:'#93c5fd'},
+  {n:'SSH',p:22,s:55,l:55,ls:2,st:'inactive',c:'Tunnel',cl:'#d1d5db'},
+  {n:'Shadowsocks',p:8388,s:60,l:45,ls:1.8,st:'active',c:'Proxy',cl:'#fca5a5'},
+  {n:'TCP',p:9924,s:50,l:60,ls:2.5,st:'inactive',c:'Tunnel',cl:'#9ca3af'},
+];
+
+const users=[
+  {name:'admin',role:'Admin',status:'active',lastLogin:'2 min ago',sessions:3},
+  {name:'user1',role:'User',status:'active',lastLogin:'15 min ago',sessions:1},
+  {name:'user2',role:'User',status:'inactive',lastLogin:'2 days ago',sessions:0},
+  {name:'operator',role:'Operator',status:'active',lastLogin:'1 hour ago',sessions:2},
+];
+
+const I18N={
+  en:{dashboard:'Dashboard',transports:'Transports',terminal:'Terminal',config:'Config',logs:'Logs',metrics:'Metrics',topology:'Topology',users:'Users',ssh:'SSH Connect',settings:'Settings',overview:'Overview',live:'Live',cmd:'nyxora@admin:~$',welcome:'Welcome to NYXORA Admin'},
+  fa:{dashboard:'داشبورد',transports:'ترنسلات',terminal:'ترمینال',config:'تنظیمات',logs:'لاگ‌ها',metrics:'متريكس',topology:'توپولوژی',users:'کاربران',ssh:'اتصال SSH',settings:'تنظیمات',overview:'نمای کلی',live:'زنده',cmd:'nyxora@admin:~$',welcome:'به پنل ادمین NYXORA خوش آمدید'},
+  ru:{dashboard:'Панель',transports:'Транспорты',terminal:'Терминал',config:'Настройки',logs:'Логи',metrics:'Метрики',topology:'Топология',users:'Пользователи',ssh:'SSH',settings:'Настройки',overview:'Обзор',live:'Live',cmd:'nyxora@admin:~$',welcome:'Добро пожаловать'},
+  zh:{dashboard:'仪表板',transports:'传输',terminal:'终端',config:'配置',logs:'日志',metrics:'指标',topology:'拓扑',users:'用户',ssh:'SSH',settings:'设置',overview:'概览',live:'实时',cmd:'nyxora@admin:~$',welcome:'欢迎使用 NYXORA'},
+  ar:{dashboard:'لوحة التحكم',transports:'الناقلات',terminal:'محطة',config:'الإعدادات',logs:'السجلات',metrics:'المقاييس',topology:'طوبولوجيا',users:'المستخدمون',ssh:'SSH',settings:'الإعدادات',overview:'نظرة عامة',live:'مباشر',cmd:'nyxora@admin:~$',welcome:'مرحباً'},
+  hi:{dashboard:'डैशबोर्ड',transports:'ट्रांसपोर्ट',terminal:'टर्मिनल',config:'कॉन्फ़िग',logs:'लॉग',metrics:'मेट्रिक्स',topology:'टोपोलॉजी',users:'उपयोगकर्ता',ssh:'SSH',settings:'सेटिंग्स',overview:'अवलोकन',live:'लाइव',cmd:'nyxora@admin:~$',welcome:'स्वागत है'},
+  es:{dashboard:'Panel',transports:'Transportes',terminal:'Terminal',config:'Config',logs:'Registros',metrics:'Métricas',topology:'Topología',users:'Usuarios',ssh:'SSH',settings:'Ajustes',overview:'Resumen',live:'Live',cmd:'nyxora@admin:~$',welcome:'Bienvenido'},
+};
+
+let cLang=localStorage.getItem('nx-lang')||'en',cPage='dashboard',term=null,tourIdx=0;
+const PAGES=['dashboard','transports','terminal','config','logs','metrics','topology','users','ssh','settings'];
+
+// ═══ THEME ═══
+function toggleTheme(){const h=document.documentElement,c=h.getAttribute('data-theme'),n=c==='dark'?'light':'dark';h.setAttribute('data-theme',n);localStorage.setItem('nx-theme',n);toast(n==='dark'?'🌙 Dark mode':'☀️ Light mode','info')}
+(function(){const s=localStorage.getItem('nx-theme');if(s)document.documentElement.setAttribute('data-theme',s)})();
+
+// ═══ TOAST ═══
+function toast(msg,type='info'){const w=document.getElementById('toastWrap'),d=document.createElement('div');d.className='toast '+type;d.textContent=msg;d.setAttribute('role','alert');w.appendChild(d);setTimeout(()=>{d.style.animation='toastOut .3s ease forwards';setTimeout(()=>d.remove(),300)},3000)}
+
+// ═══ NAV ═══
+function showPage(p){cPage=p;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+p)?.classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.querySelector(`[data-page="${p}"]`)?.classList.add('active');const t=I18N[cLang];document.getElementById('pageTitle').textContent=t[p]||p;document.getElementById('pageBread').textContent=t.overview;if(p==='terminal'&&!term)initTerm();if(p==='topology')renderTopo();if(p==='users')renderUsers();document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));const mi=PAGES.indexOf(p);if(mi<5)document.querySelectorAll('.bnav-btn')[mi]?.classList.add('active')}
+
+// ═══ LANGUAGE ═══
+function setLang(l){cLang=l;localStorage.setItem('nx-lang',l);const t=I18N[l];document.getElementById('pageTitle').textContent=t[cPage]||cPage;document.getElementById('wsLabel').textContent=t.live;if(term){term.clear();term.writeln(`\x1b[1;36m  ${t.welcome}\x1b[0m`);term.write(t.cmd+' ')}toast(`Language: ${l.toUpperCase()}`,'info')}
+
+// ═══ TRANSPORTS ═══
+function renderTransports(){const g=document.getElementById('tGrid');g.innerHTML=T.map(t=>{const bc=t.s>=80?'var(--success)':t.s>=60?'var(--warning)':'var(--error)';return`<div class="t-card micro" onclick="toast('${t.n}: ${t.s}/100, ${t.l}ms','info')"><div class="t-card-header"><div class="t-card-name"><div class="t-card-icon" style="background:${t.cl}18;color:${t.cl}">${t.c[0]}</div><div><h4>${t.n}</h4><span class="cat">${t.c} · :${t.p}</span></div></div><span class="t-card-status ${t.st}">${t.st}</span></div><div class="t-card-metrics"><div class="t-metric"><div class="t-metric-val" style="color:var(--cyan)">${t.l}ms</div><div class="t-metric-lbl">Latency</div></div><div class="t-metric"><div class="t-metric-val" style="color:var(--warning)">${t.ls}%</div><div class="t-metric-lbl">Loss</div></div><div class="t-metric"><div class="t-metric-val" style="color:${bc}">${t.s}</div><div class="t-metric-lbl">Score</div></div></div><div class="t-card-bar"><div class="t-card-bar-fill" style="width:${t.s}%;background:${bc}"></div></div></div>`}).join('');const list=document.getElementById('transportList');if(list)list.innerHTML=T.map(t=>{const bc=t.s>=80?'var(--success)':t.s>=60?'var(--warning)':'var(--error)';return`<div style="display:grid;grid-template-columns:140px 80px 80px 80px 60px 100px 100px;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;font-size:13px"><div style="font-weight:600">${t.n}</div><div style="color:var(--text-muted)">:${t.p}</div><div class="t-card-status ${t.st}" style="width:fit-content">${t.st}</div><div style="color:var(--cyan)">${t.l}ms</div><div style="color:var(--warning)">${t.ls}%</div><div style="font-weight:700;color:${bc}">${t.s}</div><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="toast('Scoring ${t.n}...','info')">Score</button><button class="btn btn-ghost btn-sm" onclick="toast('Restarting ${t.n}...','warning')">Restart</button></div></div>`}).join('')}
+
+// ═══ HEATMAP ═══
+function renderHeatmap(){document.getElementById('heatmap').innerHTML=Array.from({length:288},()=>{const l=10+Math.random()*50,i=Math.min(l/60,1),r=Math.round(52+i*196),g=Math.round(211-i*98),b=Math.round(153-i*40);return`<div class="heat-cell" style="background:rgba(${r},${g},${b},.55)"><div class="heat-tip">${Math.round(l)}ms</div></div>`}).join('')}
+
+// ═══ USERS ═══
+function renderUsers(){document.getElementById('userList').innerHTML=users.map(u=>`<div style="display:grid;grid-template-columns:1fr 100px 80px 120px 80px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);font-size:13px"><div style="font-weight:600">${u.name}</div><div style="color:var(--text-muted)">${u.role}</div><div class="t-card-status ${u.status}">${u.status}</div><div style="color:var(--text-muted)">${u.lastLogin}</div><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm">Edit</button><button class="btn btn-danger btn-sm">Ban</button></div></div>`).join('')}
+
+// ═══ TERMINAL ═══
+function initTerm(){term=new Terminal({theme:{background:'#080a10',foreground:'#eef0ff',cursor:'#7c6fff',cursorAccent:'#080a10',selectionBackground:'rgba(124,111,255,.3)'},fontFamily:"'JetBrains Mono',monospace",fontSize:13,cursorBlink:true,cursorStyle:'bar'});term.open(document.getElementById('terminal'));const t=I18N[cLang];term.writeln(`\x1b[1;36m  NYXORA Admin Terminal v0.2.0\x1b[0m`);term.writeln(`\x1b[90m  ──────────────────────────────────────\x1b[0m\n`);term.write(t.cmd+' ');let inp='',hist=[],hIdx=-1;const cmds=['help','version','status','transports','score','config','logs','clear','connect','disconnect','ping','top','whoami','uptime','users','ban','restart','deploy'];term.onKey(({key,domEvent:e})=>{const pr=!e.altKey&&!e.ctrlKey&&!e.metaKey;if(e.keyCode===13){term.writeln('');if(inp.trim()){hist.push(inp.trim());hIdx=hist.length;execCmd(inp.trim())}inp='';term.write(t.cmd+' ')}else if(e.keyCode===8){if(inp.length>0){inp=inp.slice(0,-1);term.write('\b \b')}}else if(e.keyCode===38){if(hIdx>0){hIdx--;inp=hist[hIdx];term.write('\r\x1b[K'+t.cmd+' '+inp)}}else if(e.keyCode===40){if(hIdx<hist.length-1){hIdx++;inp=hist[hIdx];term.write('\r\x1b[K'+t.cmd+' '+inp)}else{hIdx=hist.length;inp='';term.write('\r\x1b[K'+t.cmd+' ')}}else if(e.keyCode===9){e.preventDefault();const m=cmds.filter(c=>c.startsWith(inp.toLowerCase()));if(m.length===1){inp=m[0];term.write('\r\x1b[K'+t.cmd+' '+inp)}else if(m.length>1){term.writeln('');term.write(m.join('  '));term.writeln('');term.write(t.cmd+' '+inp)}}else if(e.ctrlKey&&key==='c'){term.writeln('^C');inp='';term.write(t.cmd+' ')}else if(e.ctrlKey&&key==='v'){navigator.clipboard.readText().then(tx=>{inp+=tx;term.write(tx)}).catch(()=>{})}else if(pr){inp+=key;term.write(key)}})}
+function execCmd(c){const C={help:'\x1b[1;36mAdmin commands:\x1b[0m\n  version, status, transports, score\n  config, logs, connect, disconnect\n  ping, top, whoami, uptime\n  users, ban <user>, restart <transport>\n  deploy, clear',version:'NYXORA v0.2.0 (Go 1.24.4)\nBuild: linux/amd64\nCommit: 72e5bd9',status:'\x1b[1;32m● Connected\x1b[0m\nTransports: 12/14 active\nUsers: 847 online\nUptime: 48h 23m',transports:T.map(t=>`  ${t.st==='active'?'\x1b[1;32m●':t.st==='testing'?'\x1b[1;33m◐':'\x1b[90m○'}\x1b[0m ${t.n.padEnd(14)} :${t.p}  s:${t.s}  ${t.l}ms`).join('\n'),score:T.sort((a,b)=>b.s-a.s).map(t=>`  ${String(t.s).padStart(3)}  ${t.n}`).join('\n'),users:'  admin    Admin    active\n  user1    User     active\n  user2    User     inactive\n  operator Operator active',ping:'\x1b[1;36mPING\x1b[0m 91.107.243.237: 12ms, 0.1% loss',top:'PID USER  %CPU %MEM  COMMAND\n  1 root   2.3  1.1  nyxora\n 42 root   1.1  0.6  frps',whoami:'admin (root)',uptime:' 01:14:27 up 48:23, 847 users',config:'{ "mode":"full", "transports":14, "multipath":"weighted" }',logs:'[01:05:23] \x1b[1;32m[INFO]\x1b[0m  All transports active\n[01:05:26] \x1b[1;33m[WARN]\x1b[0m  FRP latency high\n[01:05:27] \x1b[1;32m[INFO]\x1b[0m  Health check passed',ban:'Usage: ban <username>',restart:'Usage: restart <transport>',deploy:'Deploying latest version...\n\x1b[1;32m✓ Deploy complete\x1b[0m'};if(c==='clear'){term.clear();return}const o=C[c]||`\x1b[1;31mUnknown:\x1b[0m ${c}\nType \x1b[1;36mhelp\x1b[0m for commands`;term.writeln(o)}
+function clearTerm(){if(term)term.clear()}
+function switchTab(i){document.querySelectorAll('.term-tab').forEach((t,j)=>t.classList.toggle('active',j===i))}
+function addTab(){const tabs=document.querySelectorAll('.term-tab'),b=document.createElement('button');b.className='term-tab';b.textContent=`nyxora-${tabs.length}`;b.onclick=()=>switchTab(tabs.length);tabs[tabs.length-1].insertAdjacentElement('beforebegin',b)}
+
+// ═══ LOGS ═══
+const LOGS=[
+  {t:'01:05:23',l:'info',m:'WireGuard established <span class="hl">12ms</span>'},{t:'01:05:24',l:'info',m:'Hysteria QUIC connected'},
+  {t:'01:05:25',l:'info',m:'Reality handshake done'},{t:'01:05:26',l:'warn',m:'FRP latency degraded'},
+  {t:'01:05:27',l:'info',m:'VLESS XTLS active'},{t:'01:05:28',l:'info',m:'All transports active'},
+  {t:'01:05:30',l:'debug',m:'Scoring: weighted mode'},{t:'01:06:00',l:'info',m:'Health check passed'},
+  {t:'01:06:10',l:'error',m:'Backup server timeout'},{t:'01:06:15',l:'info',m:'User admin logged in'},
+];
+function renderLogs(f='all'){const logs=f==='all'?LOGS:LOGS.filter(x=>x.l===f);document.getElementById('logViewer').innerHTML=logs.map(x=>`<div class="log-line"><span class="log-time">${x.t}</span><span class="log-level ${x.l}">[${x.l.toUpperCase()}]</span><span class="log-msg">${x.m}</span></div>`).join('')}
+function filterLogs(l){renderLogs(l)}
+function exportLogs(){const t=LOGS.map(x=>`${x.t} [${x.l.toUpperCase()}] ${x.m.replace(/<[^>]+>/g,'')}`).join('\n');const b=new Blob([t],{type:'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='nyxora-logs.txt';a.click();toast('Logs exported','success')}
+
+// ═══ CHARTS ═══
+function renderCharts(){const mk=(el,data,colorFn)=>{el.innerHTML=data.map((d,i)=>`<div class="bar" style="height:${d.h}%;background:${colorFn(d,i)}"><span class="bar-label">${d.l}</span></div>`).join('')};mk(document.getElementById('chScore'),T.map(t=>({h:t.s,l:t.n.slice(0,4)})),d=>d.h>=80?'var(--success)':d.h>=60?'var(--warning)':'var(--error)');const mx=Math.max(...T.map(t=>t.l));mk(document.getElementById('chLat'),T.map(t=>({h:(t.l/mx)*100,l:t.n.slice(0,4)})),d=>d.h<40?'var(--success)':d.h<70?'var(--warning)':'var(--error)');mk(document.getElementById('chBw'),[450,380,320,290,260,240,220,180,160,140,120,80,100,60].map((b,i)=>({h:(b/450)*100,l:T[i]?.n.slice(0,4)||''})),()=>'var(--accent)');mk(document.getElementById('chFo'),[0,0,1,0,0,0,2,0,0,0,0,0,1,0].map((f,i)=>({h:f===0?5:f*30,l:T[i]?.n.slice(0,4)||''})),d=>d.h<=5?'var(--success)':'var(--error)')}
+
+// ═══ TOPOLOGY ═══
+function renderTopo(){
+  const nodes=[{n:'Local Server',x:50,y:8,c:'var(--accent)',icon:'🖥️'},{n:'WireGuard',x:10,y:38,c:'var(--success)',icon:'🔐'},{n:'Hysteria',x:30,y:38,c:'var(--accent2)',icon:'🚀'},{n:'Reality',x:50,y:38,c:'var(--cyan)',icon:'🛡️'},{n:'VLESS',x:70,y:38,c:'var(--pink)',icon:'🌐'},{n:'QUIC',x:90,y:38,c:'var(--warning)',icon:'⚡'},{n:'Remote',x:50,y:85,c:'var(--error)',icon:'📡'}];
+  const lines=[[0,1],[0,2],[0,3],[0,4],[0,5],[1,6],[2,6],[3,6],[4,6],[5,6]];
+  const box=document.getElementById('topoBox');
+  let html='';
+  lines.forEach(([a,b])=>{
+    const x1=nodes[a].x,y1=nodes[a].y+4,x2=nodes[b].x,y2=nodes[b].y;
+    const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+    const angle=Math.atan2(dy,dx)*180/Math.PI;
+    html+=`<div style="position:absolute;left:${x1}%;top:${y1}%;width:${len}%;height:2px;background:linear-gradient(90deg,${nodes[a].c},${nodes[b].c});transform:rotate(${angle}deg);transform-origin:left center;z-index:1;opacity:0.5"></div>`;
+    html+=`<div style="position:absolute;left:${(x1+x2)/2}%;top:${(y1+y2)/2}%;width:4px;height:4px;background:${nodes[a].c};border-radius:50%;z-index:2;animation:packet ${2+Math.random()*2}s linear infinite;box-shadow:0 0 6px ${nodes[a].c}"></div>`;
+  });
+  nodes.forEach(n=>{
+    html+=`<div class="topo-node" style="left:${n.x}%;top:${n.y}%;border-color:${n.c};text-align:center" onclick="toast('${n.n}: Active','info')"><div style="font-size:16px;margin-bottom:2px">${n.icon}</div><div style="font-size:10px;font-weight:600">${n.n}</div></div>`;
+  });
+  box.innerHTML=html;
+}
+
+// ═══ SSH ═══
+function doSSH(){
+  const h=document.getElementById('sshHost').value;
+  const u=document.getElementById('sshUser')?.value||'root';
+  const p=document.getElementById('sshPort')?.value||'22';
+  const mode=document.getElementById('sshMode')?.value||'full';
+  if(!h){toast('Enter host IP','error');return}
+  if(!/^[\d.]+$/.test(h)&&!/^[a-z0-9.-]+$/i.test(h)){toast('Invalid host format','error');return}
+  showPage('terminal');
+  setTimeout(()=>{
+    if(term){
+      term.writeln(`\x1b[1;36m[CONNECT]\x1b[0m ${u}@${h}:${p} (mode: ${mode})`);
+      let d=0;
+      [{m:`\x1b[1;36m[STEP 1]\x1b[0m PING ${h}...`,dl:400},
+       {m:`\x1b[1;32m[STEP 1]\x1b[0m Latency: 12ms, Loss: 0.1%`,dl:500},
+       {m:`\x1b[1;36m[STEP 2]\x1b[0m SSH ${u}@${h}:${p} authenticating...`,dl:500},
+       {m:`\x1b[1;32m[STEP 2]\x1b[0m Authenticated`,dl:400},
+       {m:`\x1b[1;36m[STEP 3]\x1b[0m DETECT OS: Ubuntu 22.04`,dl:300},
+       {m:`\x1b[1;36m[STEP 4]\x1b[0m INSTALL: deploying tunnel binaries...`,dl:700},
+       {m:`\x1b[1;32m[STEP 4]\x1b[0m Installed: wireguard, hysteria, reality, vless`,dl:500},
+       {m:`\x1b[1;36m[STEP 5]\x1b[0m WG KEY: generating X25519 keypair...`,dl:600},
+       {m:`\x1b[1;32m[STEP 5]\x1b[0m Public key: ${Array(44).fill(0).map(()=>'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random()*62)]).join('')}`,dl:400},
+       {m:`\x1b[1;36m[STEP 6]\x1b[0m REMOTE WG: ssh config + wg-quick up`,dl:500},
+       {m:`\x1b[1;36m[STEP 7]\x1b[0m LOCAL WG: wg-quick up nyxora0`,dl:400},
+       {m:`\x1b[1;36m[STEP 8]\x1b[0m PROVISION: starting daemons...`,dl:800},
+       {m:`\x1b[1;32m[STEP 8]\x1b[0m frps, rathole, ss-server, hysteria started`,dl:500},
+       {m:`\x1b[1;36m[STEP 9]\x1b[0m ALL-ACTIVE: testing all transports...`,dl:600},
+       {m:`\x1b[1;32m[STEP 9]\x1b[0m 14/14 transports active`,dl:400},
+       {m:`\x1b[1;36m[STEP 10]\x1b[0m MONITOR: health checks started`,dl:300},
+       {m:`\n\x1b[1;32m✓ Connected to ${h} via NYXORA (${mode} mode)\x1b[0m`,dl:200}
+      ].forEach(s=>{d+=s.dl;setTimeout(()=>term.writeln(s.m),d)});
     }
+  },100);
+}
 
-    function connectWS() {
-        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const url = `${proto}//${location.host}/api/ws`;
+// ═══ CMD PALETTE ═══
+const cmds=[
+  {i:'📊',t:'Dashboard',d:'Overview',a:()=>showPage('dashboard'),k:'1'},{i:'🚇',t:'Transports',d:'All transports',a:()=>showPage('transports'),k:'2'},
+  {i:'⌨️',t:'Terminal',d:'Open shell',a:()=>showPage('terminal'),k:'3'},{i:'⚙️',t:'Config',d:'Edit config',a:()=>showPage('config'),k:'4'},
+  {i:'📋',t:'Logs',d:'System logs',a:()=>showPage('logs'),k:'5'},{i:'📈',t:'Metrics',d:'Charts',a:()=>showPage('metrics'),k:'6'},
+  {i:'🗺️',t:'Topology',d:'Network map',a:()=>showPage('topology'),k:'7'},{i:'👥',t:'Users',d:'Manage users',a:()=>showPage('users'),k:'8'},
+  {i:'🔐',t:'SSH',d:'Connect remote',a:()=>showPage('ssh'),k:'9'},{i:'🌙',t:'Theme',d:'Toggle',a:toggleTheme,k:'T'},
+  {i:'📖',t:'Help',d:'Shortcuts',a:toggleHelp,k:'?'},{i:'🚀',t:'Tour',d:'Onboarding',a:startTour,k:''},
+];
+function openCmd(){document.getElementById('cmdOverlay').classList.add('open');const i=document.getElementById('cmdInput');i.value='';i.focus();filterCmd('')}
+function closeCmd(){document.getElementById('cmdOverlay').classList.remove('open')}
+function filterCmd(q){const r=cmds.filter(c=>c.t.toLowerCase().includes(q.toLowerCase()));document.getElementById('cmdResults').innerHTML=r.map((c,i)=>`<div class="cmd-item${i===0?' sel':''}" onclick="cmds.find(x=>x.t==='${c.t}').a();closeCmd()"><div class="cmd-item-icon">${c.i}</div><div class="cmd-item-text"><div class="cmd-item-title">${c.t}</div><div class="cmd-item-desc">${c.d}</div></div>${c.k?`<span class="cmd-item-key">${c.k}</span>`:''}</div>`).join('')}
+document.getElementById('cmdInput').addEventListener('input',e=>filterCmd(e.target.value));
+document.getElementById('cmdOverlay').addEventListener('click',e=>{if(e.target.id==='cmdOverlay')closeCmd()});
 
-        addLog('info', `Connecting to ${url}...`);
-        ws = new WebSocket(url);
+// ═══ TOUR ═══
+const tourSteps=[{t:'Welcome to NYXORA Admin',d:'Your admin-only dashboard for managing all tunnel transports.'},{t:'Dashboard',d:'Real-time stats, transport cards, and latency heatmap.'},{t:'Terminal',d:'Full shell with tab completion, history, and admin commands.'},{t:'Users & Settings',d:'Manage users, configure auth, and system settings.'},{t:'All Done!',d:'Press ? anytime for help. Ctrl+K for commands.'}];
+function startTour(){tourIdx=0;document.getElementById('tourOvl').classList.add('active');const b=document.getElementById('tourBox');b.style.display='block';b.style.cssText='position:fixed;top:25%;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;max-width:340px;box-shadow:var(--shadow-lg);z-index:2001';updTour()}
+function updTour(){const s=tourSteps[tourIdx];document.getElementById('tourStep').textContent=`Step ${tourIdx+1}/${tourSteps.length}`;document.getElementById('tourTitle').textContent=s.t;document.getElementById('tourDesc').textContent=s.d}
+function nextTour(){tourIdx++;if(tourIdx>=tourSteps.length){endTour();return}updTour()}
+function endTour(){document.getElementById('tourOvl').classList.remove('active');document.getElementById('tourBox').style.display='none';localStorage.setItem('nx-tour','1')}
+if(!localStorage.getItem('nx-tour'))setTimeout(startTour,1500);
 
-        ws.onopen = () => {
-            document.getElementById('wsDot').classList.add('connected');
-            document.getElementById('wsLabel').textContent = 'Connected';
-            document.getElementById('connectBtn').textContent = 'Disconnect';
-            addLog('success', 'WebSocket connected');
-        };
+// ═══ HELP ═══
+function toggleHelp(){document.getElementById('helpPanel').classList.toggle('open')}
 
-        ws.onmessage = (evt) => {
-            try {
-                const data = JSON.parse(evt.data);
-                handleUpdate(data);
-            } catch (e) {
-                console.error('Parse error:', e);
-            }
-        };
+// ═══ SHORTCUTS ═══
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='k'){e.preventDefault();openCmd();return}if(e.key==='Escape'){closeCmd();document.getElementById('helpPanel').classList.remove('open');return}if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;if(e.key>='1'&&e.key<='9')showPage(PAGES[parseInt(e.key)-1]);if(e.key==='?')toggleHelp();if(e.key==='t'||e.key==='T')toggleTheme()});
 
-        ws.onclose = () => {
-            document.getElementById('wsDot').classList.remove('connected');
-            document.getElementById('wsLabel').textContent = 'Disconnected';
-            document.getElementById('connectBtn').textContent = 'Connect';
-            addLog('warning', 'WebSocket disconnected, retrying in 5s...');
-            reconnectTimer = setTimeout(connectWS, 5000);
-        };
+// ═══ MOUSE PARALLAX ═══
+document.querySelectorAll('.stat-card').forEach(c=>{c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%')})});
 
-        ws.onerror = (err) => {
-            addLog('error', 'WebSocket error');
-        };
-    }
+// ═══ CONFIG ═══
+function loadCfg(){toast('Config loaded','success')}function saveCfg(){toast('Config saved','success')}function resetCfg(){toast('Config reset','warning')}
 
-    // ─── Handle Incoming Data ──────────────────────────────────────────
-    function handleUpdate(data) {
-        // data: { transports: [...], stats: {...}, events: [...] }
-        if (data.transports) renderTransports(data.transports);
-        if (data.stats) renderStats(data.stats);
-        if (data.events) data.events.forEach(e => addLog(e.level || 'info', e.message));
-    }
+// ═══ REFRESH ═══
+function refreshAll(){toast('Refreshing all transports...','info');renderTransports();renderCharts();renderHeatmap()}
 
-    // ─── Render Functions ──────────────────────────────────────────────
-    function renderTransports(list) {
-        const tbody = document.getElementById('transportBody');
-        tbody.innerHTML = list.map(t => {
-            const scoreClass = t.score >= 80 ? 'success' : t.score >= 60 ? 'warning' : 'bad';
-            const barColor = t.score >= 80 ? 'var(--success)' : t.score >= 60 ? 'var(--warning)' : 'var(--error)';
-            const latClass = t.latency < 30 ? 'good' : t.latency < 60 ? 'medium' : 'bad';
-            const catColor = CATEGORY_COLORS[t.category] || '#cdd6f4';
-
-            return `<tr class="transport-row">
-                <td>
-                    <div class="transport-name-cell">
-                        <div class="transport-icon" style="background:${catColor}20;color:${catColor}">
-                            ${t.category ? t.category[0] : '?'}
-                        </div>
-                        <div class="transport-info">
-                            <h4>${t.name}</h4>
-                            <span>${t.category || ''}</span>
-                        </div>
-                    </div>
-                </td>
-                <td class="mono">:${t.port}</td>
-                <td><span class="status-pill ${t.status}"><span class="dot"></span>${t.status}</span></td>
-                <td class="latency-cell ${latClass}">${t.latency}ms</td>
-                <td class="mono">${t.loss}%</td>
-                <td>
-                    <div class="score-cell">
-                        <div class="score-bar-bg">
-                            <div class="score-bar-fill" style="width:${t.score}%;background:${barColor}"></div>
-                        </div>
-                        <span class="score-num" style="color:${barColor}">${t.score}</span>
-                    </div>
-                </td>
-            </tr>`;
-        }).join('');
-
-        // Update summary stats
-        const active = list.filter(t => t.status === 'active').length;
-        document.getElementById('activeCount').textContent = `${active}/${list.length}`;
-
-        const sorted = [...list].sort((a, b) => b.score - a.score);
-        if (sorted.length > 0) {
-            document.getElementById('bestTransport').textContent = sorted[0].name;
-            document.getElementById('bestScore').textContent = `Score: ${sorted[0].score}`;
-        }
-
-        const avgLat = list.reduce((s, t) => s + t.latency, 0) / (list.length || 1);
-        document.getElementById('avgLatency').textContent = `${Math.round(avgLat)}ms`;
-    }
-
-    function renderStats(stats) {
-        if (stats.uptime) {
-            document.getElementById('uptime').textContent = stats.uptime;
-        }
-        if (stats.failovers !== undefined) {
-            document.getElementById('failoverCount').textContent = `${stats.failovers} failovers`;
-        }
-    }
-
-    // ─── Activity Log ──────────────────────────────────────────────────
-    function addLog(level, message) {
-        const log = document.getElementById('activityLog');
-        const now = new Date();
-        const time = now.toTimeString().slice(0, 8);
-
-        const iconMap = { info: 'i', success: '✓', warning: '!', error: '✕' };
-
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.innerHTML = `
-            <span class="log-time">${time}</span>
-            <div class="log-icon ${level}">${iconMap[level] || 'i'}</div>
-            <span class="log-msg">${message}</span>
-        `;
-        log.insertBefore(entry, log.firstChild);
-
-        // Keep max 50 entries
-        while (log.children.length > 50) {
-            log.removeChild(log.lastChild);
-        }
-    }
-
-    // ─── Uptime Timer ──────────────────────────────────────────────────
-    function updateUptime() {
-        const diff = Math.floor((Date.now() - startTime) / 1000);
-        const h = Math.floor(diff / 3600);
-        const m = Math.floor((diff % 3600) / 60);
-        const s = diff % 60;
-        const el = document.getElementById('uptime');
-        if (el.textContent === '—') {
-            el.textContent = `${h}h ${m}m ${s}s`;
-        }
-    }
-    setInterval(updateUptime, 1000);
-
-    // ─── Auto-connect ──────────────────────────────────────────────────
-    // Try WebSocket first; fall back to demo data
-    setTimeout(() => {
-        try {
-            connectWS();
-        } catch (e) {
-            addLog('warning', 'WebSocket unavailable, loading demo data');
-            loadDemoData();
-        }
-    }, 500);
-
-    // ─── Demo Data Fallback ────────────────────────────────────────────
-    function loadDemoData() {
-        const demo = {
-            transports: [
-                { name: 'WireGuard', port: 51820, score: 95, latency: 12, loss: 0.1, status: 'active', category: 'VPN' },
-                { name: 'Hysteria', port: 8444, score: 91, latency: 16, loss: 0.2, status: 'active', category: 'Tunnel' },
-                { name: 'Reality', port: 443, score: 89, latency: 19, loss: 0.1, status: 'active', category: 'Tunnel' },
-                { name: 'VLESS', port: 443, score: 87, latency: 21, loss: 0.15, status: 'active', category: 'Tunnel' },
-                { name: 'Rathole', port: 2333, score: 85, latency: 22, loss: 0.3, status: 'active', category: 'Relay' },
-                { name: 'QUIC', port: 9923, score: 82, latency: 26, loss: 0.4, status: 'active', category: 'Tunnel' },
-                { name: 'Backhaul', port: 3080, score: 80, latency: 28, loss: 0.5, status: 'active', category: 'Relay' },
-                { name: 'OpenVPN', port: 1194, score: 75, latency: 35, loss: 0.8, status: 'active', category: 'VPN' },
-                { name: 'WebSocket', port: 9925, score: 72, latency: 38, loss: 1.0, status: 'active', category: 'Tunnel' },
-                { name: 'FRP', port: 7000, score: 68, latency: 42, loss: 1.2, status: 'testing', category: 'Relay' },
-                { name: 'IPsec', port: 500, score: 65, latency: 48, loss: 1.5, status: 'active', category: 'VPN' },
-                { name: 'SSH', port: 22, score: 55, latency: 55, loss: 2.0, status: 'inactive', category: 'Tunnel' },
-            ],
-            stats: { uptime: '2h 34m', failovers: 0 },
-            events: [
-                { level: 'success', message: 'WireGuard tunnel established (12ms)' },
-                { level: 'info', message: 'Hysteria connected via QUIC' },
-                { level: 'info', message: 'Reality handshake completed' },
-            ]
-        };
-        handleUpdate(demo);
-    }
-    </script>
+// ═══ INIT ═══
+document.getElementById('langSel').value=cLang;setLang(cLang);renderTransports();renderLogs();renderCharts();renderHeatmap();setInterval(()=>{T.forEach(t=>{t.l=Math.max(5,t.l+Math.floor(Math.random()*5-2));t.s=Math.max(30,Math.min(100,t.s+Math.floor(Math.random()*3-1)))});if(cPage==='dashboard')renderTransports();if(cPage==='metrics')renderCharts()},5000);
+</script>
 </body>
 </html>

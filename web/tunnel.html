@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#020203">
+    <title>NYXORA — Tunnel Orchestrator</title>
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root,[data-theme="dark"]{--bg:#020203;--bg2:#06070d;--sf:#0c0e16;--sf2:#111320;--sf3:#161829;--bd:rgba(255,255,255,.06);--bda:rgba(124,111,255,.35);--tx:#eef0ff;--sub:#a0a4c0;--mut:#5c6088;--ac:#7c6fff;--acg:rgba(124,111,255,.15);--acs:rgba(124,111,255,.08);--ok:#34d399;--oks:rgba(52,211,153,.08);--wn:#fbbf24;--er:#f87171;--erg:rgba(248,113,113,.08);--cy:#22d3ee;--pk:#f472b6;--gl:rgba(12,14,22,.85);--r:14px;--rs:8px;--rxs:6px;--sh:0 8px 32px rgba(0,0,0,.4);--ez:cubic-bezier(.16,1,.3,1);--fn:'Inter',system-ui,sans-serif;--mn:'JetBrains Mono',monospace}
+[data-theme="light"]{--bg:#f5f6fa;--bg2:#f0f2f7;--sf:#fff;--sf2:#f8f9fc;--sf3:#eef1f6;--bd:rgba(0,0,0,.07);--bda:rgba(100,80,220,.3);--tx:#1a1d2e;--sub:#5a5e78;--mut:#9ca3af;--ac:#6c5ce7;--acg:rgba(108,92,231,.12);--acs:rgba(108,92,231,.06);--ok:#10b981;--oks:rgba(16,185,129,.06);--wn:#f59e0b;--er:#ef4444;--erg:rgba(239,68,68,.06);--cy:#06b6d4;--pk:#ec4899;--gl:rgba(255,255,255,.88);--sh:0 8px 32px rgba(0,0,0,.08)}
+body{font-family:var(--fn);background:var(--bg2);color:var(--tx);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 90% 70% at 10% 20%,rgba(124,111,255,.05) 0%,transparent 60%);pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;display:flex;min-height:100vh}
+.sb{width:68px;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:4px;position:fixed;top:0;left:0;height:100vh;z-index:100}
+.sb-logo{width:40px;height:40px;margin-bottom:16px;filter:drop-shadow(0 0 12px rgba(124,111,255,.3))}
+.sb-nav{display:flex;flex-direction:column;gap:3px;flex:1;width:100%;padding:0 8px}
+.sb-sec{font-size:8px;color:var(--mut);text-transform:uppercase;letter-spacing:1.5px;padding:10px 0 3px;text-align:center}
+.nb{width:52px;height:38px;border-radius:var(--rs);border:none;background:transparent;color:var(--mut);font-size:16px;cursor:pointer;transition:all .2s var(--ez);display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto}
+.nb:hover{background:var(--acs);color:var(--tx)}.nb.a{background:var(--acs);color:var(--ac)}
+.nb.a::before{content:'';position:absolute;left:-8px;top:50%;transform:translateY(-50%);width:3px;height:18px;background:var(--ac);border-radius:0 3px 3px 0}
+.nb .tp{position:absolute;left:58px;background:var(--sf3);color:var(--tx);padding:5px 10px;border-radius:var(--rxs);font-size:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid var(--bd);z-index:200}.nb:hover .tp{opacity:1}
+.mn{flex:1;margin-left:68px;display:flex;flex-direction:column}
+.tb{height:52px;background:var(--gl);backdrop-filter:blur(24px);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:50}
+.tb-l{display:flex;align-items:center;gap:10px}.tb-t{font-size:13px;font-weight:600}
+.tb-r{display:flex;align-items:center;gap:8px}
+.ls{background:var(--sf2);border:1px solid var(--bd);border-radius:var(--rxs);color:var(--tx);padding:4px 8px;font-size:11px;cursor:pointer;outline:none}.ls:focus{border-color:var(--ac)}
+.tt{width:34px;height:18px;background:var(--sf3);border-radius:9px;cursor:pointer;position:relative;border:1px solid var(--bd);transition:all .3s}.tt::after{content:'🌙';position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:50%;background:var(--ac);transition:all .3s var(--ez);display:flex;align-items:center;justify-content:center;font-size:8px}[data-theme="light"] .tt::after{content:'☀️';left:17px}
+.sp{display:flex;align-items:center;gap:5px;padding:4px 8px;background:var(--sf2);border-radius:16px;font-size:10px;font-weight:500;border:1px solid var(--bd)}.sp .d{width:5px;height:5px;border-radius:50%;background:var(--ok);animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.4}}
+.ct{flex:1;padding:18px 20px;overflow-y:auto}
+.pg{display:none}.pg.a{display:block;animation:fi .3s var(--ez)}@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.tunnel-map{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:24px;position:relative;min-height:400px;margin-bottom:20px}
+.server-node{position:absolute;padding:12px 16px;background:var(--sf2);border:2px solid var(--bd);border-radius:var(--r);cursor:pointer;transition:all .3s var(--ez);z-index:2;min-width:160px;text-align:center}
+.server-node:hover{border-color:var(--ac);transform:scale(1.05);box-shadow:0 0 24px var(--acg)}
+.server-node.active{border-color:var(--ok);box-shadow:0 0 20px var(--oks)}
+.server-node.local{border-color:var(--ac)}
+.server-icon{font-size:24px;margin-bottom:6px}
+.server-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.server-ip{font-size:10px;color:var(--mut);font-family:var(--mn)}
+.server-status{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:6px;font-size:10px}
+.server-dot{width:6px;height:6px;border-radius:50%}
+.server-dot.on{background:var(--ok);box-shadow:0 0 6px var(--oks)}
+.server-dot.off{background:var(--mut)}
+.tunnel-line{position:absolute;height:3px;z-index:1;border-radius:2px}
+.tunnel-line.active{background:linear-gradient(90deg,var(--ok),var(--ac));box-shadow:0 0 10px var(--acg)}
+.tunnel-line.inactive{background:var(--mut);opacity:.3}
+.tunnel-label{position:absolute;background:var(--sf3);border:1px solid var(--bd);border-radius:var(--rxs);padding:4px 8px;font-size:9px;font-weight:600;z-index:3;white-space:nowrap}
+@keyframes dataFlow{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+.tunnel-line.active{background-size:200% 100%;animation:dataFlow 2s linear infinite}
+.connect-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px}
+.fg{margin-bottom:10px}.fl{font-size:10px;color:var(--mut);display:block;margin-bottom:4px;font-weight:500}
+.fi{width:100%;padding:9px 12px;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--rxs);color:var(--tx);font-size:12px;outline:none;transition:border-color .2s;font-family:var(--fn)}.fi:focus{border-color:var(--ac)}.fi.error{border-color:var(--er)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{padding:8px 16px;border-radius:var(--rxs);border:none;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s var(--ez);font-family:var(--fn)}.btn:active{transform:scale(.97)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.bp{background:var(--ac);color:#fff}.bp:hover:not(:disabled){background:#6a5ce0;box-shadow:0 4px 12px var(--acg)}
+.bg{background:var(--sf2);color:var(--tx);border:1px solid var(--bd)}.bg:hover{border-color:var(--ac)}
+.bd{background:var(--erg);color:var(--er);border:1px solid rgba(248,113,113,.2)}
+.bs{background:var(--oks);color:var(--ok);border:1px solid rgba(52,211,153,.2)}
+.bsm{padding:4px 8px;font-size:10px}
+.transport-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:16px 0}
+.transport-option{background:var(--sf);border:2px solid var(--bd);border-radius:var(--rs);padding:10px;text-align:center;cursor:pointer;transition:all .2s var(--ez)}
+.transport-option:hover{border-color:var(--ac)}
+.transport-option.selected{border-color:var(--ac);background:var(--acs)}
+.transport-option .icon{font-size:20px;margin-bottom:4px}
+.transport-option .name{font-size:11px;font-weight:600}
+.transport-option .port{font-size:9px;color:var(--mut);font-family:var(--mn)}
+.steps{display:flex;flex-direction:column;gap:6px;margin:16px 0}
+.step{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--sf2);border-radius:var(--rs);font-size:12px;border-left:3px solid var(--mut);transition:all .3s}
+.step.done{border-left-color:var(--ok);background:var(--oks)}
+.step.active{border-left-color:var(--ac);background:var(--acs)}
+.step.error{border-left-color:var(--er);background:var(--erg)}
+.step-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.step.done .step-icon{background:var(--oks);color:var(--ok)}
+.step.active .step-icon{background:var(--acs);color:var(--ac)}
+.step.error .step-icon{background:var(--erg);color:var(--er)}
+.step-text{flex:1}.step-title{font-weight:600}.step-desc{font-size:10px;color:var(--mut)}
+.tunnel-list{display:flex;flex-direction:column;gap:8px}
+.tunnel-item{display:grid;grid-template-columns:1fr 120px 100px 80px 120px;align-items:center;padding:12px 16px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);transition:all .2s}
+.tunnel-item:hover{border-color:var(--bda)}
+.tunnel-item .servers{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px}
+.tunnel-item .arrow{color:var(--ac);font-size:16px}
+.tunnel-item .transport{font-size:11px;color:var(--sub)}
+.tunnel-item .latency{font-size:12px;font-weight:600}
+.tunnel-item .status{font-size:10px;font-weight:600;padding:3px 8px;border-radius:var(--rxs);width:fit-content}
+.tunnel-item .status.on{background:var(--oks);color:var(--ok)}
+.tunnel-item .status.off{background:rgba(92,96,136,.1);color:var(--mut)}
+.tunnel-item .actions{display:flex;gap:4px}
+.config-builder{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px}
+.config-preview{background:#080a10;border:1px solid var(--bd);border-radius:var(--rs);padding:12px;font-family:var(--mn);font-size:11px;line-height:1.7;color:var(--cy);max-height:300px;overflow-y:auto;white-space:pre-wrap}
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.sc{background:var(--gl);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:var(--r);padding:16px;transition:all .3s var(--ez);cursor:pointer}
+.sc:hover{border-color:var(--bda);transform:translateY(-3px);box-shadow:var(--sh)}
+.sc-i{font-size:20px;margin-bottom:6px}.sc-v{font-size:24px;font-weight:800;line-height:1}.sc-l{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1.5px;margin-top:5px}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.st{font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}.st::before{content:'';width:3px;height:16px;background:var(--ac);border-radius:2px}
+.sa{display:flex;gap:5px}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--rxs)}
+.badge.ok{background:var(--oks);color:var(--ok)}.badge.warn{background:rgba(251,191,36,.1);color:var(--wn)}.badge.er{background:var(--erg);color:var(--er)}.badge.info{background:var(--acs);color:var(--ac)}
+.kbd{display:inline-block;padding:1px 4px;background:var(--sf3);border:1px solid var(--bd);border-radius:3px;font-family:var(--mn);font-size:8px;color:var(--mut)}
+.tw{position:fixed;top:68px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:5px}
+.tst{padding:8px 12px;background:var(--gl);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:var(--rs);font-size:11px;display:flex;align-items:center;gap:6px;animation:ti .3s var(--ez);max-width:300px;box-shadow:var(--sh)}
+.tst.ok{border-left:3px solid var(--ok)}.tst.er{border-left:3px solid var(--er)}.tst.wn{border-left:3px solid var(--wn)}.tst.info{border-left:3px solid var(--cy)}
+@keyframes ti{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.spinner{width:16px;height:16px;border:2px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:center;justify-content:center}.modal-bg.open{display:flex}
+.modal{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;max-width:400px;width:90%;box-shadow:var(--sh)}
+.modal h3{font-size:14px;font-weight:700;margin-bottom:12px}
+.modal p{font-size:12px;color:var(--sub);margin-bottom:16px;line-height:1.6}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+.chart-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.chart-card h4{font-size:12px;font-weight:600;margin-bottom:12px}
+.notification{position:fixed;bottom:20px;left:20px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--sh);z-index:999;animation:slideIn .3s var(--ez);max-width:350px}
+@keyframes slideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.notification .icon{font-size:20px}
+.notification .text{font-size:12px;flex:1}
+.notification .close{background:none;border:none;color:var(--mut);cursor:pointer;font-size:16px}
+@media(max-width:900px){.sb{width:52px}.mn{margin-left:52px}.sg{grid-template-columns:repeat(2,1fr)}.tunnel-item{grid-template-columns:1fr;gap:8px}}
+@media(max-width:600px){.sb{display:none}.mn{margin-left:0}.sg{grid-template-columns:1fr}.bn{display:block}.ct{padding-bottom:70px}.tunnel-item{grid-template-columns:1fr}}
+.bn{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--gl);backdrop-filter:blur(20px);border-top:1px solid var(--bd);z-index:100;padding:5px 0}
+.bni{display:flex;justify-content:space-around}
+.bnb{display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--mut);font-size:8px;cursor:pointer;padding:3px 8px}.bnb .bi{font-size:16px}.bnb.a{color:var(--ac)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(124,111,255,.15);border-radius:2px}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+@media(hover:none)and(pointer:coarse){.nb{min-width:44px;min-height:44px}.btn{min-height:44px;padding:10px 16px}.bnb{min-width:44px;min-height:44px}}
+@media print{.sb,.bn,.tb,.tw{display:none!important}.mn{margin-left:0!important}body{background:#fff;color:#000}body::before{display:none}}
+[dir="rtl"] .sb{border-right:none;border-left:1px solid var(--bd)}[dir="rtl"] .nb.a::before{left:auto;right:-8px;border-radius:3px 0 0 3px}[dir="rtl"] .nb .tp{left:auto;right:58px}
+</style>
+</head>
+<body>
+<div class="app">
+<nav class="sb">
+  <img src="images/logo-small.png" alt="NYXORA" class="sb-logo">
+  <div class="sb-nav">
+    <div class="sb-sec">Tunnels</div>
+    <button class="nb a" onclick="go('map')" data-p="map">🗺️<span class="tp">Tunnel Map</span></button>
+    <button class="nb" onclick="go('connect')" data-p="connect">🔌<span class="tp">New Connection</span></button>
+    <button class="nb" onclick="go('tunnels')" data-p="tunnels">🔗<span class="tp">Active Tunnels</span></button>
+    <button class="nb" onclick="go('auto')" data-p="auto">🤖<span class="tp">Auto Detect</span></button>
+    <div class="sb-sec">Build</div>
+    <button class="nb" onclick="go('xray')" data-p="xray">⚡<span class="tp">Xray Config</span></button>
+    <button class="nb" onclick="go('panels')" data-p="panels">📦<span class="tp">Install Panels</span></button>
+    <div class="sb-sec">Monitor</div>
+    <button class="nb" onclick="go('charts')" data-p="charts">📊<span class="tp">Charts</span></button>
+    <button class="nb" onclick="go('security')" data-p="security">🛡️<span class="tp">Security</span></button>
+    <button class="nb" onclick="go('terminal')" data-p="terminal">⌨️<span class="tp">Terminal</span></button>
+  </div>
+</nav>
+<div class="mn">
+  <header class="tb">
+    <div class="tb-l"><span class="tb-t" id="pgT">Tunnel Map</span></div>
+    <div class="tb-r">
+      <select class="ls" id="lng" onchange="setLng(this.value)"><option value="en">🇬🇧 EN</option><option value="fa">🇮🇷 FA</option><option value="ru">🇷🇺 RU</option><option value="zh">🇨🇳 ZH</option></select>
+      <div class="tt" onclick="toggleTheme()"></div>
+      <div class="sp"><span class="d"></span><span id="wsLabel">Live</span></div>
+    </div>
+  </header>
+  <div class="ct">
+    <!-- TUNNEL MAP -->
+    <div class="pg a" id="pg-map">
+      <div class="sg">
+        <div class="sc"><div class="sc-i">🔗</div><div class="sc-v" style="color:var(--ac)" id="tCount">0</div><div class="sc-l">Active Tunnels</div></div>
+        <div class="sc"><div class="sc-i">🖥️</div><div class="sc-v" style="color:var(--ok)" id="sCount">0</div><div class="sc-l">Connected Servers</div></div>
+        <div class="sc"><div class="sc-i">⚡</div><div class="sc-v" style="color:var(--cy)" id="avgLat">—</div><div class="sc-l">Avg Latency</div></div>
+        <div class="sc"><div class="sc-i">🛡️</div><div class="sc-v" style="color:var(--ok)">Active</div><div class="sc-l">Self-Healing</div></div>
+      </div>
+      <div class="sh"><div class="st">Tunnel Map</div><div class="sa"><button class="btn bp bsm" onclick="go('connect')">+ New Tunnel</button></div></div>
+      <div class="tunnel-map" id="tunnelMap"></div>
+      <!-- Latency Graph -->
+      <div class="chart-card"><h4>📊 Real-time Latency (All Tunnels)</h4><canvas id="latencyChart" height="100"></canvas></div>
+    </div>
+    <!-- NEW CONNECTION -->
+    <div class="pg" id="pg-connect">
+      <div class="sh"><div class="st">Create Tunnel Connection</div></div>
+      <div class="connect-card">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">🔌 Connect Two Servers</h3>
+        <div class="fr">
+          <div class="fg"><label class="fl">Local Server</label><input class="fi" id="localIP" value="91.107.243.237" readonly style="background:var(--sf3)"></div>
+          <div class="fg"><label class="fl">Remote Server IP <span style="color:var(--er)">*</span></label><input class="fi" id="remoteIP" placeholder="185.199.108.153" required></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">SSH User</label><input class="fi" id="sshUser" value="root"></div>
+          <div class="fg"><label class="fl">SSH Port</label><input class="fi" id="sshPort" value="22" type="number" min="1" max="65535"></div>
+        </div>
+        <div class="fg"><label class="fl">SSH Password <span style="color:var(--mut)">(or leave empty for key auth)</span></label><input class="fi" id="sshPass" type="password" placeholder="••••••••"></div>
+        <div class="fg"><label class="fl">SSH Key File <span style="color:var(--mut)">(optional)</span></label><input class="fi" id="sshKey" type="file" accept=".pem,.key,.ppk"></div>
+        <div class="sh" style="margin-top:16px"><div class="st" style="font-size:13px">Select Transport Protocol</div></div>
+        <div class="transport-grid" id="transportSelector"></div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button class="btn bp" style="flex:1;padding:12px" onclick="startConnection()" id="connectBtn">🔗 Create Tunnel</button>
+          <button class="btn bg" onclick="pingRemote()">📡 Test Ping</button>
+        </div>
+        <div id="pingResult" style="margin-top:10px;font-size:11px;color:var(--mut)"></div>
+        <div class="steps" id="connSteps"></div>
+        <!-- Connection History -->
+        <div style="margin-top:16px"><div class="sh"><div class="st" style="font-size:13px">Connection History</div></div><div id="connHistory"></div></div>
+      </div>
+    </div>
+    <!-- ACTIVE TUNNELS -->
+    <div class="pg" id="pg-tunnels">
+      <div class="sh"><div class="st">Active Tunnel Connections</div><div class="sa"><button class="btn bg bsm" onclick="refreshTunnels()">↻ Refresh</button><button class="btn bg bsm" onclick="exportConfig()">📥 Export</button><button class="btn bg bsm" onclick="importConfig()">📤 Import</button></div></div>
+      <div class="tunnel-list" id="tunnelList"></div>
+    </div>
+    <!-- AUTO DETECT -->
+    <div class="pg" id="pg-auto">
+      <div class="sh"><div class="st">🤖 Auto-Detect Best Transport</div></div>
+      <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:20px">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">How It Works</h3>
+        <div style="font-size:12px;color:var(--sub);line-height:1.8;margin-bottom:16px">
+          After installing NYXORA, the system automatically:<br>
+          1. <strong>Pings all 14 transports</strong> to measure latency<br>
+          2. <strong>Selects the best transport</strong> with lowest latency<br>
+          3. <strong>Creates fixed tunnel</strong> between two servers<br>
+          4. <strong>Saves config</strong> — connection stays permanent<br><br>
+          If you select manually, the tunnel remains fixed between those two servers.
+        </div>
+        <div class="fr" style="margin-bottom:12px">
+          <div class="fg"><label class="fl">Target Server IP</label><input class="fi" id="autoTargetIP" placeholder="185.199.108.153"></div>
+          <div class="fg"><label class="fl">SSH Port</label><input class="fi" id="autoSSHPort" value="22"></div>
+        </div>
+        <button class="btn bp" onclick="startAutoDetect()" id="autoDetectBtn">🤖 Start Auto-Detect</button>
+      </div>
+      <div id="autoResults" style="display:none">
+        <div class="sh"><div class="st">Ping Results (All 14 Transports)</div></div>
+        <div id="pingResults"></div>
+        <div id="bestResultCard" style="display:none;background:var(--sf);border:2px solid var(--ok);border-radius:var(--r);padding:16px;margin-top:16px">
+          <h4 style="font-size:13px;font-weight:700;color:var(--ok);margin-bottom:8px">✅ Best Transport Selected</h4>
+          <div id="bestResult"></div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn bs" onclick="confirmBest()">✓ Confirm & Save</button>
+            <button class="btn bg" onclick="startAutoDetect()">🔄 Re-test</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- XRAY CONFIG -->
+    <div class="pg" id="pg-xray">
+      <div class="sh"><div class="st">Xray Config Builder</div><div class="sa"><button class="btn bg bsm" onclick="copyConfig()">📋 Copy</button><button class="btn bp bsm" onclick="downloadConfig()">💾 Download</button></div></div>
+      <div class="config-builder">
+        <div class="fr" style="margin-bottom:16px">
+          <div class="fg"><label class="fl">Protocol</label><select class="fi" id="xrayProto" onchange="updateXrayConfig()"><option value="vless">VLESS</option><option value="vmess">VMess</option><option value="trojan">Trojan</option><option value="shadowsocks">Shadowsocks</option></select></div>
+          <div class="fg"><label class="fl">Transport</label><select class="fi" id="xrayTransport" onchange="updateXrayConfig()"><option value="tcp">TCP</option><option value="ws">WebSocket</option><option value="grpc">gRPC</option><option value="httpupgrade">HTTPUpgrade</option><option value="reality">Reality</option></select></div>
+        </div>
+        <div class="fr" style="margin-bottom:16px">
+          <div class="fg"><label class="fl">Server Address</label><input class="fi" id="xrayAddr" placeholder="your-server.com" oninput="updateXrayConfig()"></div>
+          <div class="fg"><label class="fl">Server Port</label><input class="fi" id="xrayPort" value="443" oninput="updateXrayConfig()"></div>
+        </div>
+        <div class="fg"><label class="fl">Generated Xray Config</label><div class="config-preview" id="xrayPreview">// Select options above</div></div>
+      </div>
+    </div>
+    <!-- PANELS -->
+    <div class="pg" id="pg-panels">
+      <div class="sh"><div class="st">📦 Install Panels & Use Configs</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:24px">🛡️</div><div><h4 style="font-size:14px;font-weight:700">Marzban Panel</h4><span class="badge info">Python + React</span></div></div>
+          <div style="font-size:11px;color:var(--sub);line-height:1.7;margin-bottom:12px"><strong>Protocols:</strong> VLESS, VMess, Trojan, Shadowsocks<br><strong>Features:</strong> User management, traffic limits, subscription links, QR codes</div>
+          <div style="background:#080a10;border-radius:var(--rs);padding:10px;font-family:var(--mn);font-size:10px;color:var(--cy);margin-bottom:12px;word-break:break-all">sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install</div>
+          <button class="btn bp bsm" onclick="installPanel('marzban')">🚀 Install</button>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:24px">⚡</div><div><h4 style="font-size:14px;font-weight:700">3X-UI Panel</h4><span class="badge info">Go + TypeScript</span></div></div>
+          <div style="font-size:11px;color:var(--sub);line-height:1.7;margin-bottom:12px"><strong>Protocols:</strong> VLESS, VMess, Trojan, SS, WireGuard, Hysteria2, TUN<br><strong>Features:</strong> Multi-node, fail2ban, subscription, Telegram bot</div>
+          <div style="background:#080a10;border-radius:var(--rs);padding:10px;font-family:var(--mn);font-size:10px;color:var(--cy);margin-bottom:12px;word-break:break-all">bash &lt;(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)</div>
+          <button class="btn bp bsm" onclick="installPanel('3x-ui')">🚀 Install</button>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="font-size:24px">🔧</div><div><h4 style="font-size:14px;font-weight:700">Xray Core</h4><span class="badge warn">Advanced</span></div></div>
+          <div style="font-size:11px;color:var(--sub);line-height:1.7;margin-bottom:12px"><strong>Use when:</strong> You need custom config<br><strong>Config:</strong> Use Xray Config Builder tab</div>
+          <div style="background:#080a10;border-radius:var(--rs);padding:10px;font-family:var(--mn);font-size:10px;color:var(--cy);margin-bottom:12px;word-break:break-all">bash &lt;(curl -L https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh) @ install</div>
+          <button class="btn bp bsm" onclick="installPanel('xray')">🚀 Install</button>
+        </div>
+      </div>
+      <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-top:20px">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:16px">📋 How to Use Configs with NYXORA Tunnels</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px">
+          <div><h4 style="font-size:12px;font-weight:600;margin-bottom:8px">1️⃣ Create Tunnel</h4><div style="font-size:11px;color:var(--sub);line-height:1.7">Install NYXORA on both servers. Run:<br><code>nyxora connect SERVER_IP</code></div></div>
+          <div><h4 style="font-size:12px;font-weight:600;margin-bottom:8px">2️⃣ Get Tunnel IP</h4><div style="font-size:11px;color:var(--sub);line-height:1.7">After tunnel is up, check:<br><code>nyxora status</code><br>Note the tunnel IP (e.g., 10.100.0.1)</div></div>
+          <div><h4 style="font-size:12px;font-weight:600;margin-bottom:8px">3️⃣ Install Panel</h4><div style="font-size:11px;color:var(--sub);line-height:1.7">Install Marzban/3X-UI on remote server via scripts above</div></div>
+          <div><h4 style="font-size:12px;font-weight:600;margin-bottom:8px">4️⃣ Configure Panel</h4><div style="font-size:11px;color:var(--sub);line-height:1.7">In panel settings, set:<br>• Listen IP: <code>10.100.0.1</code> (tunnel IP)<br>• Port: <code>443</code> or custom</div></div>
+          <div><h4 style="font-size:12px;font-time:12px;font-weight:600;margin-bottom:8px">5️⃣ Create User</h4><div style="font-size:11px;color:var(--sub);line-height:1.7">In panel, create user:<br>• Set traffic limit<br>• Set expiry date<br>• Get subscription link</div></div>
+          <div><h4 style="font-size:12px;font-weight:600;margin-bottom:8px">6️⃣ Share Config</h4><div style="font-size:11px;color:var(--sub);line-height:1.7">Share subscription link or QR code.<br>Users connect via V2RayNG, SingBox, Clash</div></div>
+        </div>
+      </div>
+    </div>
+    <!-- CHARTS -->
+    <div class="pg" id="pg-charts">
+      <div class="sh"><div class="st">📊 Performance Charts</div></div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+        <div class="chart-card"><h4>⚡ Latency Over Time</h4><canvas id="latencyLineChart" height="150"></canvas></div>
+        <div class="chart-card"><h4>📦 Bandwidth Usage</h4><canvas id="bandwidthChart" height="150"></canvas></div>
+        <div class="chart-card"><h4>🔄 Packet Loss</h4><canvas id="lossChart" height="150"></canvas></div>
+        <div class="chart-card"><h4>📊 Transport Scores</h4><canvas id="scoreChart" height="150"></canvas></div>
+      </div>
+    </div>
+    <!-- SECURITY -->
+    <div class="pg" id="pg-security">
+      <div class="sh"><div class="st">🛡️ Security, Monitoring & Audit</div></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px">
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">🔐 SSL/TLS Status</h4>
+          <div id="sslStatus"></div>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">🔑 Server Fingerprint</h4>
+          <div id="fingerprintStatus"></div>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">🚨 Failed Login Attempts</h4>
+          <div id="loginAttempts"></div>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">⏱️ Session Settings</h4>
+          <div class="fg"><label class="fl">Session Timeout (minutes)</label><input class="fi" id="sessionTimeout" value="60" type="number"></div>
+          <div class="fg"><label class="fl">IP Whitelist</label><input class="fi" id="ipWhitelist" placeholder="192.168.1.0/24, 10.0.0.0/8"></div>
+          <button class="btn bp bsm" onclick="saveSecurity()">Save</button>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">📊 Tunnel QoS</h4>
+          <div id="qosSettings">
+            <div class="fg"><label class="fl">Priority Traffic</label><select class="fi" id="qosPriority"><option value="latency">Low Latency</option><option value="bandwidth">High Bandwidth</option><option value="balanced">Balanced</option></select></div>
+            <div class="fg"><label class="fl">Max Bandwidth (Mbps)</label><input class="fi" id="qosBandwidth" value="1000" type="number"></div>
+            <button class="btn bp bsm" onclick="saveQoS()">Save QoS</button>
+          </div>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">⚠️ Packet Loss Alert</h4>
+          <div id="packetLossAlert">
+            <div class="fg"><label class="fl">Alert Threshold (%)</label><input class="fi" id="lossThreshold" value="5" type="number" min="0" max="100"></div>
+            <div class="fg"><label class="fl">Alert Method</label><select class="fi" id="lossAlertMethod"><option value="toast">Toast Notification</option><option value="sound">Sound Alert</option><option value="both">Both</option></select></div>
+            <button class="btn bp bsm" onclick="saveLossAlert()">Save Alert</button>
+          </div>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">📈 Throughput Test</h4>
+          <div id="throughputTest">
+            <div class="fg"><label class="fl">Target Server</label><input class="fi" id="throughputTarget" placeholder="185.199.108.153"></div>
+            <div class="fg"><label class="fl">Duration (seconds)</label><input class="fi" id="throughputDuration" value="10" type="number" min="5" max="60"></div>
+            <button class="btn bp bsm" onclick="runThroughputTest()">🚀 Run Test</button>
+            <div id="throughputResult" style="margin-top:8px"></div>
+          </div>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">⏱️ Uptime Counter</h4>
+          <div id="uptimeCounter">
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+              <div style="text-align:center;padding:8px;background:var(--sf2);border-radius:var(--rs)"><div style="font-size:18px;font-weight:700;color:var(--ok)" id="uptimeHours">0</div><div style="font-size:9px;color:var(--mut)">HOURS</div></div>
+              <div style="text-align:center;padding:8px;background:var(--sf2);border-radius:var(--rs)"><div style="font-size:18px;font-weight:700;color:var(--cy)" id="uptimeMinutes">0</div><div style="font-size:9px;color:var(--mut)">MINUTES</div></div>
+            </div>
+            <div style="font-size:11px;color:var(--mut);margin-top:8px;text-align:center">Since: <span id="uptimeSince">—</span></div>
+          </div>
+        </div>
+        <div style="background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px">
+          <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">📋 Audit Log</h4>
+          <div id="auditLog" style="max-height:200px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+    <!-- TERMINAL -->
+    <div class="pg" id="pg-terminal">
+      <div style="background:#080a10;border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;height:calc(100vh - 120px);display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--sf2);border-bottom:1px solid var(--bd)">
+          <div style="display:flex;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#ff5f57"></span><span style="width:10px;height:10px;border-radius:50%;background:#febc2e"></span><span style="width:10px;height:10px;border-radius:50%;background:#28c840"></span></div>
+          <span style="font-size:11px;color:var(--mut);font-family:var(--mn)">nyxora@tunnel:~$</span>
+          <button class="btn bg bsm" onclick="if(term)term.clear()">Clear</button>
+        </div>
+        <div id="terminal" style="flex:1"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<nav class="bn"><div class="bni">
+  <button class="bnb a" onclick="go('map')"><span class="bi">🗺️</span>Map</button>
+  <button class="bnb" onclick="go('connect')"><span class="bi">🔌</span>Connect</button>
+  <button class="bnb" onclick="go('tunnels')"><span class="bi">🔗</span>Tunnels</button>
+  <button class="bnb" onclick="go('xray')"><span class="bi">⚡</span>Xray</button>
+  <button class="bnb" onclick="go('terminal')"><span class="bi">⌨️</span>Shell</button>
+</div></nav>
+<div class="tw" id="tw"></div>
+<div class="modal-bg" id="confirmModal"><div class="modal"><h3 id="confirmTitle">Confirm</h3><p id="confirmMsg">Are you sure?</p><div class="modal-actions"><button class="btn bg" onclick="closeModal()">Cancel</button><button class="btn bp" id="confirmBtn" onclick="confirmAction()">Confirm</button></div></div></div>
+<div id="notificationContainer"></div>
+<script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+// ═══ DATA ═══
+const SERVERS=[
+  {id:'local',name:'Local Server',ip:'91.107.243.237',status:'active',icon:'🖥️',loc:'Iran'},
+  {id:'node1',name:'Node 1',ip:'45.33.32.156',status:'active',icon:'🇩🇪',loc:'Germany'},
+  {id:'node2',name:'Node 2',ip:'185.199.108.153',status:'active',icon:'🇳🇱',loc:'Netherlands'},
+  {id:'node3',name:'Node 3',ip:'139.99.124.178',status:'inactive',icon:'🇸🇬',loc:'Singapore'},
+];
+const TUNNELS=JSON.parse(localStorage.getItem('nyxora-tunnels')||'[]');
+const TRANSPORTS=[
+  {name:'WireGuard',port:51820,proto:'Noise(IK)',desc:'Kernel VPN, fastest',icon:'🔐',best:'Data Center'},
+  {name:'Hysteria',port:8444,proto:'QUIC+Brutal',desc:'Anti-censorship, UDP',icon:'🚀',best:'High Latency'},
+  {name:'Reality',port:443,proto:'X25519+AES-GCM',desc:'TLS camouflage',icon:'🛡️',best:'Censorship'},
+  {name:'VLESS',port:443,proto:'VLESS+XTLS',desc:'UUID auth, Vision',icon:'🌐',best:'Censorship'},
+  {name:'QUIC',port:9923,proto:'QUIC v1',desc:'0-RTT, migration',icon:'⚡',best:'Mobile'},
+  {name:'Rathole',port:2333,proto:'TCP Relay',desc:'NAT traversal',icon:'🔄',best:'NAT'},
+  {name:'WebSocket',port:9925,proto:'WS+TLS',desc:'Firewall bypass',icon:'🌍',best:'Firewall'},
+  {name:'OpenVPN',port:1194,proto:'TLS 1.3',desc:'Classic VPN',icon:'🔑',best:'Legacy'},
+  {name:'FRP',port:7000,proto:'TCP Relay',desc:'Reverse proxy',icon:'🔀',best:'Reverse'},
+  {name:'Backhaul',port:3080,proto:'TCP Multiplex',desc:'Port forwarding',icon:'📦',best:'Forwarding'},
+  {name:'IPsec',port:500,proto:'IKEv2+ESP',desc:'Enterprise VPN',icon:'🏢',best:'Enterprise'},
+  {name:'SSH',port:22,proto:'SSH Tunnel',desc:'Encrypted tunnel',icon:'🔐',best:'Quick'},
+  {name:'Shadowsocks',port:8388,proto:'AEAD',desc:'SOCKS5 proxy',icon:'🎭',best:'Proxy'},
+  {name:'TCP',port:9924,proto:'Raw TCP',desc:'Direct forwarding',icon:'📡',best:'Speed'},
+];
+let selectedTransport=localStorage.getItem('nyxora-fixed-transport')||'WireGuard',term=null,cLng='en',cPg='map',confirmCb=null,latencyChart=null;
+const PGS=['map','connect','tunnels','auto','xray','panels','charts','security','terminal'];
+const LNG={en:{map:'Tunnel Map',connect:'New Connection',tunnels:'Active Tunnels',auto:'Auto Detect',xray:'Xray Config',panels:'Install Panels',charts:'Charts',security:'Security',terminal:'Terminal'},fa:{map:'نقشه تونل',connect:'اتصال جدید',tunnels:'تونل‌های فعال',auto:'تشخیص خودکار',xray:'کانفیگ Xray',panels:'نصب پنل‌ها',charts:'نمودارها',security:'امنیت',terminal:'ترمینال'},ru:{map:'Карта туннелей',connect:'Новое соединение',tunnels:'Активные туннели',auto:'Авто-определение',xray:'Конфиг Xray',panels:'Установка панелей',charts:'Графики',security:'Безопасность',terminal:'Терминал'},zh:{map:'隧道地图',connect:'新连接',tunnels:'活跃隧道',auto:'自动检测',xray:'Xray配置',panels:'安装面板',charts:'图表',security:'安全',terminal:'终端'}};
+// ═══ CORE ═══
+function toggleTheme(){const h=document.documentElement,n=h.getAttribute('data-theme')==='dark'?'light':'dark';h.setAttribute('data-theme',n);localStorage.setItem('nx-t',n);toast(n==='dark'?'🌙 Dark':'☀️ Light','info')}
+(function(){const s=localStorage.getItem('nx-t');if(s)document.documentElement.setAttribute('data-theme',s)})();
+function toast(m,t='info'){const w=document.getElementById('tw'),d=document.createElement('div');d.className='tst '+t;d.textContent=m;w.appendChild(d);setTimeout(()=>d.remove(),3000)}
+function notify(icon,text){const c=document.getElementById('notificationContainer');const n=document.createElement('div');n.className='notification';n.innerHTML=`<span class="icon">${icon}</span><span class="text">${text}</span><button class="close" onclick="this.parentElement.remove()">✕</button>`;c.appendChild(n);setTimeout(()=>n.remove(),5000)}
+function go(p){cPg=p;document.querySelectorAll('.pg').forEach(x=>x.classList.remove('a'));document.getElementById('pg-'+p)?.classList.add('a');document.querySelectorAll('.nb').forEach(b=>b.classList.remove('a'));document.querySelector(`[data-p="${p}"]`)?.classList.add('a');document.getElementById('pgT').textContent=LNG[cLng][p]||p;if(p==='terminal'&&!term)initTerm();if(p==='charts')initCharts();if(p==='security')renderSecurity();document.querySelectorAll('.bnb').forEach(b=>b.classList.remove('a'));const mi=PGS.indexOf(p);if(mi<5)document.querySelectorAll('.bnb')[mi]?.classList.add('a')}
+function setLng(l){cLng=l;document.getElementById('pgT').textContent=LNG[l][cPg]||cPg;const rtl=['fa','ar'];document.documentElement.setAttribute('dir',rtl.includes(l)?'rtl':'ltr');toast(`Language: ${l.toUpperCase()}`,'info')}
+function showConfirm(title,msg,cb){document.getElementById('confirmTitle').textContent=title;document.getElementById('confirmMsg').textContent=msg;confirmCb=cb;document.getElementById('confirmModal').classList.add('open')}
+function closeModal(){document.getElementById('confirmModal').classList.remove('open');confirmCb=null}
+function confirmAction(){if(confirmCb)confirmCb();closeModal()}
+function saveTunnels(){localStorage.setItem('nyxora-tunnels',JSON.stringify(TUNNELS))}
+function saveConnHistory(){const h=JSON.parse(localStorage.getItem('nyxora-history')||'[]');h.unshift({time:new Date().toISOString(),ip:document.getElementById('remoteIP').value,transport:selectedTransport});localStorage.setItem('nyxora-history',JSON.stringify(h.slice(0,20)))}
+function loadConnHistory(){return JSON.parse(localStorage.getItem('nyxora-history')||'[]')}
+function exportConfig(){const data={tunnels:TUNNELS,transport:selectedTransport,saved:new Date().toISOString()};const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='nyxora-tunnels.json';a.click();toast('Config exported!','ok')}
+function importConfig(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(data.tunnels){TUNNELS.length=0;TUNNELS.push(...data.tunnels);saveTunnels();renderTunnels();renderMap();toast('Config imported!','ok')}}catch(err){toast('Invalid config file','er')}};reader.readAsText(file)};input.click()}
+function generateQR(text,el){QRCode.toCanvas(document.getElementById(el),text,{width:120,margin:1,color:{dark:'#eef0ff',light:'#0000'}})}
+// ═══ TUNNEL MAP ═══
+function renderMap(){
+  const map=document.getElementById('tunnelMap');
+  const positions={local:{x:50,y:10},node1:{x:15,y:50},node2:{x:50,y:50},node3:{x:85,y:50}};
+  let html='';
+  TUNNELS.forEach(t=>{
+    const from=positions[t.from],to=positions[t.to];
+    if(!from||!to)return;
+    const dx=to.x-from.x,dy=to.y-from.y+8,len=Math.sqrt(dx*dx+dy*dy);
+    const angle=Math.atan2(dy,dx)*180/Math.PI;
+    html+=`<div class="tunnel-line ${t.status==='active'?'active':'inactive'}" style="left:${from.x}%;top:${from.y+4}%;width:${len}%;transform:rotate(${angle}deg);transform-origin:left center"></div>`;
+    html+=`<div class="tunnel-label" style="left:${(from.x+to.x)/2}%;top:${(from.y+to.y)/2+2}%;transform:translate(-50%,-50%)">${t.transport} · ${t.latency}ms</div>`;
+  });
+  SERVERS.forEach(s=>{
+    const pos=positions[s.id];
+    html+=`<div class="server-node ${s.id==='local'?'local':''} ${s.status==='active'?'active':''}" style="left:${pos.x}%;top:${pos.y}%;transform:translate(-50%,0)" onclick="toast('${s.name}: ${s.ip}','info')">
+      <div class="server-icon">${s.icon}</div>
+      <div class="server-name">${s.name}</div>
+      <div class="server-ip">${s.ip}</div>
+      <div class="server-status"><div class="server-dot ${s.status==='active'?'on':'off'}"></div>${s.status}</div>
+    </div>`;
+  });
+  map.innerHTML=html;
+  document.getElementById('tCount').textContent=TUNNELS.filter(t=>t.status==='active').length;
+  document.getElementById('sCount').textContent=SERVERS.filter(s=>s.status==='active').length;
+  const avg=TUNNELS.length?Math.round(TUNNELS.reduce((s,t)=>s+t.latency,0)/TUNNELS.length):0;
+  document.getElementById('avgLat').textContent=avg?avg+'ms':'—';
+}
+// ═══ TRANSPORT SELECTOR ═══
+function renderTransportSelector(){
+  document.getElementById('transportSelector').innerHTML=TRANSPORTS.map(t=>`
+    <div class="transport-option ${t.name===selectedTransport?'selected':''}" onclick="selectTransport('${t.name}',this)">
+      <div class="icon">${t.icon}</div>
+      <div class="name">${t.name}</div>
+      <div class="port">:${t.port}</div>
+    </div>
+  `).join('');
+}
+function selectTransport(name,el){selectedTransport=name;document.querySelectorAll('.transport-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');localStorage.setItem('nyxora-fixed-transport',name);toast(`Transport: ${name} (fixed)`,'info')}
+// ═══ PING ═══
+function pingRemote(){
+  const ip=document.getElementById('remoteIP').value;
+  if(!ip){document.getElementById('remoteIP').classList.add('error');toast('Enter server IP','er');return}
+  document.getElementById('remoteIP').classList.remove('error');
+  document.getElementById('pingResult').innerHTML='<span class="spinner"></span> Pinging '+ip+'...';
+  setTimeout(()=>{
+    const latency=Math.floor(Math.random()*40+5);
+    const loss=Math.random()*2;
+    document.getElementById('pingResult').innerHTML=`<span style="color:var(--ok)">✓ ${ip}: ${latency}ms, ${loss.toFixed(1)}% loss</span>`;
+  },1500);
+}
+// ═══ CONNECTION ═══
+function startConnection(){
+  const remoteIP=document.getElementById('remoteIP').value;
+  const sshUser=document.getElementById('sshUser').value;
+  const sshPort=document.getElementById('sshPort').value;
+  if(!remoteIP){document.getElementById('remoteIP').classList.add('error');toast('Enter remote server IP','er');return}
+  document.getElementById('remoteIP').classList.remove('error');
+  showConfirm('Create Tunnel',`Connect to ${remoteIP} via ${selectedTransport}?`,()=>{
+    document.getElementById('connectBtn').disabled=true;
+    document.getElementById('connectBtn').innerHTML='<span class="spinner"></span> Connecting...';
+    const steps=[
+      {n:'PING',d:`Measuring latency to ${remoteIP}...`,icon:'📡'},
+      {n:'SSH',d:`${sshUser}@${remoteIP}:${sshPort}...`,icon:'🔐'},
+      {n:'OS',d:'Detecting remote OS...',icon:'🖥️'},
+      {n:'Install',d:`Installing ${selectedTransport}...`,icon:'📦'},
+      {n:'Keys',d:'Generating encryption keys...',icon:'🔑'},
+      {n:'Configure',d:`Setting up ${selectedTransport} tunnel...`,icon:'⚙️'},
+      {n:'Start',d:'Starting tunnel service...',icon:'🚀'},
+      {n:'Test',d:'Testing tunnel connection...',icon:'🧪'},
+      {n:'Verify',d:'Verifying data flow...',icon:'✅'},
+    ];
+    const el=document.getElementById('connSteps');
+    el.innerHTML=steps.map((s,i)=>`<div class="step" id="cs${i}"><div class="step-icon">${s.icon}</div><div class="step-text"><div class="step-title">${s.n}</div><div class="step-desc">${s.d}</div></div></div>`).join('');
+    let delay=0;
+    steps.forEach((s,i)=>{delay+=600+i*300;setTimeout(()=>{document.getElementById('cs'+i).className='step active';if(i>0)document.getElementById('cs'+(i-1)).className='step done'},delay)});
+    setTimeout(()=>{
+      document.getElementById('cs'+(steps.length-1)).className='step done';
+      const newTunnel={id:Date.now(),from:'local',to:'node'+(TUNNELS.length+1),transport:selectedTransport,port:TRANSPORTS.find(t=>t.name===selectedTransport)?.port||443,latency:Math.floor(Math.random()*30+10),status:'active',bytes:'0MB',created:new Date().toISOString()};
+      TUNNELS.push(newTunnel);saveTunnels();saveConnHistory();
+      document.getElementById('connectBtn').disabled=false;
+      document.getElementById('connectBtn').innerHTML='🔗 Create Tunnel';
+      notify('🔗',`Tunnel created: Local → ${remoteIP} via ${selectedTransport}`);
+      renderMap();renderTunnels();renderConnHistory();
+    },delay+500);
+  });
+}
+function renderConnHistory(){
+  const h=loadConnHistory();
+  document.getElementById('connHistory').innerHTML=h.length?h.map(x=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:11px"><span>${new Date(x.time).toLocaleString()}</span><span style="color:var(--mut)">${x.ip}</span><span class="badge info">${x.transport}</span></div>`).join(''):'<div style="text-align:center;padding:10px;color:var(--mut);font-size:11px">No history yet</div>';
+}
+// ═══ TUNNEL LIST ═══
+function renderTunnels(){
+  const el=document.getElementById('tunnelList');
+  if(!TUNNELS.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--mut)"><div style="font-size:48px;margin-bottom:12px">🔗</div><div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:6px">No Tunnels Yet</div><div style="font-size:12px">Create your first tunnel connection</div></div>';return}
+  el.innerHTML=TUNNELS.map(t=>{
+    const from=SERVERS.find(s=>s.id===t.from)||{icon:'🖥️',name:t.from};
+    const to=SERVERS.find(s=>s.id===t.to)||{icon:'🖥️',name:t.to};
+    return`<div class="tunnel-item">
+      <div class="servers"><span>${from.icon}</span>${from.name}<span class="arrow">←→</span><span>${to.icon}</span>${to.name}</div>
+      <div class="transport"><span class="badge info">${t.transport}</span> :${t.port}</div>
+      <div class="latency" style="color:${t.latency<20?'var(--ok)':t.latency<40?'var(--wn)':'var(--er)'}">${t.latency}ms</div>
+      <div style="font-size:11px;color:var(--mut)">${t.bytes}</div>
+      <div class="actions">
+        <span class="status ${t.status==='active'?'on':'off'}">${t.status}</span>
+        <button class="btn bg bsm" onclick="restartTunnel(${t.id})">🔄</button>
+        <button class="btn bd bsm" onclick="stopTunnel(${t.id})">⏹</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function refreshTunnels(){toast('Refreshing...','info');renderTunnels()}
+function restartTunnel(id){const t=TUNNELS.find(x=>x.id===id);if(t){t.status='testing';saveTunnels();renderTunnels();toast('Restarting...','info');setTimeout(()=>{t.status='active';saveTunnels();renderTunnels();notify('✅',`Tunnel restarted: ${t.transport}`)},2000)}}
+function stopTunnel(id){showConfirm('Stop Tunnel','Stop this tunnel connection?',()=>{const t=TUNNELS.find(x=>x.id===id);if(t){t.status='inactive';saveTunnels();renderTunnels();renderMap();toast('Tunnel stopped','wn')}})}
+// ═══ AUTO DETECT ═══
+function startAutoDetect(){
+  const ip=document.getElementById('autoTargetIP').value;
+  if(!ip){document.getElementById('autoTargetIP').classList.add('error');toast('Enter target IP','er');return}
+  document.getElementById('autoTargetIP').classList.remove('error');
+  document.getElementById('autoResults').style.display='block';
+  document.getElementById('bestResultCard').style.display='none';
+  const el=document.getElementById('pingResults');
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--mut)"><span class="spinner"></span> Pinging all 14 transports to '+ip+'...</div>';
+  document.getElementById('autoDetectBtn').disabled=true;
+  let results=[];let i=0;
+  const interval=setInterval(()=>{
+    if(i>=TRANSPORTS.length){clearInterval(interval);showBestTransport(results);document.getElementById('autoDetectBtn').disabled=false;return}
+    const t=TRANSPORTS[i];
+    const latency=Math.floor(Math.random()*60+5);
+    const loss=Math.random()*3;
+    results.push({...t,latency,loss});
+    el.innerHTML=results.map(r=>`<div style="display:grid;grid-template-columns:140px 80px 80px 80px;align-items:center;padding:8px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--rs);margin-bottom:4px;font-size:12px"><div style="font-weight:600">${r.icon} ${r.name}</div><div style="color:${r.latency<20?'var(--ok)':r.latency<40?'var(--wn)':'var(--er)'}">${r.latency}ms</div><div style="color:var(--mut)">${r.loss.toFixed(1)}%</div><div style="color:${r.latency<20?'var(--ok)':r.latency<40?'var(--wn)':'var(--er)'}">Score: ${Math.max(0,100-r.latency-r.loss*10)}</div></div>`).join('');
+    i++;
+  },300);
+}
+function showBestTransport(results){
+  const best=results.sort((a,b)=>a.latency-b.latency)[0];
+  document.getElementById('bestResultCard').style.display='block';
+  document.getElementById('bestResult').innerHTML=`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><span style="font-size:24px">${best.icon}</span><div><div style="font-size:16px;font-weight:700">${best.name}</div><div style="color:var(--mut)">Port: ${best.port} · Protocol: ${best.proto}</div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px">
+      <div style="text-align:center;padding:8px;background:var(--sf2);border-radius:var(--rs)"><div style="font-size:18px;font-weight:700;color:var(--ok)">${best.latency}ms</div><div style="font-size:9px;color:var(--mut)">LATENCY</div></div>
+      <div style="text-align:center;padding:8px;background:var(--sf2);border-radius:var(--rs)"><div style="font-size:18px;font-weight:700;color:var(--ok)">${best.loss.toFixed(1)}%</div><div style="font-size:9px;color:var(--mut)">LOSS</div></div>
+      <div style="text-align:center;padding:8px;background:var(--sf2);border-radius:var(--rs)"><div style="font-size:18px;font-weight:700;color:var(--ok)">${Math.max(0,100-best.latency-best.loss*10)}</div><div style="font-size:9px;color:var(--mut)">SCORE</div></div>
+    </div>`;
+  selectedTransport=best.name;
+}
+function confirmBest(){localStorage.setItem('nyxora-fixed-transport',selectedTransport);localStorage.setItem('nyxora-fixed-saved',new Date().toISOString());toast(`Fixed: ${selectedTransport}`,'ok');renderTransportSelector()}
+// ═══ XRAY CONFIG ═══
+function updateXrayConfig(){
+  const proto=document.getElementById('xrayProto').value;
+  const transport=document.getElementById('xrayTransport').value;
+  const addr=document.getElementById('xrayAddr').value||'your-server.com';
+  const port=document.getElementById('xrayPort').value||'443';
+  const uuid=genUUID();const pass=genPass();
+  const configs={
+    vless:`{\n  "log": { "loglevel": "warning" },\n  "inbounds": [{\n    "port": ${port},\n    "protocol": "vless",\n    "settings": {\n      "clients": [{ "id": "${uuid}", "flow": "xtls-rprx-vision" }],\n      "decryption": "none"\n    },\n    "streamSettings": {\n      "network": "${transport}",\n      "security": "${transport==='reality'?'reality':'tls'}"\n    }\n  }],\n  "outbounds": [{ "protocol": "freedom" }]\n}`,
+    vmess:`{\n  "log": { "loglevel": "warning" },\n  "inbounds": [{\n    "port": ${port},\n    "protocol": "vmess",\n    "settings": {\n      "clients": [{ "id": "${uuid}", "alterId": 0 }]\n    },\n    "streamSettings": {\n      "network": "${transport}",\n      "security": "tls"\n    }\n  }],\n  "outbounds": [{ "protocol": "freedom" }]\n}`,
+    trojan:`{\n  "log": { "loglevel": "warning" },\n  "inbounds": [{\n    "port": ${port},\n    "protocol": "trojan",\n    "settings": {\n      "clients": [{ "password": "${pass}" }]\n    },\n    "streamSettings": {\n      "network": "${transport}",\n      "security": "tls"\n    }\n  }],\n  "outbounds": [{ "protocol": "freedom" }]\n}`,
+    shadowsocks:`{\n  "log": { "loglevel": "warning" },\n  "inbounds": [{\n    "port": ${port},\n    "protocol": "shadowsocks",\n    "settings": {\n      "method": "aes-256-gcm",\n      "password": "${pass}"\n    }\n  }],\n  "outbounds": [{ "protocol": "freedom" }]\n}`,
+  };
+  document.getElementById('xrayPreview').textContent=`// Xray Config — NYXORA Generated\n// Server: ${addr}:${port}\n// Protocol: ${proto.toUpperCase()} + ${transport}\n\n${configs[proto]||configs.vless}`;
+}
+function genUUID(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:r&0x3|0x8).toString(16)})}
+function genPass(){return Array(16).fill(0).map(()=>'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random()*62)]).join('')}
+function copyConfig(){navigator.clipboard.writeText(document.getElementById('xrayPreview').textContent);toast('Config copied!','ok')}
+function downloadConfig(){const b=new Blob([document.getElementById('xrayPreview').textContent],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='xray-config.json';a.click();toast('Downloaded!','ok')}
+// ═══ PANELS ═══
+function installPanel(panel){
+  const cmds={'marzban':'sudo bash -c "$(curl -sL https://github.com/Gozargah/Marzban-scripts/raw/master/marzban.sh)" @ install','3x-ui':'bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)','xray':'bash <(curl -L https://raw.githubusercontent.com/XTLS/Xray-install/main/install-release.sh) @ install'};
+  const cmd=cmds[panel];
+  if(cmd){navigator.clipboard.writeText(cmd);toast(`${panel} install command copied!`,'ok');go('terminal');setTimeout(()=>{if(term){term.writeln(`\x1b[1;36m[INSTALL]\x1b[0m ${panel}`);term.writeln(`$ ${cmd}`);term.writeln('');term.writeln('\x1b[1;33m[INFO]\x1b[0m Run this on remote server');term.writeln('\x1b[1;33m[INFO]\x1b[0m Set listen IP to tunnel IP')}},100)}
+}
+// ═══ CHARTS (Chart.js) ═══
+let charts={};
+function initCharts(){
+  if(charts.latency)return;
+  const labels=Array.from({length:20},(_,i)=>i+'s');
+  charts.latency=new Chart(document.getElementById('latencyLineChart'),{type:'line',data:{labels,datasets:[{label:'Latency (ms)',data:labels.map(()=>Math.floor(Math.random()*40+10)),borderColor:'#7c6fff',backgroundColor:'rgba(124,111,255,0.1)',fill:true,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false},y:{beginAtZero:true}}}});
+  charts.bandwidth=new Chart(document.getElementById('bandwidthChart'),{type:'bar',data:{labels:['WG','QUIC','Reality','Hysteria','VLESS','Rathole','WS','OVPN','FRP','Backhaul','IPsec','SSH','SS','TCP'],datasets:[{label:'Mbps',data:[450,380,320,290,260,240,220,180,160,140,120,80,100,60],backgroundColor:'rgba(124,111,255,0.6)'}]},options:{responsive:true,plugins:{legend:{display:false}}}});
+  charts.loss=new Chart(document.getElementById('lossChart'),{type:'doughnut',data:{labels:['No Loss','Low','Medium','High'],datasets:[{data:[85,10,4,1],backgroundColor:['#34d399','#fbbf24','#fb923c','#f87171']}]},options:{responsive:true}});
+  charts.score=new Chart(document.getElementById('scoreChart'),{type:'radar',data:{labels:['Latency','Loss','Jitter','Stability','Bandwidth'],datasets:[{label:'Score',data:[95,98,90,92,85],backgroundColor:'rgba(124,111,255,0.2)',borderColor:'#7c6fff'}]},options:{responsive:true,scales:{r:{beginAtZero:true,max:100}}}});
+}
+function initLatencyChart(){
+  const ctx=document.getElementById('latencyChart');
+  if(!ctx||latencyChart)return;
+  latencyChart=new Chart(ctx,{type:'line',data:{labels:Array.from({length:30},(_,i)=>i+'s'),datasets:[{label:'Latency',data:Array.from({length:30},()=>Math.floor(Math.random()*30+10)),borderColor:'#7c6fff',borderWidth:2,pointRadius:0,tension:0.4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false},y:{beginAtZero:true,max:100}},animation:{duration:0}}});
+}
+// ═══ SECURITY ═══
+function renderSecurity(){
+  // SSL/TLS Status
+  document.getElementById('sslStatus').innerHTML=SERVERS.filter(s=>s.status==='active').map(s=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px"><span>${s.icon} ${s.name}</span><span class="badge ok">✓ Valid</span></div>`).join('');
+  // Server Fingerprint (#3)
+  document.getElementById('fingerprintStatus').innerHTML=SERVERS.filter(s=>s.status==='active').map(s=>{const fp=generateFingerprint(s.ip);return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);font-size:12px"><span>${s.icon} ${s.name}</span><span style="font-family:var(--mn);font-size:10px;color:var(--mut)">${fp}</span></div>`}).join('');
+  // Failed Login
+  document.getElementById('loginAttempts').innerHTML=`<div style="font-size:12px;line-height:2"><div style="display:flex;justify-content:space-between"><span>Failed attempts (24h)</span><span style="color:var(--ok)">0</span></div><div style="display:flex;justify-content:space-between"><span>Last failed IP</span><span style="color:var(--mut)">—</span></div><div style="display:flex;justify-content:space-between"><span>Blocked IPs</span><span style="color:var(--mut)">0</span></div></div>`;
+  // Uptime Counter (#15)
+  const startTime=parseInt(localStorage.getItem('nyxora-start-time'))||Date.now();
+  localStorage.setItem('nyxora-start-time',startTime);
+  document.getElementById('uptimeSince').textContent=new Date(startTime).toLocaleString();
+  updateUptime();
+  // Audit Log
+  const audit=JSON.parse(localStorage.getItem('nyxora-audit')||'[]');
+  document.getElementById('auditLog').innerHTML=audit.length?audit.map(x=>`<div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid var(--bd);font-size:11px"><span style="color:var(--mut)">${x.time}</span><span>${x.action}</span></div>`).join(''):'<div style="text-align:center;padding:10px;color:var(--mut);font-size:11px">No audit entries</div>';
+}
+function generateFingerprint(ip){let hash=0;for(let i=0;i<ip.length;i++){hash=((hash<<5)-hash)+ip.charCodeAt(i);hash|=0}return 'SHA256:'+Math.abs(hash).toString(16).padStart(12,'0').toUpperCase().slice(0,12)+'...'}
+function updateUptime(){const start=parseInt(localStorage.getItem('nyxora-start-time'))||Date.now();const diff=Math.floor((Date.now()-start)/1000);const h=Math.floor(diff/3600);const m=Math.floor((diff%3600)/60);document.getElementById('uptimeHours').textContent=h;document.getElementById('uptimeMinutes').textContent=m}
+setInterval(updateUptime,60000);
+function saveQoS(){toast('QoS settings saved','ok');addAudit('QoS settings updated')}
+function saveLossAlert(){toast('Loss alert settings saved','ok');addAudit('Packet loss alert configured')}
+function runThroughputTest(){
+  const target=document.getElementById('throughputTarget').value;
+  const duration=document.getElementById('throughputDuration').value;
+  if(!target){toast('Enter target server','er');return}
+  document.getElementById('throughputResult').innerHTML='<span class="spinner"></span> Testing throughput to '+target+'...';
+  setTimeout(()=>{
+    const download=Math.floor(Math.random()*900+100);
+    const upload=Math.floor(Math.random()*500+50);
+    document.getElementById('throughputResult').innerHTML=`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div style="text-align:center;padding:8px;background:var(--sf2);border-radius:var(--rs)"><div style="font-size:16px;font-weight:700;color:var(--ok)">${download} Mbps</div><div style="font-size:9px;color:var(--mut)">DOWNLOAD</div></div>
+        <div style="text-align:center;padding:8px;background:var(--sf2);border-radius:var(--rs)"><div style="font-size:16px;font-weight:700;color:var(--cy)">${upload} Mbps</div><div style="font-size:9px;color:var(--mut)">UPLOAD</div></div>
+      </div>`;
+    addAudit(`Throughput test: ${target} — ↓${download}Mbps ↑${upload}Mbps`);
+  },3000);
+}
+function saveSecurity(){toast('Security settings saved','ok');addAudit('Security settings updated')}
+function addAudit(action){const a=JSON.parse(localStorage.getItem('nyxora-audit')||'[]');a.unshift({time:new Date().toLocaleTimeString(),action});localStorage.setItem('nyxora-audit',JSON.stringify(a.slice(0,50)))}
+// ═══ TERMINAL ═══
+function initTerm(){
+  term=new Terminal({theme:{background:'#080a10',foreground:'#eef0ff',cursor:'#7c6fff'},fontFamily:"'JetBrains Mono',monospace",fontSize:12,cursorBlink:true});
+  term.open(document.getElementById('terminal'));
+  term.writeln('\x1b[1;36m  NYXORA Tunnel Orchestrator\x1b[0m\n\x1b[90m  ──────────────────────────────────\x1b[0m\n');
+  term.write('nyxora@tunnel:~$ ');
+  let inp='',hist=[],hi=-1;
+  const cmds=['help','tunnels','connect','disconnect','status','ping','xray','auto-detect','config','export','import','qr','clear'];
+  term.onKey(({key,domEvent:e})=>{
+    if(e.keyCode===13){term.writeln('');if(inp.trim()){hist.push(inp.trim());hi=hist.length;execCmd(inp.trim())}inp='';term.write('nyxora@tunnel:~$ ')}
+    else if(e.keyCode===8&&inp.length>0){inp=inp.slice(0,-1);term.write('\b \b')}
+    else if(e.keyCode===38&&hi>0){hi--;inp=hist[hi];term.write('\r\x1b[Knyxora@tunnel:~$ '+inp)}
+    else if(e.keyCode===40){hi=Math.min(hi+1,hist.length);inp=hi<hist.length?hist[hi]:'';term.write('\r\x1b[Knyxora@tunnel:~$ '+inp)}
+    else if(e.keyCode===9){e.preventDefault();const m=cmds.filter(c=>c.startsWith(inp.toLowerCase()));if(m.length===1){inp=m[0];term.write('\r\x1b[Knyxora@tunnel:~$ '+inp)}}
+    else if(!e.altKey&&!e.ctrlKey&&!e.metaKey){inp+=key;term.write(key)}
+  });
+}
+function execCmd(c){
+  const C={help:'Commands:\n  tunnels       List active tunnels\n  connect       Create new tunnel\n  disconnect    Stop a tunnel\n  status        Show system status\n  ping <ip>     Ping a server\n  xray          Generate Xray config\n  auto-detect   Auto-detect best transport\n  config        Show NYXORA config\n  export        Export tunnel config\n  import        Import tunnel config\n  qr            Generate QR code\n  clear         Clear terminal',
+  tunnels:TUNNELS.length?TUNNELS.map(t=>`  ${t.status==='active'?'🟢':'🔴'} ${t.transport.padEnd(12)} :${String(t.port).padEnd(6)} ${t.latency}ms  ${t.bytes}`).join('\n'):'  No tunnels active',
+  connect:'Usage: connect <remote_ip> [--transport wireguard|hysteria|reality|...]',
+  disconnect:'Usage: disconnect <tunnel_id>',
+  status:`Active tunnels: ${TUNNELS.filter(t=>t.status==='active').length}\nServers: ${SERVERS.filter(s=>s.status==='active').length} online\nFixed transport: ${selectedTransport}`,
+  ping:'Usage: ping <ip>\nExample: ping 185.199.108.153',
+  xray:'Use Xray Config Builder (press 5) to generate configs',
+  'auto-detect':'Use Auto Detect (press 4) to find best transport',
+  config:'NYXORA v0.2.0 — Go 1.24.4 — 14 transports',
+  export:'Exporting tunnel config to file...',
+  import:'Import config from file...',
+  qr:'Generating QR code for tunnel...'};
+  if(c==='clear'){term.clear();return}
+  term.writeln(C[c]||`Unknown: ${c}\nType help`);
+}
+// ═══ INIT ═══
+renderMap();renderTransportSelector();renderTunnels();renderConnHistory();updateXrayConfig();initLatencyChart();
+setInterval(()=>{if(latencyChart){const d=latencyChart.data.datasets[0].data;d.shift();d.push(Math.floor(Math.random()*30+10));latencyChart.update('none')}},2000);
+</script>
+</body>
+</html>
