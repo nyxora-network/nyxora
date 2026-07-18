@@ -1,0 +1,36 @@
+name: nyxora
+version: '0.2.0'
+summary: Adaptive multi-transport VPN/tunnel orchestrator
+description: |
+  NYXORA is a self-healing multi-transport VPN/tunnel manager.
+  Install on one server. Connect to any remote server via SSH.
+  Zero agent required. Auto-provisions. Auto-failover. Interactive TUI.
+
+grade: stable
+confinement: strict
+base: core22
+
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+
+parts:
+  nyxora:
+    plugin: go
+    source: .
+    build-snaps:
+      - go/1.24/stable
+    build-environment:
+      - CGO_ENABLED: "0"
+    override-build: |
+      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
+      go build -ldflags="-s -w" -o $SNAPCRAFT_PART_INSTALL/bin/nyxora ./cmd/nyxora
+
+apps:
+  nyxora:
+    command: bin/nyxora
+    plugs:
+      - network
+      - network-bind
+      - ssh-keys
+      - firewall-control

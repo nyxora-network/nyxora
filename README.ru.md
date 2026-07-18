@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/go-%3E%3D1.25-00ADD8?style=flat&logo=go" alt="Go Version">
+  <img src="https://img.shields.io/badge/go-%3E%3D1.24-00ADD8?style=flat&logo=go" alt="Go Version">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="License">
   <img src="https://img.shields.io/badge/status-active-success?style=flat" alt="Status">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat" alt="PRs Welcome">
   <br>
-  <img src="https://img.shields.io/badge/transports-11-ff69b4?style=flat" alt="11 Transports">
+  <img src="https://img.shields.io/badge/transports-12-ff69b4?style=flat" alt="12 Transports">
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="Platform">
 </div>
 
@@ -51,7 +51,7 @@
 <td width="50%">
 
 **🧠 Самовосстанавливающаяся оркестрация**
-- 11 транспортов туннелей: WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backhaul, TCP
+- 12 транспортов туннелей: WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backhaul, TCP, WebSocket
 - Автоматическое переключение — обнаружение деградированных туннелей и мгновенный переход
 - 5 режимов мультипути (weighted, lowest-latency, lowest-loss, even, all-active)
 - Движок оценки в реальном времени (задержка + потеря пакетов + вес)
@@ -358,7 +358,7 @@ graph TB
 
 ### Зависимости
 
-- Go 1.25+
+- Go 1.24+
 - Linux или macOS
 - `ssh`, `sshpass`, `wg`, `curl`, `ping`
 
@@ -399,7 +399,7 @@ nyxora/
 │   ├── packager/         # Утилиты упаковки
 │   ├── remote/           # SSH клиент
 │   ├── routing/          # Движок оценки
-│   └── transport/        # 11 транспортов
+│   └── transport/        # 12 транспортов
 ├── tunnels/              # Скрипты установки туннелей
 ├── Makefile              # Сборка, тесты, установка
 ├── Dockerfile            # Docker сборка

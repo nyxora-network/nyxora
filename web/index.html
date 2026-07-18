@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NYXORA Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --bg: #0f0f1a;
+            --surface: #1a1a2e;
+            --surface-hover: #232340;
+            --overlay: #2d2d4a;
+            --text: #e0e0ff;
+            --subtext: #8888aa;
+            --primary: #7c6fff;
+            --primary-glow: rgba(124, 111, 255, 0.3);
+            --success: #4ade80;
+            --success-glow: rgba(74, 222, 128, 0.2);
+            --warning: #fbbf24;
+            --error: #f87171;
+            --border: rgba(255, 255, 255, 0.06);
+        }
+        body {
+            font-family: 'Inter', 'SF Pro', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(124, 111, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(74, 222, 128, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(248, 113, 113, 0.04) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0 30px;
+        }
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #7c6fff 0%, #a78bfa 50%, #c4b5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+        }
+        .version-badge {
+            padding: 4px 10px;
+            background: var(--overlay);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--subtext);
+            font-weight: 500;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .ws-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: var(--surface);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .ws-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--error);
+            transition: background 0.3s;
+        }
+        .ws-dot.connected {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success-glow);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #6a5acd;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+        .btn-ghost {
+            background: transparent;
+            color: var(--subtext);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover {
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card:hover {
+            border-color: rgba(124, 111, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--subtext);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+        }
+        .stat-value.success { color: var(--success); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.primary { color: var(--primary); }
+        .stat-change {
+            font-size: 12px;
+            margin-top: 8px;
+            color: var(--subtext);
+        }
+        .stat-change.up { color: var(--success); }
+        .stat-change.down { color: var(--error); }
+
+        /* Transport List */
+        .section {
+            margin-bottom: 32px;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .transport-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        .transport-table th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 11px;
+            color: var(--subtext);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        .transport-row {
+            background: var(--surface);
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .transport-row:hover {
+            background: var(--surface-hover);
+            transform: scale(1.005);
+        }
+        .transport-row td {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .transport-row td:first-child {
+            border-left: 1px solid var(--border);
+            border-radius: 10px 0 0 10px;
+        }
+        .transport-row td:last-child {
+            border-right: 1px solid var(--border);
+            border-radius: 0 10px 10px 0;
+        }
+        .transport-name-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .transport-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .transport-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .transport-info span {
+            font-size: 12px;
+            color: var(--subtext);
+        }
+        .mono {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            color: var(--subtext);
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .status-pill.active {
+            background: rgba(74, 222, 128, 0.15);
+            color: var(--success);
+        }
+        .status-pill.testing {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--warning);
+        }
+        .status-pill.failed {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--error);
+        }
+        .status-pill.inactive {
+            background: rgba(136, 136, 170, 0.15);
+            color: var(--subtext);
+        }
+        .status-pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .score-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .score-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: var(--overlay);
+            border-radius: 3px;
+            overflow: hidden;
+            min-width: 80px;
+        }
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .score-num {
+            font-weight: 600;
+            font-size: 14px;
+            min-width: 30px;
+        }
+        .latency-cell {
+            font-weight: 500;
+        }
+        .latency-cell.good { color: var(--success); }
+        .latency-cell.medium { color: var(--warning); }
+        .latency-cell.bad { color: var(--error); }
+
+        /* Activity Log */
+        .activity-log {
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        .log-entry:hover {
+            background: var(--surface-hover);
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        .log-time {
+            color: var(--subtext);
+            font-family: monospace;
+            font-size: 12px;
+            min-width: 70px;
+        }
+        .log-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+        .log-icon.info { background: rgba(124, 111, 255, 0.2); color: var(--primary); }
+        .log-icon.success { background: rgba(74, 222, 128, 0.2); color: var(--success); }
+        .log-icon.warning { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
+        .log-icon.error { background: rgba(248, 113, 113, 0.2); color: var(--error); }
+        .log-msg { flex: 1; color: var(--text); }
+
+        /* Footer */
+        footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--subtext);
+            font-size: 13px;
+        }
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            header {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .transport-table {
+                font-size: 12px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--surface);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--overlay);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--subtext);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-section">
+                <div class="logo">NYXORA</div>
+                <span class="version-badge">v0.2.0</span>
+            </div>
+            <div class="header-right">
+                <div class="ws-status">
+                    <div class="ws-dot" id="wsDot"></div>
+                    <span id="wsLabel">Connecting...</span>
+                </div>
+                <button class="btn btn-ghost" onclick="location.reload()">↻ Refresh</button>
+                <button class="btn btn-primary" id="connectBtn" onclick="toggleConnection()">Connect</button>
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Active Transports</div>
+                <div class="stat-value success" id="activeCount">—</div>
+                <div class="stat-change" id="activeChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Best Transport</div>
+                <div class="stat-value primary" id="bestTransport">—</div>
+                <div class="stat-change" id="bestScore"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Latency</div>
+                <div class="stat-value" id="avgLatency">—</div>
+                <div class="stat-change" id="latencyChange"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Uptime</div>
+                <div class="stat-value" id="uptime">—</div>
+                <div class="stat-change" id="failoverCount"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">Transport Status</div>
+            </div>
+            <table class="transport-table">
+                <thead>
+                    <tr>
+                        <th>Transport</th>
+                        <th>Port</th>
+                        <th>Status</th>
+                        <th>Latency</th>
+                        <th>Loss</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody id="transportBody"></tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">Activity Log</div>
+            </div>
+            <div class="activity-log" id="activityLog">
+                <div class="log-entry">
+                    <span class="log-time">—</span>
+                    <div class="log-icon info">i</div>
+                    <span class="log-msg">Waiting for connection...</span>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <span>NYXORA Adaptive Tunnel Orchestrator</span>
+            <span>
+                <a href="https://github.com/nyxorammd-lgtm/nyxora">GitHub</a> · 
+                <a href="https://t.me/NyxoraCore">Telegram</a>
+            </span>
+        </footer>
+    </div>
+
+    <script>
+    // ─── WebSocket Client ──────────────────────────────────────────────
+    let ws = null;
+    let reconnectTimer = null;
+    let startTime = Date.now();
+
+    const CATEGORY_COLORS = {
+        'VPN':     '#89b4fa',
+        'Tunnel':  '#7c6fff',
+        'Relay':   '#f9e2af',
+        'Proxy':   '#a6e3a1',
+    };
+
+    // ─── Connect / Disconnect ──────────────────────────────────────────
+    function toggleConnection() {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.close();
+        } else {
+            connectWS();
+        }
+    }
+
+    function connectWS() {
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const url = `${proto}//${location.host}/api/ws`;
+
+        addLog('info', `Connecting to ${url}...`);
+        ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            document.getElementById('wsDot').classList.add('connected');
+            document.getElementById('wsLabel').textContent = 'Connected';
+            document.getElementById('connectBtn').textContent = 'Disconnect';
+            addLog('success', 'WebSocket connected');
+        };
+
+        ws.onmessage = (evt) => {
+            try {
+                const data = JSON.parse(evt.data);
+                handleUpdate(data);
+            } catch (e) {
+                console.error('Parse error:', e);
+            }
+        };
+
+        ws.onclose = () => {
+            document.getElementById('wsDot').classList.remove('connected');
+            document.getElementById('wsLabel').textContent = 'Disconnected';
+            document.getElementById('connectBtn').textContent = 'Connect';
+            addLog('warning', 'WebSocket disconnected, retrying in 5s...');
+            reconnectTimer = setTimeout(connectWS, 5000);
+        };
+
+        ws.onerror = (err) => {
+            addLog('error', 'WebSocket error');
+        };
+    }
+
+    // ─── Handle Incoming Data ──────────────────────────────────────────
+    function handleUpdate(data) {
+        // data: { transports: [...], stats: {...}, events: [...] }
+        if (data.transports) renderTransports(data.transports);
+        if (data.stats) renderStats(data.stats);
+        if (data.events) data.events.forEach(e => addLog(e.level || 'info', e.message));
+    }
+
+    // ─── Render Functions ──────────────────────────────────────────────
+    function renderTransports(list) {
+        const tbody = document.getElementById('transportBody');
+        tbody.innerHTML = list.map(t => {
+            const scoreClass = t.score >= 80 ? 'success' : t.score >= 60 ? 'warning' : 'bad';
+            const barColor = t.score >= 80 ? 'var(--success)' : t.score >= 60 ? 'var(--warning)' : 'var(--error)';
+            const latClass = t.latency < 30 ? 'good' : t.latency < 60 ? 'medium' : 'bad';
+            const catColor = CATEGORY_COLORS[t.category] || '#cdd6f4';
+
+            return `<tr class="transport-row">
+                <td>
+                    <div class="transport-name-cell">
+                        <div class="transport-icon" style="background:${catColor}20;color:${catColor}">
+                            ${t.category ? t.category[0] : '?'}
+                        </div>
+                        <div class="transport-info">
+                            <h4>${t.name}</h4>
+                            <span>${t.category || ''}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="mono">:${t.port}</td>
+                <td><span class="status-pill ${t.status}"><span class="dot"></span>${t.status}</span></td>
+                <td class="latency-cell ${latClass}">${t.latency}ms</td>
+                <td class="mono">${t.loss}%</td>
+                <td>
+                    <div class="score-cell">
+                        <div class="score-bar-bg">
+                            <div class="score-bar-fill" style="width:${t.score}%;background:${barColor}"></div>
+                        </div>
+                        <span class="score-num" style="color:${barColor}">${t.score}</span>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Update summary stats
+        const active = list.filter(t => t.status === 'active').length;
+        document.getElementById('activeCount').textContent = `${active}/${list.length}`;
+
+        const sorted = [...list].sort((a, b) => b.score - a.score);
+        if (sorted.length > 0) {
+            document.getElementById('bestTransport').textContent = sorted[0].name;
+            document.getElementById('bestScore').textContent = `Score: ${sorted[0].score}`;
+        }
+
+        const avgLat = list.reduce((s, t) => s + t.latency, 0) / (list.length || 1);
+        document.getElementById('avgLatency').textContent = `${Math.round(avgLat)}ms`;
+    }
+
+    function renderStats(stats) {
+        if (stats.uptime) {
+            document.getElementById('uptime').textContent = stats.uptime;
+        }
+        if (stats.failovers !== undefined) {
+            document.getElementById('failoverCount').textContent = `${stats.failovers} failovers`;
+        }
+    }
+
+    // ─── Activity Log ──────────────────────────────────────────────────
+    function addLog(level, message) {
+        const log = document.getElementById('activityLog');
+        const now = new Date();
+        const time = now.toTimeString().slice(0, 8);
+
+        const iconMap = { info: 'i', success: '✓', warning: '!', error: '✕' };
+
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `
+            <span class="log-time">${time}</span>
+            <div class="log-icon ${level}">${iconMap[level] || 'i'}</div>
+            <span class="log-msg">${message}</span>
+        `;
+        log.insertBefore(entry, log.firstChild);
+
+        // Keep max 50 entries
+        while (log.children.length > 50) {
+            log.removeChild(log.lastChild);
+        }
+    }
+
+    // ─── Uptime Timer ──────────────────────────────────────────────────
+    function updateUptime() {
+        const diff = Math.floor((Date.now() - startTime) / 1000);
+        const h = Math.floor(diff / 3600);
+        const m = Math.floor((diff % 3600) / 60);
+        const s = diff % 60;
+        const el = document.getElementById('uptime');
+        if (el.textContent === '—') {
+            el.textContent = `${h}h ${m}m ${s}s`;
+        }
+    }
+    setInterval(updateUptime, 1000);
+
+    // ─── Auto-connect ──────────────────────────────────────────────────
+    // Try WebSocket first; fall back to demo data
+    setTimeout(() => {
+        try {
+            connectWS();
+        } catch (e) {
+            addLog('warning', 'WebSocket unavailable, loading demo data');
+            loadDemoData();
+        }
+    }, 500);
+
+    // ─── Demo Data Fallback ────────────────────────────────────────────
+    function loadDemoData() {
+        const demo = {
+            transports: [
+                { name: 'WireGuard', port: 51820, score: 95, latency: 12, loss: 0.1, status: 'active', category: 'VPN' },
+                { name: 'Hysteria', port: 8444, score: 91, latency: 16, loss: 0.2, status: 'active', category: 'Tunnel' },
+                { name: 'Reality', port: 443, score: 89, latency: 19, loss: 0.1, status: 'active', category: 'Tunnel' },
+                { name: 'VLESS', port: 443, score: 87, latency: 21, loss: 0.15, status: 'active', category: 'Tunnel' },
+                { name: 'Rathole', port: 2333, score: 85, latency: 22, loss: 0.3, status: 'active', category: 'Relay' },
+                { name: 'QUIC', port: 9923, score: 82, latency: 26, loss: 0.4, status: 'active', category: 'Tunnel' },
+                { name: 'Backhaul', port: 3080, score: 80, latency: 28, loss: 0.5, status: 'active', category: 'Relay' },
+                { name: 'OpenVPN', port: 1194, score: 75, latency: 35, loss: 0.8, status: 'active', category: 'VPN' },
+                { name: 'WebSocket', port: 9925, score: 72, latency: 38, loss: 1.0, status: 'active', category: 'Tunnel' },
+                { name: 'FRP', port: 7000, score: 68, latency: 42, loss: 1.2, status: 'testing', category: 'Relay' },
+                { name: 'IPsec', port: 500, score: 65, latency: 48, loss: 1.5, status: 'active', category: 'VPN' },
+                { name: 'SSH', port: 22, score: 55, latency: 55, loss: 2.0, status: 'inactive', category: 'Tunnel' },
+            ],
+            stats: { uptime: '2h 34m', failovers: 0 },
+            events: [
+                { level: 'success', message: 'WireGuard tunnel established (12ms)' },
+                { level: 'info', message: 'Hysteria connected via QUIC' },
+                { level: 'info', message: 'Reality handshake completed' },
+            ]
+        };
+        handleUpdate(demo);
+    }
+    </script>
+</body>
+</html>

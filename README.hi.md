@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/go-%3E%3D1.25-00ADD8?style=flat&logo=go" alt="Go Version">
+  <img src="https://img.shields.io/badge/go-%3E%3D1.24-00ADD8?style=flat&logo=go" alt="Go Version">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="License">
   <img src="https://img.shields.io/badge/status-active-success?style=flat" alt="Status">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat" alt="PRs Welcome">
   <br>
-  <img src="https://img.shields.io/badge/transports-11-ff69b4?style=flat" alt="11 Transports">
+  <img src="https://img.shields.io/badge/transports-12-ff69b4?style=flat" alt="12 Transports">
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="Platform">
 </div>
 
@@ -51,7 +51,7 @@
 <td width="50%">
 
 **🧠 स्व-उपचार ऑर्केस्ट्रेशन**
-- 11 सुरंग ट्रांसपोर्ट: WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backhaul, TCP
+- 12 सुरंग ट्रांसपोर्ट: WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backhaul, TCP, WebSocket
 - स्वचालित फेलओवर — खराब सुरंगों का पता लगाकर तुरंत स्विच करें
 - 5 मल्टीपाथ शेड्यूलिंग मोड (भारित, न्यूनतम-विलंबता, न्यूनतम-हानि, समान, सभी-सक्रिय)
 - रीयल-टाइम स्कोरिंग इंजन (विलंबता + पैकेट हानि + भार)
@@ -331,7 +331,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 
 ### आवश्यकताएँ
 
-- Go 1.25+
+- Go 1.24+
 - Linux या macOS
 - `ssh`, `sshpass`, `wg`, `curl`, `ping`
 

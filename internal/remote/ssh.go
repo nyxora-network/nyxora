@@ -54,7 +54,7 @@ func (h *Host) sshConfig() *ssh.ClientConfig {
 	return &ssh.ClientConfig{
 		User:            h.User,
 		Auth:            auth,
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // TODO: Implement proper host key verification
 		Timeout:         10 * time.Second,
 	}
 }

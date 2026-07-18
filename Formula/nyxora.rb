@@ -1,39 +1,28 @@
-# typed: true
+# typed: false
 # frozen_string_literal: true
 
+# Documentation: https://docs.brew.sh/Formula-Cookbook
+#                https://rubydoc.brew.sh/Formula
+
 class Nyxora < Formula
-  desc "Adaptive Tunnel Orchestrator — self-healing multi-transport VPN/tunnel manager"
+  desc "Adaptive multi-transport VPN/tunnel orchestrator"
   homepage "https://github.com/nyxorammd-lgtm/nyxora"
-  version "0.2.0"
+  url "https://github.com/nyxorammd-lgtm/nyxora/archive/refs/tags/v0.2.0.tar.gz"
+  sha256 "d455530328c00b6bb0dfc9dc97662c2ebc85e67e05e7ca2bfadc12f3a339a09a"
   license "MIT"
+  head "https://github.com/nyxorammd-lgtm/nyxora.git", branch: "main"
 
-  on_macos do
-    if Hardware::CPU.intel?
-      url "https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_darwin_amd64"
-      sha256 "0000000000000000000000000000000000000000000000000000000000000000" # placeholder
-    end
-    if Hardware::CPU.arm?
-      url "https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_darwin_arm64"
-      sha256 "0000000000000000000000000000000000000000000000000000000000000000" # placeholder
-    end
-  end
-
-  on_linux do
-    if Hardware::CPU.intel?
-      url "https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64"
-      sha256 "0000000000000000000000000000000000000000000000000000000000000000" # placeholder
-    end
-    if Hardware::CPU.arm?
-      url "https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_arm64"
-      sha256 "0000000000000000000000000000000000000000000000000000000000000000" # placeholder
-    end
-  end
+  depends_on "go" => :build
 
   def install
-    bin.install "nyxora"
+    ldflags = %W[
+      -s -w
+      -X main.version=#{version}
+    ]
+    system "go", "build", *std_go_args(ldflags:), "./cmd/nyxora"
   end
 
   test do
-    assert_match "v#{version}", shell_output("#{bin}/nyxora version")
+    assert_match "nyxora v#{version}", shell_output("#{bin}/nyxora version")
   end
 end

@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/go-%3E%3D1.25-00ADD8?style=flat&logo=go" alt="إصدار Go">
+  <img src="https://img.shields.io/badge/go-%3E%3D1.24-00ADD8?style=flat&logo=go" alt="إصدار Go">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="الترخيص">
   <img src="https://img.shields.io/badge/status-active-success?style=flat" alt="الحالة">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat" alt="PRs مرحب بها">
   <br>
-  <img src="https://img.shields.io/badge/transports-11-ff69b4?style=flat" alt="11 ناقلاً">
+  <img src="https://img.shields.io/badge/transports-12-ff69b4?style=flat" alt="12 ناقلاً">
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="المنصة">
 </div>
 
@@ -54,7 +54,7 @@
 <td width="50%">
 
 **🧠 تنسيق ذاتي الإصلاح**
-- 11 ناقلاً للأنفاق: WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backhaul, TCP
+- 12 ناقلاً للأنفاق: WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backhaul, TCP, WebSocket
 - تجاوز الفشل تلقائي — يكتشف الأنفاق المتدهورة ويبدل فوراً
 - 5 أوضاع جدولة متعددة المسارات (موزون، أقل زمن وصول، أقل فقدان، متساوٍ، الكل نشط)
 - محرك تسجيل نقاط في الوقت الفعلي (زمن الوصول + فقدان الحزم + الوزن)
@@ -334,7 +334,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 
 ### المتطلبات
 
-- Go 1.25+
+- Go 1.24+
 - Linux أو macOS
 - `ssh`, `sshpass`, `wg`, `curl`, `ping`
 

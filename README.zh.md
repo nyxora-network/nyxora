@@ -1,10 +1,10 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/go-%3E%3D1.25-00ADD8?style=flat&logo=go" alt="Go Version">
+  <img src="https://img.shields.io/badge/go-%3E%3D1.24-00ADD8?style=flat&logo=go" alt="Go Version">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="License">
   <img src="https://img.shields.io/badge/status-active-success?style=flat" alt="Status">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat" alt="PRs Welcome">
   <br>
-  <img src="https://img.shields.io/badge/transports-11-ff69b4?style=flat" alt="11 Transports">
+  <img src="https://img.shields.io/badge/transports-12-ff69b4?style=flat" alt="12 Transports">
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="Platform">
 </div>
 
@@ -51,7 +51,7 @@
 <td width="50%">
 
 **🧠 自愈编排**
-- 11 种隧道传输：WireGuard、OpenVPN、SSH、QUIC、FRP、Rathole、IPsec、Shadowsocks、Hysteria、Backhaul、TCP
+- 12 种隧道传输：WireGuard、OpenVPN、SSH、QUIC、FRP、Rathole、IPsec、Shadowsocks、Hysteria、Backhaul、TCP、WebSocket
 - 自动故障转移 — 检测降级隧道，瞬间切换
 - 5 种多路径调度模式（加权、最低延迟、最低丢包、均衡、全部激活）
 - 实时评分引擎（延迟 + 丢包率 + 权重）
@@ -344,7 +344,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 
 ### 前提条件
 
-- Go 1.25+
+- Go 1.24+
 - Linux 或 macOS
 - `ssh`, `sshpass`, `wg`, `curl`, `ping`
 
@@ -385,7 +385,7 @@ nyxora/
 │   ├── packager/         # 打包工具
 │   ├── remote/           # SSH 客户端
 │   ├── routing/          # 评分引擎
-│   └── transport/        # 11 种传输实现
+│   └── transport/        # 12 种传输实现
 ├── tunnels/              # 各隧道的安装脚本
 ├── Makefile              # 构建、测试、安装
 ├── Dockerfile            # Docker 构建

@@ -1,0 +1,24 @@
+# Maintainer: Nyxora Team <https://t.me/NyxoraCore>
+pkgname=nyxora
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="Adaptive multi-transport VPN/tunnel orchestrator"
+arch=('x86_64' 'aarch64')
+url="https://github.com/nyxorammd-lgtm/nyxora"
+license=('MIT')
+depends=('wireguard-tools' 'openssh' 'sshpass' 'curl' 'ping')
+makedepends=('go')
+source=("${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cd "${pkgname}"
+  go build -ldflags="-s -w -X main.version=${pkgver}" -o nyxora ./cmd/nyxora
+}
+
+package() {
+  cd "${pkgname}"
+  install -Dm755 nyxora "${pkgdir}/usr/bin/nyxora"
+  install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 README.md "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+}

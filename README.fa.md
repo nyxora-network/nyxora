@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/go-%3E%3D1.25-00ADD8?style=flat&logo=go" alt="Go Version">
+  <img src="https://img.shields.io/badge/go-%3E%3D1.24-00ADD8?style=flat&logo=go" alt="Go Version">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="مجوز">
   <img src="https://img.shields.io/badge/status-active-success?style=flat" alt="وضعیت">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat" alt="PRs Welcome">
   <img src="https://img.shields.io/github/stars/nyxorammd-lgtm/nyxora?style=flat&logo=github" alt="Stars">
   <br>
   <a href="https://github.com/nyxorammd-lgtm/nyxora/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxorammd-lgtm/nyxora/ci.yml?branch=main&label=CI&logo=github" alt="CI"></a>
-  <img src="https://img.shields.io/badge/transports-11-ff69b4?style=flat" alt="۱۱ ترنسپورت">
+  <img src="https://img.shields.io/badge/transports-12-ff69b4?style=flat" alt="۱۲ ترنسپورت">
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="پلتفرم">
   <img src="https://img.shields.io/github/v/release/nyxorammd-lgtm/nyxora?style=flat" alt="Release">
 </div>
@@ -54,7 +54,7 @@
 <td width="50%">
 
 **🧠 ارکستریتور خود-ترمیم**
-- ۱۱ ترنسپورت تونل: WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backhaul, TCP
+- ۱۲ ترنسپورت تونل: WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backhaul, TCP, WebSocket
 - Failover خودکار — تشخیص تونل‌های ضعیف و سوئیچ آنی
 - ۵ حالت زمان‌بندی چندمسیره (weighted, lowest-latency, lowest-loss, even, all-active)
 - موتور امتیازدهی بلادرنگ (تأخیر + افت بسته + وزن)
@@ -348,7 +348,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 
 ### پیش‌نیازها
 
-- Go 1.25+
+- Go 1.24+
 - لینوکس یا macOS
 - `ssh`, `sshpass`, `wg`, `curl`, `ping`
 
@@ -480,7 +480,7 @@ Error: ssh: connect to host 192.168.1.50 port 22: connection refused
 
 **Environment**
 - سیستم‌عامل (لوکال): Ubuntu 22.04
-- نسخه Go: 1.25.0
+- نسخه Go: 1.24.0
 - نسخه NYXORA: 0.2.0
 - سیستم‌عامل سرور ریموت: CentOS 8
 - RAM: 512MB
