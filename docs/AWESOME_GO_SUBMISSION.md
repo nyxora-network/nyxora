@@ -3,7 +3,7 @@
 ## Project Information
 
 - **Name**: NYXORA
-- **URL**: https://github.com/nyxorammd-lgtm/nyxora
+- **URL**: https://github.com/nyxora-network/nyxora
 - **Description**: Self-healing multi-transport VPN/tunnel manager with 12 transports, auto-failover, and interactive TUI
 - **Category**: Networking
 
@@ -41,7 +41,7 @@
 ## Submission Template
 
 ```markdown
-### [NYXORA](https://github.com/nyxorammd-lgtm/nyxora) - Adaptive Tunnel Orchestrator
+### [NYXORA](https://github.com/nyxora-network/nyxora) - Adaptive Tunnel Orchestrator
 
 Self-healing multi-transport VPN/tunnel manager. Install on one server, connect to any remote via SSH. 12 transports, auto-failover, interactive TUI.
 

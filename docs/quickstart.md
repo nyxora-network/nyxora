@@ -11,13 +11,13 @@
 ### One-Line Install (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nyxorammd-lgtm/nyxora/main/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/nyxora-network/nyxora/main/install.sh | sudo bash
 ```
 
 ### Manual Install
 
 ```bash
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 make build
 sudo make install

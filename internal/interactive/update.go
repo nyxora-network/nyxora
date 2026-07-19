@@ -17,8 +17,8 @@ import (
 
 const (
 	currentVersion = "0.2.0"
-	updateURL      = "https://api.github.com/repos/nyxorammd-lgtm/nyxora/releases/latest"
-	downloadBase   = "https://github.com/nyxorammd-lgtm/nyxora/releases/download"
+	updateURL      = "https://api.github.com/repos/nyxora-network/nyxora/releases/latest"
+	downloadBase   = "https://github.com/nyxora-network/nyxora/releases/download"
 	telegramURL    = "https://t.me/NyxoraCore"
 )
 

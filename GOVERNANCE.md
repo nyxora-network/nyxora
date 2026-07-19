@@ -17,7 +17,7 @@ NYXORA follows a **lazy consensus** model.
 ## RFC Process
 
 For significant changes:
-1. Open a [Discussion](https://github.com/nyxorammd-lgtm/nyxora/discussions) with `[RFC]` prefix
+1. Open a [Discussion](https://github.com/nyxora-network/nyxora/discussions) with `[RFC]` prefix
 2. Describe motivation, design, and alternatives
 3. Minimum 1 week for community feedback
 4. Maintainers vote to accept, reject, or request changes

@@ -3,12 +3,12 @@
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="مجوز">
   <img src="https://img.shields.io/badge/status-active-success?style=flat" alt="وضعیت">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat" alt="PRs Welcome">
-  <img src="https://img.shields.io/github/stars/nyxorammd-lgtm/nyxora?style=flat&logo=github" alt="Stars">
+  <img src="https://img.shields.io/github/stars/nyxora-network/nyxora?style=flat&logo=github" alt="Stars">
   <br>
-  <a href="https://github.com/nyxorammd-lgtm/nyxora/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxorammd-lgtm/nyxora/ci.yml?branch=main&label=CI&logo=github" alt="CI"></a>
+  <a href="https://github.com/nyxora-network/nyxora/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxora-network/nyxora/ci.yml?branch=main&label=CI&logo=github" alt="CI"></a>
   <img src="https://img.shields.io/badge/transports-12-ff69b4?style=flat" alt="۱۲ ترنسپورت">
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="پلتفرم">
-  <img src="https://img.shields.io/github/v/release/nyxorammd-lgtm/nyxora?style=flat" alt="Release">
+  <img src="https://img.shields.io/github/v/release/nyxora-network/nyxora?style=flat" alt="Release">
 </div>
 
 <br>
@@ -115,13 +115,13 @@
 ## 📦 نصب تک خطی
 
 ```bash
-curl -L github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+curl -L github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 یا با `wget`:
 
 ```bash
-wget -q https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+wget -q https://github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 <details>
@@ -133,7 +133,7 @@ sudo apt install golang-go git ssh sshpass wireguard curl
 # یا: brew install go (macOS)
 
 # Clone
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # Build
@@ -414,7 +414,7 @@ NYXORA شامل یک **وب داشبورد** برای مدیریت تونل اس
 ### راه‌اندازی
 
 ```bash
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # Build
@@ -490,20 +490,20 @@ nyxora/
 | 🚀 **ویژگی‌های جدید** | سخت | افزودن دستورات، حالت‌ها، گزینه‌های جدید |
 | 🌐 **ترنسپورت‌های جدید** | سخت | پیاده‌سازی پروتکل‌های تونل جدید
 
-**اولین بار است که مشارکت می‌کنید؟** به issuesهایی با برچسب [`good first issue`](https://github.com/nyxorammd-lgtm/nyxora/labels/good%20first%20issue) نگاه کنید — عالی برای شروع هستند!
+**اولین بار است که مشارکت می‌کنید؟** به issuesهایی با برچسب [`good first issue`](https://github.com/nyxora-network/nyxora/labels/good%20first%20issue) نگاه کنید — عالی برای شروع هستند!
 
 ---
 
 ### 🐛 گزارش باگ
 
 **قبل از ارسال:**
-1. [Issuesهای موجود](https://github.com/nyxorammd-lgtm/nyxora/issues) را جستجو کنید — ممکن است باگ شما قبلاً گزارش شده باشد
+1. [Issuesهای موجود](https://github.com/nyxora-network/nyxora/issues) را جستجو کنید — ممکن است باگ شما قبلاً گزارش شده باشد
 2. سعی کنید در نصب تمیز بازتولید کنید (`nyxora install` جدید)
 3. به آخرین نسخه آپدیت کنید (`nyxora update`) — ممکن است باگ قبلاً رفع شده باشد
 
 **نحوه ارسال گزارش باگ عالی:**
 
-1. روی [**گزارش باگ جدید**](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=bug_report.md) کلیک کنید
+1. روی [**گزارش باگ جدید**](https://github.com/nyxora-network/nyxora/issues/new?template=bug_report.md) کلیک کنید
 2. **تمام بخش‌ها** را پر کنید (هرچه جزئیات بیشتر باشد، سریع‌تر رفع می‌شود):
 
 | بخش | چه چیزی وارد کنید |
@@ -705,7 +705,7 @@ test: add integration tests for failover engine
 
 - 📖 [راهنمای مشارکت](CONTRIBUTING.md) را برای دستورالعمل‌های دقیق بخوانید
 - 💬 به [کانال تلگرام](https://t.me/NyxoraCore) برای سؤالات بپیوندید
-- 🐛 [Issuesهای موجود](https://github.com/nyxorammd-lgtm/nyxora/issues) را برای الهام بررسی کنید
+- 🐛 [Issuesهای موجود](https://github.com/nyxora-network/nyxora/issues) را برای الهام بررسی کنید
 - 📧 برای نگرانی‌های خصوصی به maintainers ایمیل بزنید
 
 > **به یاد داشته باشید:** سؤال احمقانه‌ای وجود ندارد! همه ما یک زمانی مبتدی بودیم. درخواست کمک را دریغ نکنید.
@@ -714,8 +714,8 @@ test: add integration tests for failover engine
 
 ## 🌟 مشارکت‌کنندگان
 
-<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="مشارکت‌کنندگان" />
+<a href="https://github.com/nyxora-network/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxora-network/nyxora" alt="مشارکت‌کنندگان" />
 </a>
 
 ---
@@ -730,8 +730,8 @@ test: add integration tests for failover engine
   <br>
   <p>
     <a href="https://t.me/NyxoraCore">کانال تلگرام</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">گزارش باگ</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">درخواست ویژگی</a>
+    <a href="https://github.com/nyxora-network/nyxora/issues">گزارش باگ</a> •
+    <a href="https://github.com/nyxora-network/nyxora/issues">درخواست ویژگی</a>
   </p>
   <p>
     <sub>ساخته شده با ❤️ با استفاده از Go &amp; Bubble Tea</sub>

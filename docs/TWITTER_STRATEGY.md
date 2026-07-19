@@ -7,7 +7,7 @@
 - **Name**: NYXORA
 - **Handle**: @NyxoraCore
 - **Bio**: Self-healing multi-transport VPN/tunnel orchestrator | 12 transports | Auto-failover | Interactive TUI | Go
-- **Website**: https://github.com/nyxorammd-lgtm/nyxora
+- **Website**: https://github.com/nyxora-network/nyxora
 - **Location**: Global
 
 ### Profile Picture
@@ -55,7 +55,7 @@ Show the TUI dashboard or architecture diagram.
 
 Built with Go | Open source
 
-github.com/nyxorammd-lgtm/nyxora
+github.com/nyxora-network/nyxora
 
 #GoLang #VPN #OpenSource
 ```

@@ -112,13 +112,13 @@
 ## 📦 Установка
 
 ```bash
-curl -L github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+curl -L github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 Или через `wget`:
 
 ```bash
-wget -q https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+wget -q https://github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 <details>
@@ -130,7 +130,7 @@ sudo apt install golang-go git ssh sshpass wireguard curl
 # или: brew install go (macOS)
 
 # Клонирование
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # Сборка
@@ -424,7 +424,7 @@ NYXORA включает **веб-панель** для управления ту
 ### Настройка
 
 ```bash
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # Сборка
@@ -485,7 +485,7 @@ nyxora/
 Мы приветствуем участие! Пожалуйста, прочитайте [Руководство по участию](CONTRIBUTING.md).
 
 **Способы участия:**
-- Сообщайте об ошибках через [GitHub Issues](https://github.com/nyxorammd-lgtm/nyxora/issues)
+- Сообщайте об ошибках через [GitHub Issues](https://github.com/nyxora-network/nyxora/issues)
 - Предлагайте новые типы транспортов
 - Улучшайте TUI / панель мониторинга
 - Добавляйте поддержку других ОС
@@ -496,8 +496,8 @@ nyxora/
 
 ## 🌟 Участники
 
-<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="Участники" />
+<a href="https://github.com/nyxora-network/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxora-network/nyxora" alt="Участники" />
 </a>
 
 ---
@@ -512,8 +512,8 @@ nyxora/
   <br>
   <p>
     <a href="https://t.me/NyxoraCore">Telegram Канал</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">Сообщить об ошибке</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">Предложить функцию</a>
+    <a href="https://github.com/nyxora-network/nyxora/issues">Сообщить об ошибке</a> •
+    <a href="https://github.com/nyxora-network/nyxora/issues">Предложить функцию</a>
   </p>
   <p>
     <sub>Сделано с ❤️ на Go &amp; Bubble Tea</sub>

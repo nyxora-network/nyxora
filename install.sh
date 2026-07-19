@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="nyxorammd-lgtm/nyxora"
+REPO="nyxora-network/nyxora"
 BINARY="nyxora"
 INSTALL_DIR="/usr/local/bin"
 CONFIG_DIR="/etc/nyxora"

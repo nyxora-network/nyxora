@@ -11,14 +11,14 @@
 ### Сообщение об ошибке
 
 Перед отправкой отчёта об ошибке:
-- Проверьте [issues](https://github.com/nyxorammd-lgtm/nyxora/issues), не сообщалось ли уже об этой проблеме
+- Проверьте [issues](https://github.com/nyxora-network/nyxora/issues), не сообщалось ли уже об этой проблеме
 - Соберите информацию: версия ОС, версия Go, шаги для воспроизведения, вывод ошибки
 
-**Отправьте отчёт об ошибке**, открыв [новый issue](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=bug_report.md).
+**Отправьте отчёт об ошибке**, открыв [новый issue](https://github.com/nyxora-network/nyxora/issues/new?template=bug_report.md).
 
 ### Предложение функции
 
-Откройте [запрос функции](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=feature_request.md) с описанием:
+Откройте [запрос функции](https://github.com/nyxora-network/nyxora/issues/new?template=feature_request.md) с описанием:
 - Проблема, которую вы решаете
 - Как вы представляете решение
 - Рассмотренные альтернативы
@@ -68,7 +68,7 @@ git clone https://github.com/YOUR_USERNAME/nyxora.git
 cd nyxora
 
 # Добавить upstream remote
-git remote add upstream https://github.com/nyxorammd-lgtm/nyxora.git
+git remote add upstream https://github.com/nyxora-network/nyxora.git
 
 # Создать ветку для функции
 git checkout -b feat/your-feature
@@ -85,4 +85,4 @@ git push origin feat/your-feature
 
 ## Есть вопросы?
 
-Откройте [обсуждение](https://github.com/nyxorammd-lgtm/nyxora/discussions) или присоединяйтесь к [Telegram](https://t.me/NyxoraCore).
+Откройте [обсуждение](https://github.com/nyxora-network/nyxora/discussions) или присоединяйтесь к [Telegram](https://t.me/NyxoraCore).

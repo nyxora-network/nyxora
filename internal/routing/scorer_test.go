@@ -3,7 +3,7 @@ package routing
 import (
 	"testing"
 
-	"github.com/nyxora/nyxora/internal/transport"
+	"github.com/nyxora-network/nyxora/internal/transport"
 )
 
 func TestNewScorer(t *testing.T) {

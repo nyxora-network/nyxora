@@ -5,9 +5,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/nyxora/nyxora/internal/config"
-	"github.com/nyxora/nyxora/internal/remote"
-	"github.com/nyxora/nyxora/internal/transport"
+	"github.com/nyxora-network/nyxora/internal/config"
+	"github.com/nyxora-network/nyxora/internal/remote"
+	"github.com/nyxora-network/nyxora/internal/transport"
 )
 
 func (o *Orchestrator) ConnectToRemote(addr string, port int, user, password string) error {
@@ -39,7 +39,7 @@ func (o *Orchestrator) ConnectToRemote(addr string, port int, user, password str
 	if err := o.remoteHost.DetectOS(); err != nil {
 		o.addStep("Detecting OS", "FAILED", err.Error())
 		o.phase = PhaseFailed
-		return err
+		return fmt.Errorf("detect OS: %w", err)
 	}
 	o.addStep("Detecting OS", "OK", fmt.Sprintf("%s | %s", o.remoteHost.OSInfo(), o.remoteHost.Arch()))
 
@@ -93,7 +93,7 @@ func (o *Orchestrator) ConnectToRemote(addr string, port int, user, password str
 	if err != nil {
 		o.addStep("Setting up remote WG endpoint", "FAILED", err.Error())
 		o.phase = PhaseFailed
-		return err
+		return fmt.Errorf("setup remote WireGuard: %w", err)
 	}
 	o.addStep("Setting up remote WG endpoint", "OK", fmt.Sprintf("pub: %s... | iface: %s", remotePub[:16], o.remoteIface))
 
@@ -119,7 +119,7 @@ func (o *Orchestrator) ConnectToRemote(addr string, port int, user, password str
 	if err := localWG.Connect(remoteIP); err != nil {
 		o.addStep("Setting up local WG endpoint", "FAILED", err.Error())
 		o.phase = PhaseFailed
-		return err
+		return fmt.Errorf("setup local WireGuard: %w", err)
 	}
 	o.addStep("Setting up local WG endpoint", "OK", "interface nyxora0 ready")
 

@@ -39,10 +39,10 @@ WireGuard, OpenVPN, SSH, QUIC, FRP, Rathole, IPsec, Shadowsocks, Hysteria, Backh
 
 **Installation:**
 ```bash
-curl -L github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+curl -L github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
-**GitHub:** https://github.com/nyxorammd-lgtm/nyxora
+**GitHub:** https://github.com/nyxora-network/nyxora
 
 Would love to hear your feedback! Happy to answer any questions.
 

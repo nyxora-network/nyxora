@@ -11,14 +11,14 @@ This project adheres to a [Code of Conduct](CODE_OF_CONDUCT.md). By participatin
 ### Reporting Bugs
 
 Before submitting a bug report:
-- Check the [issues](https://github.com/nyxorammd-lgtm/nyxora/issues) to see if it's already reported
+- Check the [issues](https://github.com/nyxora-network/nyxora/issues) to see if it's already reported
 - Collect information: OS version, Go version, steps to reproduce, error output
 
-**Submit a bug report** by opening a [new issue](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=bug_report.md).
+**Submit a bug report** by opening a [new issue](https://github.com/nyxora-network/nyxora/issues/new?template=bug_report.md).
 
 ### Suggesting Features
 
-Open a [feature request](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=feature_request.md) describing:
+Open a [feature request](https://github.com/nyxora-network/nyxora/issues/new?template=feature_request.md) describing:
 - The problem you're solving
 - How you envision the solution
 - Any alternatives considered
@@ -68,7 +68,7 @@ git clone https://github.com/YOUR_USERNAME/nyxora.git
 cd nyxora
 
 # Add upstream remote
-git remote add upstream https://github.com/nyxorammd-lgtm/nyxora.git
+git remote add upstream https://github.com/nyxora-network/nyxora.git
 
 # Create feature branch
 git checkout -b feat/your-feature
@@ -85,4 +85,4 @@ git push origin feat/your-feature
 
 ## Questions?
 
-Open a [Discussion](https://github.com/nyxorammd-lgtm/nyxora/discussions) or join our [Telegram](https://t.me/NyxoraCore).
+Open a [Discussion](https://github.com/nyxora-network/nyxora/discussions) or join our [Telegram](https://t.me/NyxoraCore).

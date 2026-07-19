@@ -112,13 +112,13 @@
 ## 📦 Instalación en Una Línea
 
 ```bash
-curl -L github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+curl -L github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 O con `wget`:
 
 ```bash
-wget -q https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+wget -q https://github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 <details>
@@ -130,7 +130,7 @@ sudo apt install golang-go git ssh sshpass wireguard curl
 # o: brew install go (macOS)
 
 # Clonar
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # Compilar
@@ -397,7 +397,7 @@ NYXORA incluye un **panel web** para gestión de túneles. Acceso: `http://YOUR_
 ### Configuración
 
 ```bash
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # Compilar
@@ -420,7 +420,7 @@ make vet
 ¡Aceptamos contribuciones! Consulta nuestra [Guía de Contribución](CONTRIBUTING.md).
 
 **Formas de contribuir:**
-- Reporta errores en [GitHub Issues](https://github.com/nyxorammd-lgtm/nyxora/issues)
+- Reporta errores en [GitHub Issues](https://github.com/nyxora-network/nyxora/issues)
 - Sugiere nuevos tipos de transporte
 - Mejora la TUI / el panel
 - Agrega soporte para más sistemas operativos
@@ -431,8 +431,8 @@ make vet
 
 ## 🌟 Contribuidores
 
-<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="Contribuidores" />
+<a href="https://github.com/nyxora-network/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxora-network/nyxora" alt="Contribuidores" />
 </a>
 
 ---
@@ -447,8 +447,8 @@ Este proyecto está licenciado bajo **MIT License**.
   <br>
   <p>
     <a href="https://t.me/NyxoraCore">Canal de Telegram</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">Reportar Error</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">Solicitar Característica</a>
+    <a href="https://github.com/nyxora-network/nyxora/issues">Reportar Error</a> •
+    <a href="https://github.com/nyxora-network/nyxora/issues">Solicitar Característica</a>
   </p>
   <p>
     <sub>Hecho con ❤️ usando Go &amp; Bubble Tea</sub>

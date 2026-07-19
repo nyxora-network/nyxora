@@ -33,6 +33,6 @@ NYXORA is a Go-based tunnel orchestrator designed for:
 ## Get Started
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nyxorammd-lgtm/nyxora/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/nyxora-network/nyxora/main/install.sh | bash
 nyxora --help
 ```

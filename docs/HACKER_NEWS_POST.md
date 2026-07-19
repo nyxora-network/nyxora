@@ -6,7 +6,7 @@ NYXORA: Self-healing multi-transport VPN/tunnel orchestrator (12 transports, aut
 
 ## URL
 
-https://github.com/nyxorammd-lgtm/nyxora
+https://github.com/nyxora-network/nyxora
 
 ## Post Content
 

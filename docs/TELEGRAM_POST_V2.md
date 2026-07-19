@@ -166,7 +166,7 @@ Issue بزن.
 
 بزرگ‌ترین حمایتیه که می‌تونی انجام بدی.
 
-🔗 **github.com/nyxorammd-lgtm/nyxora**
+🔗 **github.com/nyxora-network/nyxora**
 
 ━━━━━━━━━━━━━━━
 

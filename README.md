@@ -1,17 +1,17 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/go-%3E%3D1.24-00ADD8?style=flat&logo=go" alt="Go Version">
+  <img src="https://img.shields.io/badge/go-1.25+-00ADD8?style=flat&logo=go" alt="Go Version">
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="License">
-  <img src="https://img.shields.io/badge/status-active-success?style=flat" alt="Status">
+  <img src="https://img.shields.io/badge/status-stable-success?style=flat" alt="Status">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat" alt="PRs Welcome">
-  <a href="https://goreportcard.com/report/github.com/nyxorammd-lgtm/nyxora"><img src="https://goreportcard.com/badge/github.com/nyxorammd-lgtm/nyxora" alt="Go Report Card"></a>
-  <img src="https://img.shields.io/github/stars/nyxorammd-lgtm/nyxora?style=flat&logo=github" alt="Stars">
+  <a href="https://goreportcard.com/report/github.com/nyxora-network/nyxora"><img src="https://goreportcard.com/badge/github.com/nyxora-network/nyxora" alt="Go Report Card"></a>
+  <img src="https://img.shields.io/github/stars/nyxora-network/nyxora?style=flat&logo=github" alt="Stars">
   <br>
-  <a href="https://github.com/nyxorammd-lgtm/nyxora/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxorammd-lgtm/nyxora/ci.yml?branch=main&label=CI&logo=github" alt="CI"></a>
-  <a href="https://github.com/nyxorammd-lgtm/nyxora/actions/workflows/codeql.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxorammd-lgtm/nyxora/codeql.yml?branch=main&label=CodeQL&logo=github" alt="CodeQL"></a>
-  <img src="https://img.shields.io/badge/transports-14-ff69b4?style=flat" alt="14 Transports">
+  <a href="https://github.com/nyxora-network/nyxora/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxora-network/nyxora/ci.yml?branch=main&label=CI&logo=github" alt="Build Status"></a>
+  <a href="https://github.com/nyxora-network/nyxora/actions/workflows/codeql.yml"><img src="https://img.shields.io/github/actions/workflow/status/nyxora-network/nyxora/codeql.yml?branch=main&label=CodeQL&logo=github" alt="CodeQL"></a>
+  <img src="https://img.shields.io/badge/transports-12-ff69b4?style=flat" alt="12 Transports">
   <img src="https://img.shields.io/badge/platform-linux%20%7C%20macOS-lightgrey?style=flat" alt="Platform">
-  <img src="https://img.shields.io/badge/coverage-runnable-brightgreen?style=flat" alt="Coverage">
-  <img src="https://img.shields.io/github/v/release/nyxorammd-lgtm/nyxora?style=flat" alt="Release">
+  <img src="https://img.shields.io/badge/tests-65%2B-brightgreen?style=flat" alt="Tests">
+  <img src="https://img.shields.io/github/v/release/nyxora-network/nyxora?style=flat" alt="Release">
 </div>
 
 <br>
@@ -114,13 +114,13 @@
 ## 📦 One-Liner Install
 
 ```bash
-curl -L github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+curl -L github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 Or using `wget`:
 
 ```bash
-wget -q https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+wget -q https://github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 <details>
@@ -132,7 +132,7 @@ sudo apt install golang-go git ssh sshpass wireguard curl
 # or: brew install go  (macOS)
 
 # Clone
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # Build
@@ -167,15 +167,36 @@ nyxora dashboard
 ### Connect Options
 
 ```bash
-nyxora connect <host> [options]
+nyxora connect <host> [flags]
 
-Options:
-  --user, -u <name>       SSH username (default: root)
-  --port, -p <port>       SSH port (default: 22)
-  --password <pass>       SSH password
-  --mode <mode>           Server mode: full, lite, minimal
-  --transports <list>     Comma-separated transports (overrides mode)
-  --ports <pairs>         Port overrides: wg=51820,ss=8388,...
+Flags:
+  -u, --user string         SSH username (default "root")
+  -p, --port int            SSH port (default 22)
+      --password string     SSH password
+  -m, --mode string         Server mode: full, lite, minimal
+      --transports string   Comma-separated transports (overrides mode)
+      --ports string        Port overrides: wg=51820,ss=8388,...
+  -q, --quiet               Suppress output
+  -v, --verbose             Enable verbose logging
+  -c, --config string       Config file path
+  -d, --daemon              Run as background service
+  -t, --tui                 Enable TUI mode
+```
+
+### All Commands
+
+```
+nyxora connect [host]      Connect to remote server
+nyxora status              Show connection status
+nyxora tunnels             List available tunnel protocols
+nyxora dashboard           Live terminal dashboard
+nyxora tui                 Interactive terminal UI
+nyxora disconnect          Close all tunnels
+nyxora install             Check dependencies & setup
+nyxora server              Show server info & suggest mode
+nyxora update              Check for updates
+nyxora version             Show version
+nyxora daemon              Run as background service
 ```
 
 #### Server Modes
@@ -232,6 +253,32 @@ NYXORA features a full-featured terminal UI built with [Bubble Tea](https://gith
 | `s`       | Toggle status bar         |
 | `?`       | Open help screen          |
 | `t`       | Tunnel topology view      |
+
+---
+
+## 🏗️ Architecture Highlights
+
+### Concurrent Failover Engine
+NYXORA connects to **all 12 transports simultaneously** using Go's `errgroup` — not sequentially. This means:
+- **Connection time**: ~2s (max single transport) instead of ~24s (sum of all)
+- **Automatic failover**: Detects degraded tunnels in <10s, switches instantly
+- **Real-time scoring**: Latency + packet loss + jitter + stability weighted formula
+- **Self-healing**: Recovers from cascading failures without manual intervention
+
+### Zero-Config Remote Provisioning
+No agent or software required on the remote server:
+- **SSH-only**: Just password or key authentication
+- **Auto-detect OS**: Ubuntu, Debian, CentOS recognition
+- **Auto-install**: Deploys tunnel binaries (WireGuard, OpenVPN, FRP, Rathole, etc.)
+- **Auto-configure**: Generates keys, configs, and starts services
+- **Auto-teardown**: Cleans up everything on disconnect
+
+### Production-Grade Observability
+- **Prometheus metrics** at `/metrics` endpoint
+- **Hot-reload config** via file watcher (5s polling)
+- **Token bucket rate limiting** per transport
+- **Internal DNS resolver** with caching (300s TTL)
+- **Audit logging** with JSON-structured events
 
 ---
 
@@ -436,14 +483,14 @@ Config is stored at `/etc/nyxora/config.json` (auto-generated on `nyxora install
 
 ### Prerequisites
 
-- Go 1.24+
+- Go 1.25+
 - Linux or macOS
 - `ssh`, `sshpass`, `wg`, `curl`, `ping`
 
 ### Setup
 
 ```bash
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # Build
@@ -523,20 +570,20 @@ nyxora/
 | 🚀 **New Features** | Hard | Add new commands, modes, options |
 | 🌐 **New Transports** | Hard | Implement new tunnel protocols |
 
-**First time contributing?** Look for issues labeled [`good first issue`](https://github.com/nyxorammd-lgtm/nyxora/labels/good%20first%20issue) — they're perfect for getting started!
+**First time contributing?** Look for issues labeled [`good first issue`](https://github.com/nyxora-network/nyxora/labels/good%20first%20issue) — they're perfect for getting started!
 
 ---
 
 ### 🐛 Reporting Bugs
 
 **Before submitting:**
-1. Search [existing issues](https://github.com/nyxorammd-lgtm/nyxora/issues) — your bug might already be there
+1. Search [existing issues](https://github.com/nyxora-network/nyxora/issues) — your bug might already be there
 2. Try reproducing on a clean install (fresh `nyxora install`)
 3. Update to the latest version (`nyxora update`) — the bug might be fixed already
 
 **How to submit a great bug report:**
 
-1. Click [**New Bug Report**](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=bug_report.md)
+1. Click [**New Bug Report**](https://github.com/nyxora-network/nyxora/issues/new?template=bug_report.md)
 2. Fill in **all sections** (the more detail, the faster we can fix it):
 
 | Section | What to Include |
@@ -738,15 +785,15 @@ All contributors are recognized in our [Contributors section](#-contributors). W
 
 - 📖 Read the [Contributing Guide](CONTRIBUTING.md) for detailed instructions
 - 💬 Join our [Telegram Channel](https://t.me/NyxoraCore) for questions
-- 🐛 Check [existing issues](https://github.com/nyxorammd-lgtm/nyxora/issues) for inspiration
+- 🐛 Check [existing issues](https://github.com/nyxora-network/nyxora/issues) for inspiration
 - 📧 Email maintainers for private concerns
 
 > **Remember:** There are no stupid questions! We were all beginners once. Don't hesitate to ask for help.
 
 ## 🌟 Contributors
 
-<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="Contributors" />
+<a href="https://github.com/nyxora-network/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxora-network/nyxora" alt="Contributors" />
 </a>
 
 ---
@@ -761,8 +808,8 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
   <br>
   <p>
     <a href="https://t.me/NyxoraCore">Telegram Channel</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">Report Bug</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">Feature Request</a>
+    <a href="https://github.com/nyxora-network/nyxora/issues">Report Bug</a> •
+    <a href="https://github.com/nyxora-network/nyxora/issues">Feature Request</a>
   </p>
   <p>
     <sub>Built with ❤️ using Go &amp; Bubble Tea</sub>

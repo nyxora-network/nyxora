@@ -1,10 +1,15 @@
 package transport
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sort"
 	"sync"
+	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Manager struct {
@@ -105,33 +110,66 @@ func (m *Manager) ConnectAll(remoteAddr string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	log.Printf("[manager] probing %s...", remoteAddr)
+	log.Printf("[manager] probing %s concurrently...", remoteAddr)
 	latency, loss, _ := MeasureLatency(remoteAddr, 4)
 	log.Printf("[manager] remote base latency: %.1fms, loss: %.1f%%", latency, loss)
 
-	type candidate struct {
+	type result struct {
+		name  string
 		t     Transport
 		score float64
+		err   error
 	}
 
-	var candidates []candidate
-	log.Printf("[manager] testing all registered transports to %s", remoteAddr)
+	// Timeout to prevent infinite hangs
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	resultChan := make(chan result, len(m.transports))
 
 	for name, t := range m.transports {
-		log.Printf("[manager] trying %s...", name)
-		err := t.Connect(remoteAddr)
-		if err != nil {
-			log.Printf("[manager] %s failed: %v", name, err)
-			t.Disconnect()
-			continue
+		t := t
+		name := name
+
+		g.Go(func() error {
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+			}
+
+			log.Printf("[manager] trying %s...", name)
+			err := t.Connect(remoteAddr)
+			score := 0.0
+			if err == nil {
+				score = t.Score()
+			}
+			resultChan <- result{name: name, t: t, score: score, err: err}
+			return nil
+		})
+	}
+
+	_ = g.Wait()
+	close(resultChan)
+
+	var candidates []result
+	var allErrors []error
+
+	for res := range resultChan {
+		if res.err != nil {
+			allErrors = append(allErrors, fmt.Errorf("%s: %w", res.name, res.err))
+			log.Printf("[manager] %s failed: %v", res.name, res.err)
+			res.t.Disconnect()
+		} else {
+			log.Printf("[manager] %s success (score: %.1f)", res.name, res.score)
+			candidates = append(candidates, res)
 		}
-		score := t.Score()
-		log.Printf("[manager] %s score: %.1f", name, score)
-		candidates = append(candidates, candidate{t, score})
 	}
 
 	if len(candidates) == 0 {
-		return fmt.Errorf("no transport could connect to %s", remoteAddr)
+		return fmt.Errorf("connect all transports to %s: %w", remoteAddr, errors.Join(allErrors...))
 	}
 
 	sort.Slice(candidates, func(i, j int) bool {
@@ -140,24 +178,20 @@ func (m *Manager) ConnectAll(remoteAddr string) error {
 
 	if m.allActive {
 		for _, c := range candidates {
-			m.active[c.t.Name()] = true
+			m.active[c.name] = true
 		}
 		log.Printf("[manager] all-active: %d transports active", len(candidates))
-
-		for i, c := range candidates {
-			if i == 0 {
-				log.Printf("[manager] primary: %s (score: %.1f)", c.t.Name(), c.score)
-			}
+		if len(candidates) > 0 {
+			log.Printf("[manager] primary: %s (score: %.1f)", candidates[0].name, candidates[0].score)
 		}
 	} else {
 		best := candidates[0]
-		m.active[best.t.Name()] = true
-		for i, c := range candidates {
-			if i > 0 {
-				c.t.Disconnect()
-			}
+		m.active[best.name] = true
+
+		for _, c := range candidates[1:] {
+			c.t.Disconnect()
 		}
-		log.Printf("[manager] selected: %s (score: %.1f)", best.t.Name(), best.score)
+		log.Printf("[manager] selected primary: %s (score: %.1f)", best.name, best.score)
 	}
 
 	return nil

@@ -11,14 +11,14 @@
 ### 报告 Bug
 
 提交 Bug 报告前：
-- 检查 [issues](https://github.com/nyxorammd-lgtm/nyxora/issues) 是否已报告
+- 检查 [issues](https://github.com/nyxora-network/nyxora/issues) 是否已报告
 - 收集信息：操作系统版本、Go 版本、重现步骤、错误输出
 
-**提交 Bug 报告**：打开 [新 issue](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=bug_report.md)。
+**提交 Bug 报告**：打开 [新 issue](https://github.com/nyxora-network/nyxora/issues/new?template=bug_report.md)。
 
 ### 建议新功能
 
-打开 [功能请求](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=feature_request.md)，描述：
+打开 [功能请求](https://github.com/nyxora-network/nyxora/issues/new?template=feature_request.md)，描述：
 - 您要解决的问题
 - 您设想的解决方案
 - 考虑过的替代方案
@@ -68,7 +68,7 @@ git clone https://github.com/YOUR_USERNAME/nyxora.git
 cd nyxora
 
 # 添加 upstream remote
-git remote add upstream https://github.com/nyxorammd-lgtm/nyxora.git
+git remote add upstream https://github.com/nyxora-network/nyxora.git
 
 # 创建功能分支
 git checkout -b feat/your-feature
@@ -85,4 +85,4 @@ git push origin feat/your-feature
 
 ## 有问题？
 
-打开 [讨论](https://github.com/nyxorammd-lgtm/nyxora/discussions) 或加入我们的 [Telegram](https://t.me/NyxoraCore)。
+打开 [讨论](https://github.com/nyxora-network/nyxora/discussions) 或加入我们的 [Telegram](https://t.me/NyxoraCore)。

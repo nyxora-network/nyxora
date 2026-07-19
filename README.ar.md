@@ -115,13 +115,13 @@
 ## 📦 تثبيت بسطر واحد
 
 ```bash
-curl -L github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+curl -L github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 أو باستخدام `wget`:
 
 ```bash
-wget -q https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+wget -q https://github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 <details>
@@ -133,7 +133,7 @@ sudo apt install golang-go git ssh sshpass wireguard curl
 # أو: brew install go (macOS)
 
 # استنساخ
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # بناء
@@ -400,7 +400,7 @@ nyxora connect 91.107.243.237 --user root --password ...
 ### الإعداد
 
 ```bash
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # بناء
@@ -423,7 +423,7 @@ make vet
 نرحب بالمساهمات! يرجى مراجعة [دليل المساهمة](CONTRIBUTING.md).
 
 **طرق المساهمة:**
-- الإبلاغ عن الأخطاء عبر [GitHub Issues](https://github.com/nyxorammd-lgtm/nyxora/issues)
+- الإبلاغ عن الأخطاء عبر [GitHub Issues](https://github.com/nyxora-network/nyxora/issues)
 - اقتراح أنواع ناقلات جديدة
 - تحسين TUI / لوحة التحكم
 - إضافة دعم لأنظمة تشغيل إضافية
@@ -434,8 +434,8 @@ make vet
 
 ## 🌟 المساهمون
 
-<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="المساهمون" />
+<a href="https://github.com/nyxora-network/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxora-network/nyxora" alt="المساهمون" />
 </a>
 
 ---
@@ -452,8 +452,8 @@ make vet
   <br>
   <p>
     <a href="https://t.me/NyxoraCore">قناة تلغرام</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">الإبلاغ عن خطأ</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">طلب ميزة</a>
+    <a href="https://github.com/nyxora-network/nyxora/issues">الإبلاغ عن خطأ</a> •
+    <a href="https://github.com/nyxora-network/nyxora/issues">طلب ميزة</a>
   </p>
   <p>
     <sub>بُني بـ ❤️ باستخدام Go &amp; Bubble Tea</sub>

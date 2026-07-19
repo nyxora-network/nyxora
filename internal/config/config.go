@@ -247,12 +247,12 @@ func (c *Config) Validate() error {
 	}
 	if len(c.EnabledTransports) > 0 {
 		if err := ValidateTransports(c.EnabledTransports); err != nil {
-			return err
+			return fmt.Errorf("validate transports: %w", err)
 		}
 	}
 	if c.PortOverrides != nil {
 		if err := ValidatePortOverrides(c.PortOverrides); err != nil {
-			return err
+			return fmt.Errorf("validate port overrides: %w", err)
 		}
 	}
 	return nil

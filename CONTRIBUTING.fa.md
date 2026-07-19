@@ -11,14 +11,14 @@
 ### گزارش باگ
 
 قبل از ارسال گزارش باگ:
-- بررسی کنید آیا قبلاً در [issues](https://github.com/nyxorammd-lgtm/nyxora/issues) گزارش شده
+- بررسی کنید آیا قبلاً در [issues](https://github.com/nyxora-network/nyxora/issues) گزارش شده
 - اطلاعات جمع‌آوری کنید: نسخه سیستم‌عامل، نسخه Go، مراحل بازتولید، خروجی خطا
 
-**گزارش باگ ارسال کنید** با باز کردن [issue جدید](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=bug_report.md).
+**گزارش باگ ارسال کنید** با باز کردن [issue جدید](https://github.com/nyxora-network/nyxora/issues/new?template=bug_report.md).
 
 ### پیشنهاد ویژگی جدید
 
-[درخواست ویژگی](https://github.com/nyxorammd-lgtm/nyxora/issues/new?template=feature_request.md) باز کنید و توضیح دهید:
+[درخواست ویژگی](https://github.com/nyxora-network/nyxora/issues/new?template=feature_request.md) باز کنید و توضیح دهید:
 - مشکلی که حل می‌کنید
 - راه‌حل مورد نظر شما
 - جایگزین‌های در نظر گرفته شده
@@ -68,7 +68,7 @@ git clone https://github.com/YOUR_USERNAME/nyxora.git
 cd nyxora
 
 # اضافه کردن upstream remote
-git remote add upstream https://github.com/nyxorammd-lgtm/nyxora.git
+git remote add upstream https://github.com/nyxora-network/nyxora.git
 
 # ایجاد شاخه ویژگی
 git checkout -b feat/your-feature
@@ -85,4 +85,4 @@ git push origin feat/your-feature
 
 ## سوالی دارید؟
 
-[بحث](https://github.com/nyxorammd-lgtm/nyxora/discussions) باز کنید یا به [تلگرام](https://t.me/NyxoraCore) بپیوندید.
+[بحث](https://github.com/nyxora-network/nyxora/discussions) باز کنید یا به [تلگرام](https://t.me/NyxoraCore) بپیوندید.

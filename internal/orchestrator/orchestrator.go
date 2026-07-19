@@ -8,15 +8,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nyxora/nyxora/internal/config"
-	"github.com/nyxora/nyxora/internal/dashboard"
-	"github.com/nyxora/nyxora/internal/failover"
-	"github.com/nyxora/nyxora/internal/monitor"
-	"github.com/nyxora/nyxora/internal/multipath"
-	"github.com/nyxora/nyxora/internal/packager"
-	"github.com/nyxora/nyxora/internal/remote"
-	"github.com/nyxora/nyxora/internal/routing"
-	"github.com/nyxora/nyxora/internal/transport"
+	"github.com/nyxora-network/nyxora/internal/config"
+	"github.com/nyxora-network/nyxora/internal/dashboard"
+	"github.com/nyxora-network/nyxora/internal/failover"
+	"github.com/nyxora-network/nyxora/internal/monitor"
+	"github.com/nyxora-network/nyxora/internal/multipath"
+	"github.com/nyxora-network/nyxora/internal/packager"
+	"github.com/nyxora-network/nyxora/internal/remote"
+	"github.com/nyxora-network/nyxora/internal/routing"
+	"github.com/nyxora-network/nyxora/internal/transport"
 )
 
 type Phase string

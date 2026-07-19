@@ -10,16 +10,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/nyxora/nyxora/internal/failover"
-	"github.com/nyxora/nyxora/internal/remote"
-	"github.com/nyxora/nyxora/internal/transport"
+	"github.com/nyxora-network/nyxora/internal/failover"
+	"github.com/nyxora-network/nyxora/internal/remote"
+	"github.com/nyxora-network/nyxora/internal/transport"
 )
 
 func (o *Orchestrator) Start() error {
 	o.mu.Lock()
 	if o.running {
 		o.mu.Unlock()
-		return fmt.Errorf("already running")
+		return fmt.Errorf("orchestrator start: already running")
 	}
 	o.running = true
 	o.mu.Unlock()

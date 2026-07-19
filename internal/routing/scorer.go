@@ -3,7 +3,7 @@ package routing
 import (
 	"sort"
 
-	"github.com/nyxora/nyxora/internal/transport"
+	"github.com/nyxora-network/nyxora/internal/transport"
 )
 
 type PathScore struct {

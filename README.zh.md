@@ -112,13 +112,13 @@
 ## 📦 一行安装
 
 ```bash
-curl -L github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+curl -L github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 或使用 `wget`：
 
 ```bash
-wget -q https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
+wget -q https://github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -O /usr/local/bin/nyxora && chmod +x /usr/local/bin/nyxora
 ```
 
 <details>
@@ -130,7 +130,7 @@ sudo apt install golang-go git ssh sshpass wireguard curl
 # 或：brew install go (macOS)
 
 # 克隆仓库
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # 编译
@@ -410,7 +410,7 @@ NYXORA 包含一个用于隧道管理的 **Web Dashboard**。访问地址：`htt
 ### 开始开发
 
 ```bash
-git clone https://github.com/nyxorammd-lgtm/nyxora.git
+git clone https://github.com/nyxora-network/nyxora.git
 cd nyxora
 
 # 编译
@@ -471,7 +471,7 @@ nyxora/
 我们欢迎贡献！请阅读我们的[贡献指南](CONTRIBUTING.md)。
 
 **贡献方式：**
-- 通过 [GitHub Issues](https://github.com/nyxorammd-lgtm/nyxora/issues) 报告错误
+- 通过 [GitHub Issues](https://github.com/nyxora-network/nyxora/issues) 报告错误
 - 建议新的传输类型
 - 改进 TUI / 仪表板
 - 添加更多操作系统的支持
@@ -482,8 +482,8 @@ nyxora/
 
 ## 🌟 贡献者
 
-<a href="https://github.com/nyxorammd-lgtm/nyxora/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=nyxorammd-lgtm/nyxora" alt="贡献者" />
+<a href="https://github.com/nyxora-network/nyxora/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=nyxora-network/nyxora" alt="贡献者" />
 </a>
 
 ---
@@ -498,8 +498,8 @@ nyxora/
   <br>
   <p>
     <a href="https://t.me/NyxoraCore">Telegram 频道</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">报告错误</a> •
-    <a href="https://github.com/nyxorammd-lgtm/nyxora/issues">功能请求</a>
+    <a href="https://github.com/nyxora-network/nyxora/issues">报告错误</a> •
+    <a href="https://github.com/nyxora-network/nyxora/issues">功能请求</a>
   </p>
   <p>
     <sub>用 ❤️ 和 Go 与 Bubble Tea 构建</sub>

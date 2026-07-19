@@ -152,7 +152,7 @@ Since launching NYXORA:
 
 ```bash
 # Install
-curl -L https://github.com/nyxorammd-lgtm/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora
+curl -L https://github.com/nyxora-network/nyxora/releases/download/v0.2.0/nyxora_linux_amd64 -o /usr/local/bin/nyxora
 chmod +x /usr/local/bin/nyxora
 
 # Connect to a server
@@ -166,7 +166,7 @@ nyxora tui
 
 Building NYXORA taught me a lot about Go networking, concurrent programming, and TUI development. The project is open-source and welcomes contributions!
 
-**GitHub:** https://github.com/nyxorammd-lgtm/nyxora
+**GitHub:** https://github.com/nyxora-network/nyxora
 
 ---
 

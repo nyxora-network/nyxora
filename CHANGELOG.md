@@ -7,15 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.0.0] - 2026-07-18
+
 ### Added
-- CONTRIBUTING.md in Persian, Russian, and Chinese
-- Enhanced API Reference documentation
-- Comprehensive test coverage improvements
+- **Cobra CLI framework** — Professional command-line interface with subcommands, flag validation, and help system
+- **Concurrent transport connections** — All 12 transports connect simultaneously using `errgroup` (reduces connection time from ~24s to ~2s)
+- **30-second connection timeout** — Prevents infinite hangs on unresponsive transports
+- **Comprehensive unit tests** — 15+ new tests for transport manager with mock transports
+- **CI/CD pipeline improvements** — Updated to Go 1.25, added test timeout, race detection
 
 ### Changed
-- Updated transport count from 11 to 12 across all READMEs
-- Added WebSocket transport to all language documentation
-- Fixed Go version badge from 1.25 to 1.24 in all READMEs
+- **Module path fixed** — `go.mod` now correctly declares `github.com/nyxora-network/nyxora`
+- **CLI architecture** — Replaced manual `os.Args` parsing with `spf13/cobra` v1.10.2
+- **Error handling** — All critical paths now use `fmt.Errorf` wrapping with context
+- **Go version** — Minimum required Go version updated from 1.24 to 1.25
+- **README.md** — Updated with new CLI commands, architecture highlights, and badges
+- **CI/CD workflows** — Updated `ci.yml` and `release.yml` to Go 1.25
+
+### Fixed
+- **Import path mismatch** — All internal imports now use correct module path
+- **Error context loss** — Bare `return err` patterns replaced with wrapped errors
+- **CLI flag parsing** — Fixed fragile manual parsing with proper Cobra flag handling
+
+### Removed
+- **Legacy CLI parser** — Removed 400+ lines of manual `os.Args` parsing code
 
 ---
 
